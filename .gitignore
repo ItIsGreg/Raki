@@ -21,6 +21,7 @@ pip-wheel-metadata/
 .pyre/
 .pytest_cache/
 celerybeat-schedule
+venv/
 
 # TypeScript
 *.tsbuildinfo
