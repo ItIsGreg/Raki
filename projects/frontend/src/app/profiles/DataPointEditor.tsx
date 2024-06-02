@@ -1,166 +1,190 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SelectGroup } from "@radix-ui/react-select";
+import { TiDeleteOutline } from "react-icons/ti";
+import { DataPointEditorProps } from "../types";
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-  explanation: z.string(),
-  synonyms: z.array(z.string()),
-  dimension: z.string(),
-  unit: z.string(),
-  valueset: z.array(z.string()),
-});
-
-export function DataPointEditor() {
-  // 1. Define your form.
-  const [synonyms, setSynonyms] = useState<string[]>(["synonym1", "synonym2"]);
+export function DataPointEditor(props: DataPointEditorProps) {
+  const [synonyms, setSynonyms] = useState<string[]>([]);
   const [valueset, setValueset] = useState<string[]>([]);
+  const [datatype, setDatatype] = useState<string>("");
+  const [unit, setUnit] = useState<string>("");
   const [currentSynonym, setCurrentSynonym] = useState<string>("");
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      explanation: "",
-      synonyms: [],
-      dimension: "",
-      unit: "",
-      valueset: [],
-    },
-  });
+  const [currentValuesetItem, setCurrentValuesetItem] = useState<string>("");
 
-  // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
-  }
+  const handleDeleteClick = (array: string, element: string) => {
+    if (array == "synonyms") {
+      const newSynonyms = synonyms.filter((synonym) => synonym !== element);
+      setSynonyms(newSynonyms);
+    }
+    if (array == "valueset") {
+      const newValueset = valueset.filter((valueset) => valueset !== element);
+      setValueset(newValueset);
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Edit Datapoint</CardTitle>
+        <CardTitle>Data Point Editor</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <Card>
-                  <FormItem>
-                    <CardHeader>
-                      <CardTitle>Name</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <FormControl>
-                        <Input placeholder="shadcn" {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        The name of the data point
-                      </FormDescription>
-                      <FormMessage />
-                    </CardContent>
-                  </FormItem>
-                </Card>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="explanation"
-              render={({ field }) => (
-                <Card>
-                  <FormItem>
-                    <CardHeader>
-                      <CardTitle>Explanation</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <FormControl>
-                        <Input
-                          placeholder="This datapoint represents..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        A short explanation for the data point. You do not need
-                        to provide one, but it might improve the understanding
-                        of the data point.
-                      </FormDescription>
-                      <FormMessage />
-                    </CardContent>
-                  </FormItem>
-                </Card>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="synonyms"
-              render={({ field }) => (
-                <Card>
-                  <FormItem>
-                    <CardHeader>
-                      <CardTitle>Synonyms</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {/* <FormControl> */}
-                      <Card>
-                        <CardContent>
-                          <div className="flex flex-row gap-2 p-2">
-                            {synonyms.map((synonym, index) => {
-                              return <Badge key={index}>{synonym}</Badge>;
-                            })}
-                          </div>
-                        </CardContent>
-                        <CardFooter className="flex flex-row gap-1">
-                          <Input placeholder="synonym" onChange={} />
-                          <Button
-                            onClick={() => {
-                              setSynonyms([...synonyms, "synonym"]);
-                            }}
-                          >
-                            Add
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                      {/* </FormControl> */}
-                      <FormDescription>
-                        Create a list of synonyms for the data point. E.g.
-                        abbreviations or alternative names.
-                      </FormDescription>
-                      <FormMessage />
-                    </CardContent>
-                  </FormItem>
-                </Card>
-              )}
-            />
-            <Button type="submit">Submit</Button>
-          </form>
-        </Form>
+      <CardContent className="overflow-y-scroll">
+        <Card>
+          <CardHeader>
+            <CardTitle>Name</CardTitle>
+            <CardDescription>The name of the Data Point</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input placeholder="Name" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Explanation</CardTitle>
+            <CardDescription>
+              Some explanation to help understand the Data Point
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Input placeholder="Explanation" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Synonyms</CardTitle>
+            <CardDescription>
+              Other names that can be used to refer to this Data Point, e.g.
+              abbreviations or full names
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2 flex-wrap">
+            <div className="flex flex-row gap-1">
+              {synonyms.map((synonym, index) => (
+                <Badge key={index}>
+                  {synonym}
+                  <TiDeleteOutline
+                    size={20}
+                    onClick={() => handleDeleteClick("synonym", synonym)}
+                  />
+                </Badge>
+              ))}
+            </div>
+            <div className="flex flex-row gap-1">
+              <Input
+                placeholder="Synonym"
+                value={currentSynonym}
+                onChange={(e) => setCurrentSynonym(e.target.value)}
+              />
+              <Button
+                onClick={() => {
+                  setSynonyms([...synonyms, currentSynonym]);
+                  setCurrentSynonym("");
+                }}
+              >
+                Add Synonym
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Datatype</CardTitle>
+            <CardDescription>
+              The type of data that this Data Point represents
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Select onValueChange={setDatatype}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a Datatype" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="valueset">Valueset</SelectItem>
+                  <SelectItem value="number">Number</SelectItem>
+                  <SelectItem value="boolean">True/False</SelectItem>
+                  <SelectItem value="text">Text</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+        {datatype == "valueset" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Valueset</CardTitle>
+              <CardDescription>
+                In case the datatype is a valueset, you can define the possible
+                values here
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2 flex-wrap">
+              <div className="flex flex-row gap-1">
+                {valueset.map((valueset, index) => (
+                  <Badge key={index}>
+                    {valueset}
+                    <TiDeleteOutline
+                      size={20}
+                      onClick={() => handleDeleteClick("valueset", valueset)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex flex-row gap-1">
+                <Input
+                  placeholder="Valueset Item"
+                  value={currentValuesetItem}
+                  onChange={(e) => setCurrentValuesetItem(e.target.value)}
+                />
+                <Button
+                  onClick={() => {
+                    setValueset([...valueset, currentValuesetItem]);
+                    setCurrentValuesetItem("");
+                  }}
+                >
+                  Add Item
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        {datatype == "number" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Unit</CardTitle>
+              <CardDescription>
+                The unit in which the number is expressed. Leave empty if no
+                unit is applicable.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Input
+                placeholder="Unit"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+              />
+            </CardContent>
+          </Card>
+        )}
       </CardContent>
     </Card>
   );

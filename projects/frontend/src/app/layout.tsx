@@ -17,8 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <nav>Navbar</nav>
-        {children}
+        <div className="h-screen">
+          <nav className="">Navbar</nav>
+          {children}
+        </div>
       </body>
     </html>
   );

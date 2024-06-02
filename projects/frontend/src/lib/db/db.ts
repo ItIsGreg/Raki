@@ -1,49 +1,70 @@
 // db.ts
 import Dexie, { Table } from "dexie";
 
-export interface ProfilePoint {
-  id: number;
+export interface ProfilePointCreate {
   name: string;
   explanation: string;
   synonyms: string[];
+  datatype: string;
   valueset: string[] | undefined;
-  dimension: string;
   unit: string | undefined;
   profileId: number;
 }
 
-export interface Profile {
-  id: number;
+export interface ProfilePoint extends ProfilePointCreate {
+  id: string;
+}
+export interface ProfileCreate {
+  name: string;
+  description: string;
+}
+
+export interface Profile extends ProfileCreate {
+  id: string;
+}
+
+export interface DatasetCreate {
   name: string;
 }
 
-export interface Dataset {
-  id: number;
-  name: string | undefined;
+export interface Dataset extends DatasetCreate {
+  id: string;
 }
 
-export interface AnnotatedText {
-  id: number;
+export interface AnnotatedTextCreate {
   textId: number;
   annotatedDatasetId: number;
 }
 
-export interface AnnotatedDataset {
-  id: number;
+export interface AnnotatedText extends AnnotatedTextCreate {
+  id: string;
+}
+
+export interface AnnotatedDatasetCreate {
   datasetId: number;
 }
 
-export interface Texts {
-  id: number;
+export interface AnnotatedDataset extends AnnotatedDatasetCreate {
+  id: string;
+}
+
+export interface TextCreate {
   datasetId: number;
   filename: string | undefined;
   text: string;
 }
 
-export interface DataPoint {
-  id: number;
+export interface Text extends TextCreate {
+  id: string;
+}
+
+export interface DataPointCreate {
   annotatedTextId: number;
   name: string;
+}
+
+export interface DataPoint extends DataPointCreate {
+  id: string;
 }
 
 export class MySubClassedDexie extends Dexie {
@@ -54,7 +75,7 @@ export class MySubClassedDexie extends Dexie {
   Datasets!: Table<Dataset>;
   AnnotatedTexts!: Table<AnnotatedText>;
   AnnotatedDatasets!: Table<AnnotatedDataset>;
-  Texts!: Table<Texts>;
+  Texts!: Table<Text>;
   DataPoints!: Table<DataPoint>;
 
   constructor() {

@@ -1,20 +1,40 @@
-import { db } from "./db";
+import { v4 as uuidv4, v4 } from "uuid";
+import {
+  AnnotatedDatasetCreate,
+  AnnotatedTextCreate,
+  DataPointCreate,
+  DatasetCreate,
+  ProfileCreate,
+  ProfilePointCreate,
+  TextCreate,
+  db,
+} from "./db";
 import {
   ProfilePoint,
   Profile,
   Dataset,
   AnnotatedText,
   AnnotatedDataset,
-  Texts,
+  Text,
   DataPoint,
 } from "./db";
 
 // The CRUD operations for the ProfilePoint table
-export const createProfilePoint = async (profilePoint: ProfilePoint) => {
-  return db.profilePoints.add(profilePoint);
+export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
+  const id = v4();
+  try {
+    const profile = await db.Profiles.get(profilePoint.profileId);
+    if (profile) {
+      return db.profilePoints.add({ ...profilePoint, id });
+    } else {
+      throw new Error("Profile not found");
+    }
+  } catch (error) {
+    throw new Error("Profile not found");
+  }
 };
 
-export const readProfilePoint = async (id: number) => {
+export const readProfilePoint = async (id: string) => {
   return db.profilePoints.get(id);
 };
 
@@ -23,7 +43,9 @@ export const readAllProfilePoints = async () => {
 };
 
 // read all profile points that belong to a specific profile
-export const readProfilePointsByProfile = async (profileId: number) => {
+export const readProfilePointsByProfile = async (
+  profileId: string | undefined
+) => {
   return db.profilePoints.where({ profileId }).toArray();
 };
 
@@ -31,16 +53,17 @@ export const updateProfilePoint = async (profilePoint: ProfilePoint) => {
   return db.profilePoints.put(profilePoint);
 };
 
-export const deleteProfilePoint = async (id: number) => {
+export const deleteProfilePoint = async (id: string) => {
   return db.profilePoints.delete(id);
 };
 
 // The CRUD operations for the Profile table
-export const createProfile = async (profile: Profile) => {
-  return db.Profiles.add(profile);
+export const createProfile = async (profile: ProfileCreate) => {
+  const id = v4();
+  return db.Profiles.add({ ...profile, id });
 };
 
-export const readProfile = async (id: number) => {
+export const readProfile = async (id: string) => {
   return db.Profiles.get(id);
 };
 
@@ -52,16 +75,17 @@ export const updateProfile = async (profile: Profile) => {
   return db.Profiles.put(profile);
 };
 
-export const deleteProfile = async (id: number) => {
+export const deleteProfile = async (id: string) => {
   return db.Profiles.delete(id);
 };
 
 // The CRUD operations for the Dataset table
-export const createDataset = async (dataset: Dataset) => {
-  return db.Datasets.add(dataset);
+export const createDataset = async (dataset: DatasetCreate) => {
+  const id = v4();
+  return db.Datasets.add({ ...dataset, id });
 };
 
-export const readDataset = async (id: number) => {
+export const readDataset = async (id: string) => {
   return db.Datasets.get(id);
 };
 
@@ -73,16 +97,19 @@ export const updateDataset = async (dataset: Dataset) => {
   return db.Datasets.put(dataset);
 };
 
-export const deleteDataset = async (id: number) => {
+export const deleteDataset = async (id: string) => {
   return db.Datasets.delete(id);
 };
 
 // The CRUD operations for the AnnotatedText table
-export const createAnnotatedText = async (annotatedText: AnnotatedText) => {
-  return db.AnnotatedTexts.add(annotatedText);
+export const createAnnotatedText = async (
+  annotatedText: AnnotatedTextCreate
+) => {
+  const id = v4();
+  return db.AnnotatedTexts.add({ ...annotatedText, id });
 };
 
-export const readAnnotatedText = async (id: number) => {
+export const readAnnotatedText = async (id: string) => {
   return db.AnnotatedTexts.get(id);
 };
 
@@ -92,13 +119,13 @@ export const readAllAnnotatedTexts = async () => {
 
 // read all annotated texts that belong to a specific annotated dataset
 export const readAnnotatedTextsByAnnotatedDataset = async (
-  annotatedDatasetId: number
+  annotatedDatasetId: string
 ) => {
   return db.AnnotatedTexts.where({ annotatedDatasetId }).toArray();
 };
 
 // read all annotated texts that belong to a specific text
-export const readAnnotatedTextsByText = async (textId: number) => {
+export const readAnnotatedTextsByText = async (textId: string) => {
   return db.AnnotatedTexts.where({ textId }).toArray();
 };
 
@@ -106,18 +133,19 @@ export const updateAnnotatedText = async (annotatedText: AnnotatedText) => {
   return db.AnnotatedTexts.put(annotatedText);
 };
 
-export const deleteAnnotatedText = async (id: number) => {
+export const deleteAnnotatedText = async (id: string) => {
   return db.AnnotatedTexts.delete(id);
 };
 
 // The CRUD operations for the AnnotatedDataset table
 export const createAnnotatedDataset = async (
-  annotatedDataset: AnnotatedDataset
+  annotatedDataset: AnnotatedDatasetCreate
 ) => {
-  return db.AnnotatedDatasets.add(annotatedDataset);
+  const id = v4();
+  return db.AnnotatedDatasets.add({ ...annotatedDataset, id });
 };
 
-export const readAnnotatedDataset = async (id: number) => {
+export const readAnnotatedDataset = async (id: string) => {
   return db.AnnotatedDatasets.get(id);
 };
 
@@ -126,7 +154,7 @@ export const readAllAnnotatedDatasets = async () => {
 };
 
 // read all annotated datasets that belong to a specific dataset
-export const readAnnotatedDatasetsByDataset = async (datasetId: number) => {
+export const readAnnotatedDatasetsByDataset = async (datasetId: string) => {
   return db.AnnotatedDatasets.where({ datasetId }).toArray();
 };
 
@@ -136,16 +164,17 @@ export const updateAnnotatedDataset = async (
   return db.AnnotatedDatasets.put(annotatedDataset);
 };
 
-export const deleteAnnotatedDataset = async (id: number) => {
+export const deleteAnnotatedDataset = async (id: string) => {
   return db.AnnotatedDatasets.delete(id);
 };
 
 // The CRUD operations for the Texts table
-export const createText = async (text: Texts) => {
-  return db.Texts.add(text);
+export const createText = async (text: TextCreate) => {
+  const id = v4();
+  return db.Texts.add({ ...text, id });
 };
 
-export const readText = async (id: number) => {
+export const readText = async (id: string) => {
   return db.Texts.get(id);
 };
 
@@ -154,24 +183,25 @@ export const readAllTexts = async () => {
 };
 
 // read all texts that belong to a specific dataset
-export const readTextsByDataset = async (datasetId: number) => {
+export const readTextsByDataset = async (datasetId: string) => {
   return db.Texts.where({ datasetId }).toArray();
 };
 
-export const updateText = async (text: Texts) => {
+export const updateText = async (text: Text) => {
   return db.Texts.put(text);
 };
 
-export const deleteText = async (id: number) => {
+export const deleteText = async (id: string) => {
   return db.Texts.delete(id);
 };
 
 // The CRUD operations for the DataPoint table
-export const createDataPoint = async (dataPoint: DataPoint) => {
-  return db.DataPoints.add(dataPoint);
+export const createDataPoint = async (dataPoint: DataPointCreate) => {
+  const id = v4();
+  return db.DataPoints.add({ ...dataPoint, id });
 };
 
-export const readDataPoint = async (id: number) => {
+export const readDataPoint = async (id: string) => {
   return db.DataPoints.get(id);
 };
 
@@ -181,7 +211,7 @@ export const readAllDataPoints = async () => {
 
 // read all data points that belong to a specific annotated text
 export const readDataPointsByAnnotatedText = async (
-  annotatedTextId: number
+  annotatedTextId: string
 ) => {
   return db.DataPoints.where({ annotatedTextId }).toArray();
 };
@@ -190,6 +220,6 @@ export const updateDataPoint = async (dataPoint: DataPoint) => {
   return db.DataPoints.put(dataPoint);
 };
 
-export const deleteDataPoint = async (id: number) => {
+export const deleteDataPoint = async (id: string) => {
   return db.DataPoints.delete(id);
 };
