@@ -97,6 +97,13 @@ export function DataPointEditor(props: DataPointEditorProps) {
         setDatatype(activeDataPoint.datatype);
         setValueset(activeDataPoint.valueset || []);
         setUnit(activeDataPoint.unit || "");
+      } else {
+        setName("");
+        setExplanation("");
+        setSynonyms([]);
+        setDatatype("");
+        setValueset([]);
+        setUnit("");
       }
     };
     popuplateDataPoint();
