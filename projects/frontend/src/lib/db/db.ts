@@ -8,7 +8,7 @@ export interface ProfilePointCreate {
   datatype: string;
   valueset: string[] | undefined;
   unit: string | undefined;
-  profileId: number;
+  profileId: string;
 }
 
 export interface ProfilePoint extends ProfilePointCreate {
@@ -32,8 +32,8 @@ export interface Dataset extends DatasetCreate {
 }
 
 export interface AnnotatedTextCreate {
-  textId: number;
-  annotatedDatasetId: number;
+  textId: string;
+  annotatedDatasetId: string;
 }
 
 export interface AnnotatedText extends AnnotatedTextCreate {
@@ -41,7 +41,7 @@ export interface AnnotatedText extends AnnotatedTextCreate {
 }
 
 export interface AnnotatedDatasetCreate {
-  datasetId: number;
+  datasetId: string;
 }
 
 export interface AnnotatedDataset extends AnnotatedDatasetCreate {
@@ -49,7 +49,7 @@ export interface AnnotatedDataset extends AnnotatedDatasetCreate {
 }
 
 export interface TextCreate {
-  datasetId: number;
+  datasetId: string;
   filename: string | undefined;
   text: string;
 }
@@ -59,7 +59,7 @@ export interface Text extends TextCreate {
 }
 
 export interface DataPointCreate {
-  annotatedTextId: number;
+  annotatedTextId: string;
   name: string;
 }
 

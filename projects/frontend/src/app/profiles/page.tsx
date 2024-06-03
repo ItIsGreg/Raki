@@ -9,7 +9,9 @@ const Profiles = () => {
   const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
   const [activeDataPoint, setActiveDataPoint] = useState<
     ProfilePoint | undefined
-  >();
+  >(undefined);
+  const [creatingNewDataPoint, setCreatingNewDataPoint] =
+    useState<boolean>(false);
 
   return (
     <div className="grid grid-cols-3 gap-4 h-full">
@@ -20,10 +22,14 @@ const Profiles = () => {
       <DataPointList
         activeProfile={activeProfile}
         setActiveDataPoint={setActiveDataPoint}
+        setCreatingNewDataPoint={setCreatingNewDataPoint}
       />
       <DataPointEditor
+        activeProfile={activeProfile}
         activeDataPoint={activeDataPoint}
         setActiveDataPoint={setActiveDataPoint}
+        creatingNewDataPoint={creatingNewDataPoint}
+        setCreatingNewDataPoint={setCreatingNewDataPoint}
       />
     </div>
   );

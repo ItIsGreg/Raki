@@ -7,10 +7,14 @@ export interface ProfileListProps {
 
 export interface DataPointListProps {
   activeProfile: Profile | undefined;
-  setActiveDataPoint: (dataPoint: ProfilePoint) => void;
+  setActiveDataPoint: (dataPoint: ProfilePoint | undefined) => void;
+  setCreatingNewDataPoint: (creating: boolean) => void;
 }
 
 export interface DataPointEditorProps {
   activeDataPoint: ProfilePoint | undefined;
-  setActiveDataPoint: (dataPoint: ProfilePoint) => void;
+  setActiveDataPoint: (dataPoint: ProfilePoint | undefined) => void;
+  creatingNewDataPoint: boolean;
+  setCreatingNewDataPoint: (creating: boolean) => void;
+  activeProfile: Profile | undefined;
 }

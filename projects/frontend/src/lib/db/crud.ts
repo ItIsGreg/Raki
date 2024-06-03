@@ -46,7 +46,10 @@ export const readAllProfilePoints = async () => {
 export const readProfilePointsByProfile = async (
   profileId: string | undefined
 ) => {
-  return db.profilePoints.where({ profileId }).toArray();
+  if (!profileId) {
+    return [];
+  }
+  return db.profilePoints.where("profileId").equals(profileId).toArray();
 };
 
 export const updateProfilePoint = async (profilePoint: ProfilePoint) => {

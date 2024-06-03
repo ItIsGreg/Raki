@@ -9,67 +9,32 @@ import {
 } from "@/components/ui/card";
 import { DataPointListProps } from "../types";
 import { useLiveQuery } from "dexie-react-hooks";
-import { readProfilePointsByProfile } from "@/lib/db/crud";
+import { deleteProfilePoint, readProfilePointsByProfile } from "@/lib/db/crud";
+import { TiDeleteOutline } from "react-icons/ti";
 
 const DataPointList = (props: DataPointListProps) => {
-  const { activeProfile, setActiveDataPoint } = props;
-  const dataPoints = useLiveQuery(() => {
-    readProfilePointsByProfile(activeProfile?.id);
-  });
-  // const dataPoints = [
-  //   {
-  //     id: 1,
-  //     name: "LVEF",
-  //     explanation: "Left ventricular ejection fraction",
-  //     synonyms: ["LVEF", "EF"],
-  //     dimension: "number",
-  //     unit: "%",
-  //     valueset: undefined,
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "LVOT",
-  //     explanation: "Left ventricular outflow tract",
-  //     synonyms: ["LVOT"],
-  //     dimension: "number",
-  //     unit: "mm",
-  //     valueset: undefined,
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Mitralinsuffizienz",
-  //     explanation: "Mitral insufficiency",
-  //     synonyms: ["Mitralinsuffizienz", "MI"],
-  //     dimension: "string",
-  //     unit: "",
-  //     valueset: ["I", "II", "III", "IV"],
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Trikuspidalinsuffizienz",
-  //     explanation: "Tricuspid insufficiency",
-  //     synonyms: ["Trikuspidalinsuffizienz", "TI"],
-  //     dimension: "string",
-  //     unit: "",
-  //     valueset: ["I", "II", "III", "IV"],
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Aortenklappenstenose",
-  //     explanation: "Aortic valve stenosis",
-  //     synonyms: ["Aortenklappenstenose", "AS"],
-  //     dimension: "string",
-  //     unit: "",
-  //     valueset: ["I°", "II°", "III°", "IV°"],
-  //   },
-  // ];
+  const { activeProfile, setActiveDataPoint, setCreatingNewDataPoint } = props;
+  const dataPoints = useLiveQuery(
+    () => readProfilePointsByProfile(activeProfile?.id),
+    [activeProfile]
+  );
+
   return (
     <div>
       <Card>
         <CardHeader className="flex flex-row">
           <CardTitle>Data Points</CardTitle>
           <div className="flex-grow"></div>
-          {activeProfile && <Button>Add</Button>}
+          {activeProfile && (
+            <Button
+              onClick={() => {
+                setActiveDataPoint(undefined);
+                setCreatingNewDataPoint(true);
+              }}
+            >
+              New
+            </Button>
+          )}
         </CardHeader>
         {dataPoints && (
           <CardContent className="flex flex-col gap-2">
@@ -78,9 +43,21 @@ const DataPointList = (props: DataPointListProps) => {
                 <Card
                   key={dataPoint.id}
                   className="transition-transform hover:bg-gray-100 hover:shadow-lg hover:scale-105 transform"
+                  onClick={() => {
+                    setActiveDataPoint(dataPoint);
+                    setCreatingNewDataPoint(false);
+                  }}
                 >
-                  <CardHeader>
+                  <CardHeader className="flex flex-row">
                     <CardTitle>{dataPoint.name}</CardTitle>
+                    <div className="flex-grow"></div>
+                    <TiDeleteOutline
+                      className="hover:text-red-500 cursor-pointer"
+                      size={24}
+                      onClick={() => {
+                        deleteProfilePoint(dataPoint.id);
+                      }}
+                    />
                   </CardHeader>
                   <CardContent>
                     <CardDescription>{dataPoint.explanation}</CardDescription>
