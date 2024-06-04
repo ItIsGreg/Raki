@@ -42,6 +42,17 @@ export function DataPointEditor(props: DataPointEditorProps) {
   const [currentSynonym, setCurrentSynonym] = useState<string>("");
   const [currentValuesetItem, setCurrentValuesetItem] = useState<string>("");
 
+  const resetEditor = () => {
+    setName("");
+    setExplanation("");
+    setSynonyms([]);
+    setValueset([]);
+    setDatatype("");
+    setUnit("");
+    setCurrentSynonym("");
+    setCurrentValuesetItem("");
+  };
+
   const SaveButton = () => {
     return (
       <Button
@@ -56,6 +67,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
               unit: unit,
               profileId: activeProfile!.id,
             });
+            resetEditor();
           }
         }}
       >
@@ -79,6 +91,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
               unit: unit,
               profileId: activeProfile!.id,
             });
+            resetEditor();
           }
         }}
       >
@@ -98,12 +111,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
         setValueset(activeDataPoint.valueset || []);
         setUnit(activeDataPoint.unit || "");
       } else {
-        setName("");
-        setExplanation("");
-        setSynonyms([]);
-        setDatatype("");
-        setValueset([]);
-        setUnit("");
+        resetEditor();
       }
     };
     popuplateDataPoint();
@@ -121,165 +129,169 @@ export function DataPointEditor(props: DataPointEditorProps) {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row gap-2">
-        <CardTitle>Data Point Editor</CardTitle>
-        <div className="flex-grow"></div>
-        {creatingNewDataPoint && <SaveButton />}
-        {activeDataPoint && <UpdateButton />}
-      </CardHeader>
-      {(activeDataPoint || creatingNewDataPoint) && (
-        <CardContent className="overflow-y-scroll flex flex-col gap-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Name</CardTitle>
-              <CardDescription>The name of the Data Point</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Input
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Explanation</CardTitle>
-              <CardDescription>
-                Some explanation to help understand the Data Point
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Input
-                placeholder="Explanation"
-                value={explanation}
-                onChange={(e) => setExplanation(e.target.value)}
-              />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Synonyms</CardTitle>
-              <CardDescription>
-                Other names that can be used to refer to this Data Point, e.g.
-                abbreviations or full names
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2 flex-wrap">
-              <div className="flex flex-row gap-1">
-                {synonyms.map((synonym, index) => (
-                  <Badge key={index}>
-                    {synonym}
-                    <TiDeleteOutline
-                      size={20}
-                      onClick={() => handleDeleteClick("synonym", synonym)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex flex-row gap-1">
-                <Input
-                  placeholder="Synonym"
-                  value={currentSynonym}
-                  onChange={(e) => setCurrentSynonym(e.target.value)}
-                />
-                <Button
-                  onClick={() => {
-                    setSynonyms([...synonyms, currentSynonym]);
-                    setCurrentSynonym("");
-                  }}
-                >
-                  Add Synonym
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Datatype</CardTitle>
-              <CardDescription>
-                The type of data that this Data Point represents
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Select onValueChange={setDatatype} value={datatype}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a Datatype" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="valueset">Valueset</SelectItem>
-                    <SelectItem value="number">Number</SelectItem>
-                    <SelectItem value="boolean">True/False</SelectItem>
-                    <SelectItem value="text">Text</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-          {datatype == "valueset" && (
+    <div className="overflow-y-scroll">
+      <Card>
+        <CardHeader className="flex flex-row gap-2">
+          <CardTitle>Data Point Editor</CardTitle>
+          <div className="flex-grow"></div>
+          {creatingNewDataPoint && <SaveButton />}
+          {activeDataPoint && <UpdateButton />}
+        </CardHeader>
+        {(activeDataPoint || creatingNewDataPoint) && (
+          <CardContent className="overflow-y-scroll flex flex-col gap-2">
             <Card>
               <CardHeader>
-                <CardTitle>Valueset</CardTitle>
+                <CardTitle>Name</CardTitle>
+                <CardDescription>The name of the Data Point</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Input
+                  placeholder="Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Explanation</CardTitle>
                 <CardDescription>
-                  In case the datatype is a valueset, you can define the
-                  possible values here
+                  Some explanation to help understand the Data Point
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Input
+                  placeholder="Explanation"
+                  value={explanation}
+                  onChange={(e) => setExplanation(e.target.value)}
+                />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Synonyms</CardTitle>
+                <CardDescription>
+                  Other names that can be used to refer to this Data Point, e.g.
+                  abbreviations or full names
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2 flex-wrap">
                 <div className="flex flex-row gap-1">
-                  {valueset.map((valueset, index) => (
+                  {synonyms.map((synonym, index) => (
                     <Badge key={index}>
-                      {valueset}
+                      {synonym}
                       <TiDeleteOutline
                         size={20}
-                        onClick={() => handleDeleteClick("valueset", valueset)}
+                        onClick={() => handleDeleteClick("synonym", synonym)}
                       />
                     </Badge>
                   ))}
                 </div>
                 <div className="flex flex-row gap-1">
                   <Input
-                    placeholder="Valueset Item"
-                    value={currentValuesetItem}
-                    onChange={(e) => setCurrentValuesetItem(e.target.value)}
+                    placeholder="Synonym"
+                    value={currentSynonym}
+                    onChange={(e) => setCurrentSynonym(e.target.value)}
                   />
                   <Button
                     onClick={() => {
-                      setValueset([...valueset, currentValuesetItem]);
-                      setCurrentValuesetItem("");
+                      setSynonyms([...synonyms, currentSynonym]);
+                      setCurrentSynonym("");
                     }}
                   >
-                    Add Item
+                    Add Synonym
                   </Button>
                 </div>
               </CardContent>
             </Card>
-          )}
-          {datatype == "number" && (
             <Card>
               <CardHeader>
-                <CardTitle>Unit</CardTitle>
+                <CardTitle>Datatype</CardTitle>
                 <CardDescription>
-                  The unit in which the number is expressed. Leave empty if no
-                  unit is applicable.
+                  The type of data that this Data Point represents
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Input
-                  placeholder="Unit"
-                  value={unit}
-                  onChange={(e) => setUnit(e.target.value)}
-                />
+                <Select onValueChange={setDatatype} value={datatype}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a Datatype" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="valueset">Valueset</SelectItem>
+                      <SelectItem value="number">Number</SelectItem>
+                      <SelectItem value="boolean">True/False</SelectItem>
+                      <SelectItem value="text">Text</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </CardContent>
             </Card>
-          )}
-          {creatingNewDataPoint && <SaveButton />}
-          {activeDataPoint && <UpdateButton />}
-        </CardContent>
-      )}
-    </Card>
+            {datatype == "valueset" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Valueset</CardTitle>
+                  <CardDescription>
+                    In case the datatype is a valueset, you can define the
+                    possible values here
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-2 flex-wrap">
+                  <div className="flex flex-row gap-1">
+                    {valueset.map((valueset, index) => (
+                      <Badge key={index}>
+                        {valueset}
+                        <TiDeleteOutline
+                          size={20}
+                          onClick={() =>
+                            handleDeleteClick("valueset", valueset)
+                          }
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex flex-row gap-1">
+                    <Input
+                      placeholder="Valueset Item"
+                      value={currentValuesetItem}
+                      onChange={(e) => setCurrentValuesetItem(e.target.value)}
+                    />
+                    <Button
+                      onClick={() => {
+                        setValueset([...valueset, currentValuesetItem]);
+                        setCurrentValuesetItem("");
+                      }}
+                    >
+                      Add Item
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {datatype == "number" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Unit</CardTitle>
+                  <CardDescription>
+                    The unit in which the number is expressed. Leave empty if no
+                    unit is applicable.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Input
+                    placeholder="Unit"
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value)}
+                  />
+                </CardContent>
+              </Card>
+            )}
+            {creatingNewDataPoint && <SaveButton />}
+            {activeDataPoint && <UpdateButton />}
+          </CardContent>
+        )}
+      </Card>
+    </div>
   );
 }
 

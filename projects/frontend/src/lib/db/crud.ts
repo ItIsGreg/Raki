@@ -79,6 +79,11 @@ export const updateProfile = async (profile: Profile) => {
 };
 
 export const deleteProfile = async (id: string) => {
+  // delete all profile points that belong to the profile
+  const profilePoints = await readProfilePointsByProfile(id);
+  profilePoints.forEach((profilePoint) => {
+    deleteProfilePoint(profilePoint.id);
+  });
   return db.Profiles.delete(id);
 };
 
@@ -101,6 +106,16 @@ export const updateDataset = async (dataset: Dataset) => {
 };
 
 export const deleteDataset = async (id: string) => {
+  // delete all annotated datasets that belong to the dataset
+  const annotatedDatasets = await readAnnotatedDatasetsByDataset(id);
+  annotatedDatasets.forEach((annotatedDataset) => {
+    deleteAnnotatedDataset(annotatedDataset.id);
+  });
+  // delete all texts that belong to the dataset
+  const texts = await readTextsByDataset(id);
+  texts.forEach((text) => {
+    deleteText(text.id);
+  });
   return db.Datasets.delete(id);
 };
 

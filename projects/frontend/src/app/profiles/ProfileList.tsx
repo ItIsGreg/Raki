@@ -23,7 +23,7 @@ const ProfileList = (props: ProfileListProps) => {
 
   const dbProfiles = useLiveQuery(() => readAllProfiles());
   return (
-    <div>
+    <div className="overflow-y-scroll">
       <Card>
         <CardHeader className="flex flex-row">
           <CardTitle>Profiles</CardTitle>

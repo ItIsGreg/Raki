@@ -20,7 +20,7 @@ const DataPointList = (props: DataPointListProps) => {
   );
 
   return (
-    <div>
+    <div className="overflow-y-scroll">
       <Card>
         <CardHeader className="flex flex-row">
           <CardTitle>Data Points</CardTitle>
