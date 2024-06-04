@@ -152,6 +152,11 @@ export const updateAnnotatedText = async (annotatedText: AnnotatedText) => {
 };
 
 export const deleteAnnotatedText = async (id: string) => {
+  // delete all data points that belong to the annotated text
+  const dataPoints = await readDataPointsByAnnotatedText(id);
+  dataPoints.forEach((dataPoint) => {
+    deleteDataPoint(dataPoint.id);
+  });
   return db.AnnotatedTexts.delete(id);
 };
 
@@ -183,6 +188,12 @@ export const updateAnnotatedDataset = async (
 };
 
 export const deleteAnnotatedDataset = async (id: string) => {
+  // delete all annotated texts that belong to the annotated dataset
+  const annotatedTexts = await readAnnotatedTextsByAnnotatedDataset(id);
+  annotatedTexts.forEach((annotatedText) => {
+    deleteAnnotatedText(annotatedText.id);
+  });
+
   return db.AnnotatedDatasets.delete(id);
 };
 
@@ -213,6 +224,11 @@ export const updateText = async (text: Text) => {
 };
 
 export const deleteText = async (id: string) => {
+  // delete all annotated texts that belong to the text
+  const annotatedTexts = await readAnnotatedTextsByText(id);
+  annotatedTexts.forEach((annotatedText) => {
+    deleteAnnotatedText(annotatedText.id);
+  });
   return db.Texts.delete(id);
 };
 
