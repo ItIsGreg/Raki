@@ -25,6 +25,7 @@ export interface Profile extends ProfileCreate {
 
 export interface DatasetCreate {
   name: string;
+  description: string;
 }
 
 export interface Dataset extends DatasetCreate {
@@ -50,7 +51,7 @@ export interface AnnotatedDataset extends AnnotatedDatasetCreate {
 
 export interface TextCreate {
   datasetId: string;
-  filename: string | undefined;
+  filename: string;
   text: string;
 }
 

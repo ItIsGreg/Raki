@@ -1,4 +1,4 @@
-import { Profile, ProfilePoint } from "@/lib/db/db";
+import { Dataset, Profile, ProfilePoint, Text } from "@/lib/db/db";
 
 export interface ProfileListProps {
   activeProfile: Profile | undefined;
@@ -17,4 +17,19 @@ export interface DataPointEditorProps {
   creatingNewDataPoint: boolean;
   setCreatingNewDataPoint: (creating: boolean) => void;
   activeProfile: Profile | undefined;
+}
+
+export interface TextListProps {
+  activeText: Text | undefined;
+  setActiveText: (text: Text) => void;
+  activeDataset: Dataset | undefined;
+}
+
+export interface TextDisplayProps {
+  activeText: Text | undefined;
+}
+
+export interface DatasetListProps {
+  activeDataset: Dataset | undefined;
+  setActiveDataset: (dataset: Dataset) => void;
 }

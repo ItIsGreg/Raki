@@ -186,7 +186,10 @@ export const readAllTexts = async () => {
 };
 
 // read all texts that belong to a specific dataset
-export const readTextsByDataset = async (datasetId: string) => {
+export const readTextsByDataset = async (datasetId: string | undefined) => {
+  if (!datasetId) {
+    return [];
+  }
   return db.Texts.where({ datasetId }).toArray();
 };
 
