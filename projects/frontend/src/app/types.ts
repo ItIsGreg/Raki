@@ -1,4 +1,11 @@
-import { Dataset, Profile, ProfilePoint, Text } from "@/lib/db/db";
+import {
+  AnnotatedDataset,
+  Dataset,
+  Profile,
+  ProfilePoint,
+  Text,
+} from "@/lib/db/db";
+import LLMAnnotation from "./llmAnnotation/page";
 
 export interface ProfileListProps {
   activeProfile: Profile | undefined;
@@ -32,4 +39,15 @@ export interface TextDisplayProps {
 export interface DatasetListProps {
   activeDataset: Dataset | undefined;
   setActiveDataset: (dataset: Dataset) => void;
+}
+
+export interface LLMAnnotationAnnotatedDatasetListProps {
+  activeAnnotatedDataset: AnnotatedDataset | undefined;
+  setActiveAnnotatedDataset: (
+    annotatedDataset: AnnotatedDataset | undefined
+  ) => void;
+}
+
+export interface LLMAnnotationAnnotatedTextsListProps {
+  activeAnnotatedDataset: AnnotatedDataset | undefined;
 }

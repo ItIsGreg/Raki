@@ -193,7 +193,6 @@ export const deleteAnnotatedDataset = async (id: string) => {
   annotatedTexts.forEach((annotatedText) => {
     deleteAnnotatedText(annotatedText.id);
   });
-
   return db.AnnotatedDatasets.delete(id);
 };
 

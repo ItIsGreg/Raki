@@ -42,7 +42,10 @@ export interface AnnotatedText extends AnnotatedTextCreate {
 }
 
 export interface AnnotatedDatasetCreate {
+  name: string;
+  description: string;
   datasetId: string;
+  profileId: string;
 }
 
 export interface AnnotatedDataset extends AnnotatedDatasetCreate {
@@ -87,7 +90,7 @@ export class MySubClassedDexie extends Dexie {
       Profiles: "++id, name",
       Datasets: "++id, name",
       AnnotatedTexts: "++id, textId, annotatedDatasetId",
-      AnnotatedDatasets: "++id, datasetId",
+      AnnotatedDatasets: "++id, datasetId, profileId, name",
       Texts: "++id, datasetId, filename",
       DataPoints: "++id, annotatedTextId, name",
     });
