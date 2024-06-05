@@ -182,7 +182,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                       {synonym}
                       <TiDeleteOutline
                         size={20}
-                        onClick={() => handleDeleteClick("synonym", synonym)}
+                        onClick={() => handleDeleteClick("synonyms", synonym)}
                       />
                     </Badge>
                   ))}
