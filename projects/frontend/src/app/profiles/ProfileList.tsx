@@ -79,7 +79,10 @@ const ProfileList = (props: ProfileListProps) => {
               return (
                 <Card
                   key={profile.id}
-                  className="transition-transform hover:bg-gray-100 hover:shadow-lg hover:scale-105 transform"
+                  className={`${
+                    activeProfile == profile &&
+                    "bg-gray-100 shadow-lg border-black border-2"
+                  } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
                   onClick={() => setActiveProfile(profile)}
                 >
                   <CardHeader className="flex flex-row">

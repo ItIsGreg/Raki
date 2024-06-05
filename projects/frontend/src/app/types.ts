@@ -14,6 +14,7 @@ export interface ProfileListProps {
 
 export interface DataPointListProps {
   activeProfile: Profile | undefined;
+  activeDataPoint: ProfilePoint | undefined;
   setActiveDataPoint: (dataPoint: ProfilePoint | undefined) => void;
   setCreatingNewDataPoint: (creating: boolean) => void;
 }

@@ -21,6 +21,7 @@ const Profiles = () => {
       />
       <DataPointList
         activeProfile={activeProfile}
+        activeDataPoint={activeDataPoint}
         setActiveDataPoint={setActiveDataPoint}
         setCreatingNewDataPoint={setCreatingNewDataPoint}
       />

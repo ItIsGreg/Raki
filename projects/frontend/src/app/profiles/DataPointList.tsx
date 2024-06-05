@@ -13,7 +13,12 @@ import { deleteProfilePoint, readProfilePointsByProfile } from "@/lib/db/crud";
 import { TiDeleteOutline } from "react-icons/ti";
 
 const DataPointList = (props: DataPointListProps) => {
-  const { activeProfile, setActiveDataPoint, setCreatingNewDataPoint } = props;
+  const {
+    activeProfile,
+    activeDataPoint,
+    setActiveDataPoint,
+    setCreatingNewDataPoint,
+  } = props;
   const dataPoints = useLiveQuery(
     () => readProfilePointsByProfile(activeProfile?.id),
     [activeProfile]
@@ -42,7 +47,10 @@ const DataPointList = (props: DataPointListProps) => {
               return (
                 <Card
                   key={dataPoint.id}
-                  className="transition-transform hover:bg-gray-100 hover:shadow-lg hover:scale-105 transform"
+                  className={`${
+                    activeDataPoint == dataPoint &&
+                    "bg-gray-100 shadow-lg border-black border-2"
+                  } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
                   onClick={() => {
                     setActiveDataPoint(dataPoint);
                     setCreatingNewDataPoint(false);
