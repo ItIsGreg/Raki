@@ -11,7 +11,7 @@ const LLMAnnotation = () => {
   >(undefined);
 
   return (
-    <div className="grid grid-cols-2 gap-4 h-full">
+    <div className="grid grid-cols-2 gap-4">
       <AnnotatedDatasetList
         activeAnnotatedDataset={activeAnnotatedDataset}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}

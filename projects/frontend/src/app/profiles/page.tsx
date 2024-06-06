@@ -14,7 +14,7 @@ const Profiles = () => {
     useState<boolean>(false);
 
   return (
-    <div className="grid grid-cols-3 gap-4 h-full">
+    <div className="grid grid-cols-3 gap-4">
       <ProfileList
         activeProfile={activeProfile}
         setActiveProfile={setActiveProfile}

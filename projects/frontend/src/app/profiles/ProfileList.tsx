@@ -13,6 +13,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { TiDelete, TiDeleteOutline } from "react-icons/ti";
 import { ProfileListProps } from "../types";
+import ProfileCard from "./ProfileCard";
 
 const ProfileList = (props: ProfileListProps) => {
   const { activeProfile, setActiveProfile } = props;
@@ -77,29 +78,12 @@ const ProfileList = (props: ProfileListProps) => {
           {dbProfiles &&
             dbProfiles.map((profile) => {
               return (
-                <Card
+                <ProfileCard
                   key={profile.id}
-                  className={`${
-                    activeProfile == profile &&
-                    "bg-gray-100 shadow-lg border-black border-2"
-                  } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
-                  onClick={() => setActiveProfile(profile)}
-                >
-                  <CardHeader className="flex flex-row">
-                    <CardTitle>{profile.name}</CardTitle>
-                    <div className="flex-grow"></div>
-                    <TiDeleteOutline
-                      className="hover:text-red-500 cursor-pointer"
-                      size={24}
-                      onClick={() => {
-                        deleteProfile(profile.id);
-                      }}
-                    />
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>{profile.description}</CardDescription>
-                  </CardContent>
-                </Card>
+                  profile={profile}
+                  activeProfile={activeProfile}
+                  setActiveProfile={setActiveProfile}
+                />
               );
             })}
         </CardContent>

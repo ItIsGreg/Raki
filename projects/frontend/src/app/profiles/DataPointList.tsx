@@ -7,10 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { MdDownload } from "react-icons/md";
 import { DataPointListProps } from "../types";
 import { useLiveQuery } from "dexie-react-hooks";
-import { deleteProfilePoint, readProfilePointsByProfile } from "@/lib/db/crud";
-import { TiDeleteOutline } from "react-icons/ti";
+import { readProfilePointsByProfile } from "@/lib/db/crud";
+import DataPointCard from "./DataPointCard";
 
 const DataPointList = (props: DataPointListProps) => {
   const {
@@ -24,6 +25,26 @@ const DataPointList = (props: DataPointListProps) => {
     [activeProfile]
   );
 
+  const handleDownloadDatapoints = () => {
+    console.log("Download");
+    // remove ids from dataPoints
+    if (!dataPoints) return;
+    const data = JSON.stringify(
+      dataPoints.map((dataPoint) => {
+        const { id, profileId, ...rest } = dataPoint;
+        return rest;
+      })
+    );
+
+    // start download
+    const element = document.createElement("a");
+    const file = new Blob([data], { type: "text/plain" });
+    element.href = URL.createObjectURL(file);
+    element.download = `${activeProfile?.name}_data_points.json`;
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  };
+
   return (
     <div className="overflow-y-scroll">
       <Card>
@@ -31,46 +52,34 @@ const DataPointList = (props: DataPointListProps) => {
           <CardTitle>Data Points</CardTitle>
           <div className="flex-grow"></div>
           {activeProfile && (
-            <Button
-              onClick={() => {
-                setActiveDataPoint(undefined);
-                setCreatingNewDataPoint(true);
-              }}
-            >
-              New
-            </Button>
+            <div className="flex flex-row gap-3 justify-center items-center">
+              <MdDownload
+                size={26}
+                className="hover:text-blue-500 cursor-pointer"
+                onClick={handleDownloadDatapoints}
+              />
+              <Button
+                onClick={() => {
+                  setActiveDataPoint(undefined);
+                  setCreatingNewDataPoint(true);
+                }}
+              >
+                New
+              </Button>
+            </div>
           )}
         </CardHeader>
         {dataPoints && (
           <CardContent className="flex flex-col gap-2">
             {dataPoints.map((dataPoint) => {
               return (
-                <Card
+                <DataPointCard
                   key={dataPoint.id}
-                  className={`${
-                    activeDataPoint == dataPoint &&
-                    "bg-gray-100 shadow-lg border-black border-2"
-                  } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
-                  onClick={() => {
-                    setActiveDataPoint(dataPoint);
-                    setCreatingNewDataPoint(false);
-                  }}
-                >
-                  <CardHeader className="flex flex-row">
-                    <CardTitle>{dataPoint.name}</CardTitle>
-                    <div className="flex-grow"></div>
-                    <TiDeleteOutline
-                      className="hover:text-red-500 cursor-pointer"
-                      size={24}
-                      onClick={() => {
-                        deleteProfilePoint(dataPoint.id);
-                      }}
-                    />
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription>{dataPoint.explanation}</CardDescription>
-                  </CardContent>
-                </Card>
+                  dataPoint={dataPoint}
+                  activeDataPoint={activeDataPoint}
+                  setActiveDataPoint={setActiveDataPoint}
+                  setCreatingNewDataPoint={setCreatingNewDataPoint}
+                />
               );
             })}
           </CardContent>

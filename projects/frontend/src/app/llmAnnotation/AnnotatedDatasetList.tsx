@@ -171,8 +171,10 @@ const AnnotatedDatasetList = (
                   }}
                 />
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col gap-4">
                 <CardDescription>{dataset.description}</CardDescription>
+                <CardDescription>Annotated datasets: 44 / 105</CardDescription>
+                <Button>Start Annotation</Button>
               </CardContent>
             </Card>
           ))}

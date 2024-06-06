@@ -13,7 +13,7 @@ const Datasets = () => {
   const [activeText, setActiveText] = useState<Text | undefined>(undefined);
 
   return (
-    <div className="grid grid-cols-3 gap-4 h-full">
+    <div className="grid grid-cols-3 gap-4">
       <DatasetList
         activeDataset={activeDataset}
         setActiveDataset={setActiveDataset}

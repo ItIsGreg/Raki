@@ -5,13 +5,24 @@ import {
   ProfilePoint,
   Text,
 } from "@/lib/db/db";
-import LLMAnnotation from "./llmAnnotation/page";
 
 export interface ProfileListProps {
   activeProfile: Profile | undefined;
   setActiveProfile: (profile: Profile) => void;
 }
 
+export interface ProfileCardProps {
+  profile: Profile;
+  activeProfile: Profile | undefined;
+  setActiveProfile: (profile: Profile) => void;
+}
+
+export interface DataPointCardProps {
+  dataPoint: ProfilePoint;
+  activeDataPoint: ProfilePoint | undefined;
+  setActiveDataPoint: (dataPoint: ProfilePoint | undefined) => void;
+  setCreatingNewDataPoint: (creating: boolean) => void;
+}
 export interface DataPointListProps {
   activeProfile: Profile | undefined;
   activeDataPoint: ProfilePoint | undefined;
