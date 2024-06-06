@@ -10,7 +10,7 @@ const TextDisplay = (props: TextDisplayProps) => {
           <CardTitle>{activeText?.filename}</CardTitle>
         </CardHeader>
         <CardContent>
-          <pre>{activeText?.text}</pre>
+          <p>{activeText?.text}</p>
         </CardContent>
       </Card>
     </div>

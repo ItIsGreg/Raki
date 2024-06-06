@@ -16,7 +16,10 @@ import { useRef } from "react";
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
 
-  const dbTexts = useLiveQuery(() => readTextsByDataset(activeDataset?.id));
+  const dbTexts = useLiveQuery(
+    () => readTextsByDataset(activeDataset?.id),
+    [activeDataset]
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
