@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from starlette.middleware.cors import CORSMiddleware
 
-from app.routers import substrings
+from app.routers import substrings, values, pipeline
 
 app = FastAPI()
 
@@ -27,6 +27,16 @@ router.include_router(
     substrings.router,
     tags=["substrings"],
     prefix="/substrings",
+)
+router.include_router(
+    values.router,
+    tags=["values"],
+    prefix="/values",
+)
+router.include_router(
+    pipeline.router,
+    tags=["pipeline"],
+    prefix="/pipeline",
 )
 
 app.add_middleware(

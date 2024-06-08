@@ -1,3 +1,4 @@
+from typing import Tuple
 from pydantic import BaseModel
 
 
@@ -14,7 +15,7 @@ class BaseDataPoint(BaseModel):
 
 
 class DataPoint(BaseDataPoint):
-    dimension: str
+    datatype: str
     valueset: list[str]
     unit: str
 
@@ -22,3 +23,35 @@ class DataPoint(BaseDataPoint):
 class ExtractDatapointSubstringsReq(BaseRequest):
     datapoints: list[BaseDataPoint]
     text: str
+
+
+class DataPointSubstring(BaseModel):
+    name: str
+    substring: str
+
+
+class DataPointSubstringMatch(DataPointSubstring):
+    match: Tuple[int, int] | None
+
+
+class ExtractValuesReqDatapoint(BaseModel):
+    name: str
+    dataType: str
+    valueset: list[str]
+    unit: str
+    text: str
+
+
+class ExtractValuesReq(BaseRequest):
+    datapoints: list[ExtractValuesReqDatapoint]
+
+
+class PipelineReq(BaseRequest):
+    text: str
+    datapoints: list[DataPoint]
+
+
+class PipelineResDatapoint(BaseModel):
+    name: str
+    match: Tuple[int, int] | None
+    value: str | int | float | None

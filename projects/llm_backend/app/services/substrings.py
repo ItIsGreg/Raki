@@ -1,24 +1,17 @@
-from typing import Callable, Tuple
+from typing import Callable
 
-from h11 import Data
-from openai import BaseModel
 from app.llm_calls import call_llm
-from app.models.models import ExtractDatapointSubstringsReq
+from app.models.models import (
+    DataPointSubstring,
+    DataPointSubstringMatch,
+    ExtractDatapointSubstringsReq,
+)
 from app.prompts.substrings import (
     Extract_Datapoint_Substrings_Prompt_List,
 )
 from app.utils.matching import get_matches
 
 prompt_list = Extract_Datapoint_Substrings_Prompt_List()
-
-
-class DataPointSubstring(BaseModel):
-    name: str
-    substring: str
-
-
-class DataPointSubstringMatch(DataPointSubstring):
-    match: Tuple[int, int] | None
 
 
 async def extract_datapoint_substrings_service(
