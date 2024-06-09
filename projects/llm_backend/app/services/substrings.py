@@ -50,13 +50,9 @@ async def extract_datapoint_substrings_and_match_service(
     )
     datapoints_w_matches: list[DataPointSubstringMatch] = []
 
-    print("text", req.text)
-
     # Match substrings
     for datapoint in datapoints_wo_match:
-        print("datapoint", datapoint)
         matches = get_matches(req.text, datapoint.substring)
-        print("matches", matches)
         if not matches:
             datapoints_w_matches.append(
                 DataPointSubstringMatch(

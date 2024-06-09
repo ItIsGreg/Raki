@@ -67,8 +67,6 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             datapoints=extract_values_datapoints,
         )
     )
-    print("extract_values_res")
-    print(extract_values_res)
 
     # merge results
     pipeline_res_datapoints: list[PipelineResDatapoint] = []

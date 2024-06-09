@@ -20,9 +20,6 @@ def create_pattern(substring: str):
 
 def get_matches(text: str, substring: str):
     pattern = create_pattern(substring)
-    print("pattern", pattern)
     re_matches = list(re.finditer(pattern, text, re.IGNORECASE))
-    print("re_matches", re_matches)
     matches = [[match.start(), match.end()] for match in re_matches]
-    print("matches", matches)
     return matches
