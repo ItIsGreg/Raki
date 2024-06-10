@@ -63,3 +63,12 @@ export interface LLMAnnotationAnnotatedDatasetListProps {
 export interface LLMAnnotationAnnotatedTextsListProps {
   activeAnnotatedDataset: AnnotatedDataset | undefined;
 }
+
+export interface ReqProfilePoint {
+  name: string;
+  explanation: string;
+  synonyms: string[];
+  datatype: string;
+  valueset: string[] | undefined;
+  unit: string | undefined;
+}

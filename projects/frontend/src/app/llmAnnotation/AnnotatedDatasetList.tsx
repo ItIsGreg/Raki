@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { LLMAnnotationAnnotatedDatasetListProps } from "../types";
+import {
+  LLMAnnotationAnnotatedDatasetListProps,
+  ReqProfilePoint,
+} from "../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   createAnnotatedDataset,
@@ -7,6 +10,7 @@ import {
   readAllAnnotatedDatasets,
   readAllAnnotatedTexts,
   readAllDatasets,
+  readAllProfilePoints,
   readAllProfiles,
   readAllTexts,
   readProfile,
@@ -30,7 +34,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TiDeleteOutline } from "react-icons/ti";
-import { Text } from "@/lib/db/db";
+import { ProfilePoint, Text } from "@/lib/db/db";
+import { get_api_key } from "../constants";
 
 const AnnotatedDatasetList = (
   props: LLMAnnotationAnnotatedDatasetListProps
@@ -38,18 +43,18 @@ const AnnotatedDatasetList = (
   const { activeAnnotatedDataset, setActiveAnnotatedDataset } = props;
 
   const [addingDataset, setAddingDataset] = useState(false);
-  const [addDatasetName, setAddDatasetName] = useState<string | undefined>(
-    undefined
-  );
-  const [addDatasetDescription, setAddDatasetDescription] = useState<
-    string | undefined
-  >(undefined);
+  const [addDatasetName, setAddDatasetName] = useState<string>("");
+  const [addDatasetDescription, setAddDatasetDescription] =
+    useState<string>("");
   const [addDatasetDatasetId, setAddDatasetDatasetId] = useState<
     string | undefined
   >(undefined);
   const [addDatasetProfileId, setAddDatasetProfileId] = useState<
     string | undefined
   >(undefined);
+  const [activeProfilePoints, setActiveProfilePoints] = useState<
+    ProfilePoint[]
+  >([]);
 
   const [isRunning, setIsRunning] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -60,32 +65,33 @@ const AnnotatedDatasetList = (
   const dbAnnotatedDatasets = useLiveQuery(() => readAllAnnotatedDatasets());
   const profiles = useLiveQuery(() => readAllProfiles());
   const datasets = useLiveQuery(() => readAllDatasets());
-  const activeProfilePoints = useLiveQuery(() =>
-    readProfilePointsByProfile(activeAnnotatedDataset?.profileId)
-  );
+  const profilePoints = useLiveQuery(() => readAllProfilePoints());
 
-  const getReqProfilePoints = () => {
-    const reqProfilePoints = [];
-    activeProfilePoints?.forEach((profilePoint) => {
-      reqProfilePoints.push({
-        name: profilePoint.name,
-        explanation: profilePoint.explanation,
-        synonyms: profilePoint.synonyms,
-        datatype: profilePoint.datatype,
-        valueset: profilePoint.valueset,
-        unit: profilePoint.unit,
+  const getReqProfilePoints = useCallback(
+    (activeProfilePoints: ProfilePoint[]) => {
+      const reqProfilePoints: ReqProfilePoint[] = [];
+      console.log("Active Profile Points:", activeProfilePoints);
+      activeProfilePoints.forEach((profilePoint) => {
+        reqProfilePoints.push({
+          name: profilePoint.name,
+          explanation: profilePoint.explanation,
+          synonyms: profilePoint.synonyms,
+          datatype: profilePoint.datatype,
+          valueset: profilePoint.valueset,
+          unit: profilePoint.unit,
+        });
       });
-    });
-  };
+      return reqProfilePoints;
+    },
+    [activeProfilePoints]
+  );
 
   // create the array containing the text that should be annotated
   useEffect(() => {
     const annotationTexts: Text[] = [];
     if (dbTexts && dbAnnotatedDatasets) {
-      console.log("Creating Annotation Texts");
       dbTexts.forEach((text) => {
         if (text.datasetId === activeAnnotatedDataset?.datasetId) {
-          console.log("Adding Text:", text.text);
           annotationTexts.push(text);
         }
       });
@@ -102,36 +108,42 @@ const AnnotatedDatasetList = (
   }, [isRunning, activeAnnotatedDataset]);
 
   // start annotating the text
-  const annotateText = useCallback(async (text: Text) => {
-    try {
-      console.log("Annotating Text:", text.text);
-      const response = await fetch(`http://localhost:8000/pipeline/pipeline/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+  const annotateText = useCallback(
+    async (text: Text) => {
+      try {
+        const body = {
           llm_provider: "openai",
           model: "gpt-4o",
           api_key: get_api_key(),
           text: text.text,
-          datapoints: getReqProfilePoints(),
-        }),
-      });
-      console.log("Success:", response);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }, []);
+          datapoints: getReqProfilePoints(activeProfilePoints),
+        };
+        console.log("Body:", body);
+        const response = await fetch(
+          `http://localhost:8000/pipeline/pipeline/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+          }
+        );
+        const data = await response.json();
+        console.log("Success:", data);
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    },
+    [getReqProfilePoints, activeProfilePoints]
+  );
 
   // annotation control useEffect
   useEffect(() => {
     let isCancelled = false;
-    console.log("Annotation Control");
 
     const runAnnotation = async () => {
       if (isRunning && currentIndex < annotationTexts.length) {
-        console.log("Annotating Text");
         const annotation = await annotateText(annotationTexts[currentIndex]);
         if (!isCancelled) {
           setCurrentIndex(currentIndex + 1);
@@ -154,6 +166,18 @@ const AnnotatedDatasetList = (
   const handleStop = () => {
     setIsRunning(false);
     console.log("Stop");
+  };
+
+  const identifyActiveProfilePoints = (profileId: string) => {
+    if (profilePoints) {
+      const activeProfilePoints: ProfilePoint[] = [];
+      profilePoints.forEach((profilePoint) => {
+        if (profilePoint.profileId === profileId) {
+          activeProfilePoints.push(profilePoint);
+        }
+      });
+      setActiveProfilePoints(activeProfilePoints);
+    }
   };
 
   return (
@@ -254,8 +278,8 @@ const AnnotatedDatasetList = (
                       profileId: addDatasetProfileId,
                     });
                     setAddingDataset(false);
-                    setAddDatasetName(undefined);
-                    setAddDatasetDescription(undefined);
+                    setAddDatasetName("");
+                    setAddDatasetDescription("");
                     setAddDatasetDatasetId(undefined);
                     setAddDatasetProfileId(undefined);
                   }}
@@ -281,6 +305,7 @@ const AnnotatedDatasetList = (
                 "bg-gray-100 shadow-lg border-black border-2"
               } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
               onClick={() => {
+                identifyActiveProfilePoints(dataset.profileId);
                 setActiveAnnotatedDataset(dataset);
               }}
             >
@@ -342,6 +367,7 @@ const AnnotatedDatasetList = (
                 {!isRunning && (
                   <Button
                     onClick={() => {
+                      identifyActiveProfilePoints(dataset.profileId);
                       setActiveAnnotatedDataset(dataset);
                       handleStart();
                     }}
@@ -353,6 +379,7 @@ const AnnotatedDatasetList = (
                 {isRunning && (
                   <Button
                     onClick={() => {
+                      identifyActiveProfilePoints(dataset.profileId);
                       setActiveAnnotatedDataset(dataset);
                       handleStop();
                     }}
