@@ -31,7 +31,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TiDeleteOutline } from "react-icons/ti";
 import { Text } from "@/lib/db/db";
-import { set } from "react-hook-form";
 
 const AnnotatedDatasetList = (
   props: LLMAnnotationAnnotatedDatasetListProps
@@ -85,11 +84,8 @@ const AnnotatedDatasetList = (
     if (dbTexts && dbAnnotatedDatasets) {
       console.log("Creating Annotation Texts");
       dbTexts.forEach((text) => {
-        if (
-          dbAnnotatedDatasets.find(
-            (annotatedDataset) => annotatedDataset.datasetId === text.datasetId
-          )
-        ) {
+        if (text.datasetId === activeAnnotatedDataset?.datasetId) {
+          console.log("Adding Text:", text.text);
           annotationTexts.push(text);
         }
       });
@@ -288,7 +284,7 @@ const AnnotatedDatasetList = (
                 setActiveAnnotatedDataset(dataset);
               }}
             >
-              <CardHeader className="flex flex-row">
+              <CardHeader className="flex flex-row gap-2">
                 <CardTitle>{dataset.name}</CardTitle>
                 <div className="flex-grow"></div>
                 <TiDeleteOutline
@@ -300,30 +296,30 @@ const AnnotatedDatasetList = (
                 />
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
-                <CardDescription className="flex flex-row gap-2">
+                <div className="flex flex-row gap-2">
                   {profiles && (
-                    <div>
+                    <CardDescription>
                       Profile:{" "}
                       {
                         profiles.find(
                           (profile) => profile.id === dataset.profileId
                         )?.name
                       }
-                    </div>
+                    </CardDescription>
                   )}
                   <div className="flex-grow"></div>
                   {datasets && (
-                    <div>
+                    <CardDescription>
                       Dataset:{" "}
                       {
                         datasets.find(
                           (dbDataset) => dbDataset.id === dataset.datasetId
                         )?.name
                       }
-                    </div>
+                    </CardDescription>
                   )}
                   <div className="flex-grow"></div>
-                </CardDescription>
+                </div>
                 <CardDescription>
                   Description: {dataset.description}
                 </CardDescription>
