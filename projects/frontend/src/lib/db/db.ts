@@ -65,6 +65,8 @@ export interface Text extends TextCreate {
 export interface DataPointCreate {
   annotatedTextId: string;
   name: string;
+  value: string;
+  match: number[];
 }
 
 export interface DataPoint extends DataPointCreate {

@@ -66,7 +66,10 @@ export const createProfile = async (profile: ProfileCreate) => {
   return db.Profiles.add({ ...profile, id });
 };
 
-export const readProfile = async (id: string) => {
+export const readProfile = async (id: string | undefined) => {
+  if (!id) {
+    return undefined;
+  }
   return db.Profiles.get(id);
 };
 
@@ -137,8 +140,11 @@ export const readAllAnnotatedTexts = async () => {
 
 // read all annotated texts that belong to a specific annotated dataset
 export const readAnnotatedTextsByAnnotatedDataset = async (
-  annotatedDatasetId: string
+  annotatedDatasetId: string | undefined
 ) => {
+  if (!annotatedDatasetId) {
+    return [];
+  }
   return db.AnnotatedTexts.where({ annotatedDatasetId }).toArray();
 };
 

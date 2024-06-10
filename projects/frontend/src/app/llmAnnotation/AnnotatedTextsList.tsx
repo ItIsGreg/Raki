@@ -3,6 +3,7 @@ import { LLMAnnotationAnnotatedTextsListProps } from "../types";
 import {
   createAnnotatedDataset,
   readAllAnnotatedDatasets,
+  readAnnotatedTextsByAnnotatedDataset,
 } from "@/lib/db/crud";
 import {
   Card,
@@ -17,6 +18,12 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 const AnnotatedTextsList = (props: LLMAnnotationAnnotatedTextsListProps) => {
+  const { activeAnnotatedDataset } = props;
+  const annotatedTexts = useLiveQuery(() =>
+    readAnnotatedTextsByAnnotatedDataset(activeAnnotatedDataset?.id)
+  );
+
+  const [annotatedDatasetName, setAnnotatedDatasetName] = useState("");
   return <div></div>;
 };
 
