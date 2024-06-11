@@ -72,3 +72,9 @@ export interface ReqProfilePoint {
   valueset: string[] | undefined;
   unit: string | undefined;
 }
+
+export interface ResDataPoint {
+  name: string;
+  value: string | number | undefined;
+  match: number[] | undefined;
+}

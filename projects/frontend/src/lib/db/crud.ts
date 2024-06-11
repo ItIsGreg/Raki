@@ -127,7 +127,8 @@ export const createAnnotatedText = async (
   annotatedText: AnnotatedTextCreate
 ) => {
   const id = v4();
-  return db.AnnotatedTexts.add({ ...annotatedText, id });
+  db.AnnotatedTexts.add({ ...annotatedText, id });
+  return id;
 };
 
 export const readAnnotatedText = async (id: string) => {

@@ -2,10 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import {
   LLMAnnotationAnnotatedDatasetListProps,
   ReqProfilePoint,
+  ResDataPoint,
 } from "../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   createAnnotatedDataset,
+  createAnnotatedText,
+  createDataPoint,
   deleteAnnotatedDataset,
   readAllAnnotatedDatasets,
   readAllAnnotatedTexts,
@@ -118,7 +121,6 @@ const AnnotatedDatasetList = (
           text: text.text,
           datapoints: getReqProfilePoints(activeProfilePoints),
         };
-        console.log("Body:", body);
         const response = await fetch(
           `http://localhost:8000/pipeline/pipeline/`,
           {
@@ -129,7 +131,22 @@ const AnnotatedDatasetList = (
             body: JSON.stringify(body),
           }
         );
-        const data = await response.json();
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data: ResDataPoint[] = await response.json();
+        const annotatedTextID = await createAnnotatedText({
+          annotatedDatasetId: activeAnnotatedDataset!.id,
+          textId: text.id,
+        });
+        data.forEach((dataPoint) => {
+          createDataPoint({
+            name: dataPoint.name,
+            value: dataPoint.value,
+            match: dataPoint.match,
+            annotatedTextId: annotatedTextID,
+          });
+        });
         console.log("Success:", data);
       } catch (error) {
         console.error("Error:", error);
