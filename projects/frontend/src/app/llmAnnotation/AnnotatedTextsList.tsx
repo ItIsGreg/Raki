@@ -4,6 +4,7 @@ import {
   createAnnotatedDataset,
   readAllAnnotatedDatasets,
   readAnnotatedTextsByAnnotatedDataset,
+  readTextsByIds,
 } from "@/lib/db/crud";
 import {
   Card,
@@ -19,12 +20,41 @@ import { useState } from "react";
 
 const AnnotatedTextsList = (props: LLMAnnotationAnnotatedTextsListProps) => {
   const { activeAnnotatedDataset } = props;
-  const annotatedTexts = useLiveQuery(() =>
-    readAnnotatedTextsByAnnotatedDataset(activeAnnotatedDataset?.id)
+  const annotatedTexts = useLiveQuery(
+    () => readAnnotatedTextsByAnnotatedDataset(activeAnnotatedDataset?.id),
+    [activeAnnotatedDataset]
+  );
+  const texts = useLiveQuery(
+    () => readTextsByIds(annotatedTexts?.map((at) => at.textId) || []),
+    [annotatedTexts]
   );
 
-  const [annotatedDatasetName, setAnnotatedDatasetName] = useState("");
-  return <div></div>;
+  return (
+    <div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Annotated Texts</CardTitle>
+          <CardDescription>{activeAnnotatedDataset?.name}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {annotatedTexts?.map((annotatedText) => {
+            return (
+              <Card key={annotatedText.id}>
+                <CardHeader>
+                  <CardTitle>
+                    {
+                      texts?.find((text) => text.id === annotatedText.textId)
+                        ?.filename
+                    }
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+            );
+          })}
+        </CardContent>
+      </Card>
+    </div>
+  );
 };
 
 export default AnnotatedTextsList;
