@@ -3,81 +3,53 @@
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import TextAnnotation from "./TextAnnotation";
+import DataPointList from "./DataPointList";
+import DatasetList from "./DatasetList";
+import { AnnotatedDataset, AnnotatedText, DataPoint } from "@/lib/db/db";
+import AnnotatedTextList from "./AnnotatedTextList";
 
-interface DataPointMatch {
-  startIndex: number;
-  endIndex: number;
-}
-
-interface DataPoint {
-  id: String;
-  name: String;
-  value: String | number;
-  match: DataPointMatch;
-}
-
-const dummyText =
-  "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
-
-const dummyDataPoints: DataPoint[] = [
-  {
-    id: "1",
-    name: "LVEF",
-    value: 55,
-    match: {
-      startIndex: 5,
-      endIndex: 15,
-    },
-  },
-  {
-    id: "2",
-    name: "LVOT",
-    value: 20,
-    match: {
-      startIndex: 25,
-      endIndex: 35,
-    },
-  },
-  {
-    id: "3",
-    name: "Mitralinsuffizienz",
-    value: "III",
-    match: {
-      startIndex: 45,
-      endIndex: 55,
-    },
-  },
-  {
-    id: "4",
-    name: "Trikuspidalinsuffizienz",
-    value: "IV",
-    match: {
-      startIndex: 65,
-      endIndex: 75,
-    },
-  },
-  {
-    id: "5",
-    name: "Aortenklappenstenose",
-    value: "II°",
-    match: {
-      startIndex: 85,
-      endIndex: 95,
-    },
-  },
-];
+// create a representation of the text and the data points
+// where the data points are highlighted
 
 const Annotation = () => {
-  const [text, setText] = useState<String>("");
-  const [dataPoints, setDataPoints] = useState<DataPoint[]>([]);
+  const [activeAnnotatedDataset, setActiveAnnotatedDataset] = useState<
+    AnnotatedDataset | undefined
+  >(undefined);
+  const [activeAnnotatedText, setActiveAnnotatedText] = useState<
+    AnnotatedText | undefined
+  >(undefined);
+  const [activeDataPoint, setActiveDataPoint] = useState<DataPoint | undefined>(
+    undefined
+  );
+
   return (
-    <div>
-      <span>Moin</span>
-      <span>Moin</span>
-      <Badge>Moin</Badge>
-      <span>Moin</span>
-      <span>Moin</span>
-      <span>Moin</span>
+    <div className="grid grid-cols-7 gap-4">
+      <TextAnnotation
+        activeAnnotatedDataset={activeAnnotatedDataset}
+        activeDataPoint={activeDataPoint}
+        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+        setActiveDataPoint={setActiveDataPoint}
+        activeAnnotatedText={activeAnnotatedText}
+      />
+      <DataPointList
+        activeAnnotatedDataset={activeAnnotatedDataset}
+        activeDataPoint={activeDataPoint}
+        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+        setActiveDataPoint={setActiveDataPoint}
+        activeAnnotatedText={activeAnnotatedText}
+        setActiveAnnotatedText={setActiveAnnotatedText}
+      />
+      <AnnotatedTextList
+        activeAnnotatedDataset={activeAnnotatedDataset}
+        activeAnnotatedText={activeAnnotatedText}
+        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+        setActiveAnnotatedText={setActiveAnnotatedText}
+      />
+      <DatasetList
+        activeAnnotatedDataset={activeAnnotatedDataset}
+        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+      />
     </div>
   );
 };

@@ -1,25 +1,19 @@
-import { useLiveQuery } from "dexie-react-hooks";
-import { LLMAnnotationAnnotatedTextsListProps } from "../types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AnnotatedTextListProps } from "../types";
 import {
-  createAnnotatedDataset,
-  readAllAnnotatedDatasets,
   readAnnotatedTextsByAnnotatedDataset,
   readTextsByIds,
 } from "@/lib/db/crud";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { useLiveQuery } from "dexie-react-hooks";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
 
-const AnnotatedTextsList = (props: LLMAnnotationAnnotatedTextsListProps) => {
-  const { activeAnnotatedDataset } = props;
+const AnnotatedTextList = (props: AnnotatedTextListProps) => {
+  const {
+    activeAnnotatedDataset,
+    activeAnnotatedText,
+    setActiveAnnotatedText,
+  } = props;
+
   const annotatedTexts = useLiveQuery(
     () => readAnnotatedTextsByAnnotatedDataset(activeAnnotatedDataset?.id),
     [activeAnnotatedDataset]
@@ -34,12 +28,19 @@ const AnnotatedTextsList = (props: LLMAnnotationAnnotatedTextsListProps) => {
       <Card>
         <CardHeader>
           <CardTitle>Annotated Texts</CardTitle>
-          <CardDescription>{activeAnnotatedDataset?.name}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-1">
           {annotatedTexts?.map((annotatedText) => {
             return (
-              <Card key={annotatedText.id}>
+              <Card
+                key={annotatedText.id}
+                onClick={() => setActiveAnnotatedText(annotatedText)}
+                className={`cursor-pointer ${
+                  activeAnnotatedText?.id === annotatedText.id
+                    ? "bg-gray-100"
+                    : ""
+                }`}
+              >
                 <CardHeader>
                   <CardTitle>
                     {
@@ -57,4 +58,4 @@ const AnnotatedTextsList = (props: LLMAnnotationAnnotatedTextsListProps) => {
   );
 };
 
-export default AnnotatedTextsList;
+export default AnnotatedTextList;

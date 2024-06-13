@@ -259,8 +259,11 @@ export const readAllDataPoints = async () => {
 
 // read all data points that belong to a specific annotated text
 export const readDataPointsByAnnotatedText = async (
-  annotatedTextId: string
+  annotatedTextId: string | undefined
 ) => {
+  if (!annotatedTextId) {
+    return [];
+  }
   return db.DataPoints.where({ annotatedTextId }).toArray();
 };
 

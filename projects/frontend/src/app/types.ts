@@ -1,5 +1,7 @@
 import {
   AnnotatedDataset,
+  AnnotatedText,
+  DataPoint,
   Dataset,
   Profile,
   ProfilePoint,
@@ -77,4 +79,41 @@ export interface ResDataPoint {
   name: string;
   value: string | number | undefined;
   match: number[] | undefined;
+}
+
+export interface TextAnnotationProps {
+  activeAnnotatedDataset: AnnotatedDataset | undefined;
+  setActiveAnnotatedDataset: (
+    annotatedDataset: AnnotatedDataset | undefined
+  ) => void;
+  activeDataPoint: DataPoint | undefined;
+  setActiveDataPoint: (dataPoint: DataPoint | undefined) => void;
+  activeAnnotatedText: AnnotatedText | undefined;
+}
+
+export interface AnnotationDataPointListProps {
+  activeAnnotatedDataset: AnnotatedDataset | undefined;
+  setActiveAnnotatedDataset: (
+    annotatedDataset: AnnotatedDataset | undefined
+  ) => void;
+  activeDataPoint: DataPoint | undefined;
+  setActiveDataPoint: (dataPoint: DataPoint | undefined) => void;
+  activeAnnotatedText: AnnotatedText | undefined;
+  setActiveAnnotatedText: (annotatedText: AnnotatedText | undefined) => void;
+}
+
+export interface AnnotationDatasetListProps {
+  activeAnnotatedDataset: AnnotatedDataset | undefined;
+  setActiveAnnotatedDataset: (
+    annotatedDataset: AnnotatedDataset | undefined
+  ) => void;
+}
+
+export interface AnnotatedTextListProps {
+  activeAnnotatedDataset: AnnotatedDataset | undefined;
+  setActiveAnnotatedDataset: (
+    annotatedDataset: AnnotatedDataset | undefined
+  ) => void;
+  activeAnnotatedText: AnnotatedText | undefined;
+  setActiveAnnotatedText: (annotatedText: AnnotatedText | undefined) => void;
 }

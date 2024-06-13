@@ -73,7 +73,6 @@ const AnnotatedDatasetList = (
   const getReqProfilePoints = useCallback(
     (activeProfilePoints: ProfilePoint[]) => {
       const reqProfilePoints: ReqProfilePoint[] = [];
-      console.log("Active Profile Points:", activeProfilePoints);
       activeProfilePoints.forEach((profilePoint) => {
         reqProfilePoints.push({
           name: profilePoint.name,
@@ -147,7 +146,6 @@ const AnnotatedDatasetList = (
             annotatedTextId: annotatedTextID,
           });
         });
-        console.log("Success:", data);
       } catch (error) {
         console.error("Error:", error);
       }
@@ -209,24 +207,6 @@ const AnnotatedDatasetList = (
             }}
           >
             New Dataset
-          </Button>
-          <Button
-            onClick={() => {
-              console.log("Log");
-              // log all the state
-              console.log("isRunning:", isRunning);
-              console.log("currentIndex:", currentIndex);
-              console.log("annotationTexts:", annotationTexts);
-              console.log("activeAnnotatedDataset:", activeAnnotatedDataset);
-              console.log("activeProfilePoints:", activeProfilePoints);
-              console.log("dbAnnotatedTexts:", dbAnnotatedTexts);
-              console.log("dbTexts:", dbTexts);
-              console.log("dbAnnotatedDatasets:", dbAnnotatedDatasets);
-              console.log("profiles:", profiles);
-              console.log("datasets:", datasets);
-            }}
-          >
-            Log
           </Button>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
