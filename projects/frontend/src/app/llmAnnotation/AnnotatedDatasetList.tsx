@@ -37,7 +37,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TiDeleteOutline } from "react-icons/ti";
-import { ProfilePoint, Text } from "@/lib/db/db";
+import { DataPoint, DataPointCreate, ProfilePoint, Text } from "@/lib/db/db";
 import { get_api_key } from "../constants";
 
 const AnnotatedDatasetList = (
@@ -109,6 +109,28 @@ const AnnotatedDatasetList = (
     }
   }, [isRunning, activeAnnotatedDataset]);
 
+  const complementMissingDatapoints = (
+    dataPoints: DataPointCreate[],
+    profilePoints: ProfilePoint[],
+    annotatedTextId: string
+  ): DataPointCreate[] => {
+    const missingDataPoints: DataPointCreate[] = [];
+    profilePoints.forEach((profilePoint) => {
+      if (
+        !dataPoints.find((dataPoint) => dataPoint.name === profilePoint.name)
+      ) {
+        missingDataPoints.push({
+          name: profilePoint.name,
+          value: "",
+          match: undefined,
+          annotatedTextId: annotatedTextId,
+          profilePointId: profilePoint.id,
+        });
+      }
+    });
+    return dataPoints.concat(missingDataPoints);
+  };
+
   // start annotating the text
   const annotateText = useCallback(
     async (text: Text) => {
@@ -139,11 +161,15 @@ const AnnotatedDatasetList = (
           textId: text.id,
         });
         data.forEach((dataPoint) => {
+          const profilePoint = activeProfilePoints.find(
+            (profilePoint) => profilePoint.name === dataPoint.name
+          );
           createDataPoint({
             name: dataPoint.name,
             value: dataPoint.value,
             match: dataPoint.match,
             annotatedTextId: annotatedTextID,
+            profilePointId: profilePoint?.id,
           });
         });
       } catch (error) {

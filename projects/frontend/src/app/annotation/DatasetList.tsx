@@ -25,7 +25,13 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
             return (
               <Card
                 key={annotatedDataset.id}
-                onClick={() => setActiveAnnotatedDataset(annotatedDataset)}
+                onClick={() =>
+                  setActiveAnnotatedDataset(
+                    activeAnnotatedDataset === annotatedDataset
+                      ? undefined
+                      : annotatedDataset
+                  )
+                }
                 className={`cursor-pointer ${
                   activeAnnotatedDataset?.id === annotatedDataset.id
                     ? "bg-gray-100"

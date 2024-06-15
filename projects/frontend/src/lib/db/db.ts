@@ -67,6 +67,7 @@ export interface DataPointCreate {
   name: string;
   value: string | number | undefined;
   match: number[] | undefined;
+  profilePointId: string | undefined;
 }
 
 export interface DataPoint extends DataPointCreate {

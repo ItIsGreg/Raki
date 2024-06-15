@@ -34,7 +34,13 @@ const AnnotatedTextList = (props: AnnotatedTextListProps) => {
             return (
               <Card
                 key={annotatedText.id}
-                onClick={() => setActiveAnnotatedText(annotatedText)}
+                onClick={() =>
+                  setActiveAnnotatedText(
+                    activeAnnotatedText === annotatedText
+                      ? undefined
+                      : annotatedText
+                  )
+                }
                 className={`cursor-pointer ${
                   activeAnnotatedText?.id === annotatedText.id
                     ? "bg-gray-100"

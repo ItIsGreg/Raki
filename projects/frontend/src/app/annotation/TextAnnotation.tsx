@@ -2,12 +2,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TextAnnotationProps } from "../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
+  readAnnotatedDataset,
   readDataPointsByAnnotatedText,
+  readProfile,
+  readProfilePointsByProfile,
   readTextsByDataset,
 } from "@/lib/db/crud";
 import { DataPoint } from "@/lib/db/db";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -28,6 +39,17 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     [activeAnnotatedText]
   );
 
+  const activeProfile = useLiveQuery(
+    () => readProfile(activeAnnotatedDataset?.profileId),
+    [activeAnnotatedDataset]
+  );
+  const activeProfilePoints = useLiveQuery(
+    () => readProfilePointsByProfile(activeProfile?.id),
+    [activeProfile]
+  );
+
+  const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
+
   // create a representation of the text and the data points
   // where the data points are highlighted
   const generateHighlightedText = (text: string, dataPoints: DataPoint[]) => {
@@ -40,7 +62,36 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     sortedDataPoints.forEach((dataPoint) => {
       highlightedText.push(text.slice(lastEnd, dataPoint.match![0]));
       highlightedText.push(
-        <Badge>{text.slice(dataPoint.match![0], dataPoint.match![1])}</Badge>
+        <TooltipProvider>
+          <Tooltip open={activeDataPoint === dataPoint}>
+            <TooltipTrigger>
+              <Badge
+                onClick={() =>
+                  setActiveDataPoint(
+                    activeDataPoint === dataPoint ? undefined : dataPoint
+                  )
+                }
+                className="mr-1"
+              >
+                {text.slice(dataPoint.match![0], dataPoint.match![1])}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{dataPoint.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Input
+                    value={activeDataPointValue}
+                    onChange={(e) => setActiveDataPointValue(e.target.value)}
+                    placeholder={dataPoint.value?.toString() ?? "Value"}
+                  />
+                </CardContent>
+              </Card>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       );
       lastEnd = dataPoint.match![1];
     });

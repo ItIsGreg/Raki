@@ -3,6 +3,7 @@ import { AnnotationDataPointListProps } from "../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import { readDataPointsByAnnotatedText } from "@/lib/db/crud";
 import { Button } from "@/components/ui/button";
+import { act } from "react";
 
 const DataPointList = (props: AnnotationDataPointListProps) => {
   const {
@@ -29,7 +30,11 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
             return (
               <Card
                 key={dataPoint.id}
-                onClick={() => setActiveDataPoint(dataPoint)}
+                onClick={() =>
+                  setActiveDataPoint(
+                    activeDataPoint === dataPoint ? undefined : dataPoint
+                  )
+                }
                 className={`cursor-pointer ${
                   activeDataPoint?.id === dataPoint.id ? "bg-gray-100" : ""
                 }`}
