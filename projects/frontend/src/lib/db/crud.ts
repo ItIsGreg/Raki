@@ -34,7 +34,10 @@ export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
   }
 };
 
-export const readProfilePoint = async (id: string) => {
+export const readProfilePoint = async (id: string | undefined) => {
+  if (!id) {
+    return undefined;
+  }
   return db.profilePoints.get(id);
 };
 

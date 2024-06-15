@@ -20,6 +20,7 @@
     "dexie": "^4.0.7",
     "dexie-react-hooks": "^1.1.7",
     "dotenv": "^16.4.5",
+    "embla-carousel-react": "^8.1.5",
     "lucide-react": "^0.379.0",
     "next": "14.2.3",
     "react": "^18",

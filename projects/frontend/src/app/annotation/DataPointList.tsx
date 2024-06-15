@@ -44,8 +44,14 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
                   )
                 }
                 className={`cursor-pointer ${
-                  activeDataPoint?.id === dataPoint.id ? "bg-gray-100" : ""
-                }`}
+                  activeDataPoint?.id === dataPoint.id
+                    ? "bg-gray-100"
+                    : !dataPoint.profilePointId
+                    ? "bg-red-100"
+                    : ""
+                }
+                ${!dataPoint.match ? "text-gray-400" : ""}
+                `}
               >
                 <CardHeader>
                   <CardTitle className="truncate">{dataPoint.name}</CardTitle>

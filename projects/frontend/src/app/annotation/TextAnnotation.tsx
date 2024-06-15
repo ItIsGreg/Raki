@@ -5,8 +5,10 @@ import {
   readAnnotatedDataset,
   readDataPointsByAnnotatedText,
   readProfile,
+  readProfilePoint,
   readProfilePointsByProfile,
   readTextsByDataset,
+  updateDataPoint,
 } from "@/lib/db/crud";
 import { DataPoint } from "@/lib/db/db";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +21,14 @@ import {
 } from "@/components/ui/tooltip";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import {
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -43,9 +53,9 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     () => readProfile(activeAnnotatedDataset?.profileId),
     [activeAnnotatedDataset]
   );
-  const activeProfilePoints = useLiveQuery(
-    () => readProfilePointsByProfile(activeProfile?.id),
-    [activeProfile]
+  const activeProfilePoint = useLiveQuery(
+    () => readProfilePoint(activeDataPoint?.profilePointId),
+    [activeDataPoint]
   );
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
@@ -82,11 +92,51 @@ const TextAnnotation = (props: TextAnnotationProps) => {
                   <CardTitle>{dataPoint.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Input
-                    value={activeDataPointValue}
-                    onChange={(e) => setActiveDataPointValue(e.target.value)}
-                    placeholder={dataPoint.value?.toString() ?? "Value"}
-                  />
+                  {activeProfilePoint?.datatype === "valueset" ? (
+                    <Select
+                      onValueChange={(value: string) => {
+                        // update the data point value
+                        updateDataPoint({
+                          ...dataPoint,
+                          value: value as string,
+                        });
+                      }}
+                    >
+                      <SelectTrigger>
+                        {dataPoint.value?.toString() ?? "Value"}
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {activeProfilePoint?.valueset?.map((value) => (
+                            <SelectItem key={value} value={value}>
+                              {value}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <Input
+                        value={activeDataPointValue}
+                        onChange={(e) =>
+                          setActiveDataPointValue(e.target.value)
+                        }
+                        placeholder={dataPoint.value?.toString() ?? "Value"}
+                      />
+                      <Button
+                        onClick={() => {
+                          // update the data point value
+                          updateDataPoint({
+                            ...dataPoint,
+                            value: activeDataPointValue,
+                          });
+                        }}
+                      >
+                        Update
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TooltipContent>
