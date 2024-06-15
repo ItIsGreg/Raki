@@ -160,7 +160,25 @@ const AnnotatedDatasetList = (
           annotatedDatasetId: activeAnnotatedDataset!.id,
           textId: text.id,
         });
-        data.forEach((dataPoint) => {
+        let dataPoints: DataPointCreate[] = data.map((dataPoint) => {
+          return {
+            name: dataPoint.name,
+            value: dataPoint.value,
+            match: dataPoint.match,
+            annotatedTextId: annotatedTextID,
+            profilePointId: activeProfilePoints.find(
+              (profilePoint) => profilePoint.name === dataPoint.name
+            )?.id,
+          };
+        });
+        // add missing empty data points according to profile points
+        dataPoints = complementMissingDatapoints(
+          dataPoints,
+          activeProfilePoints,
+          annotatedTextID
+        );
+
+        dataPoints.forEach((dataPoint) => {
           const profilePoint = activeProfilePoints.find(
             (profilePoint) => profilePoint.name === dataPoint.name
           );
