@@ -17,8 +17,16 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
   const dataPoints = useLiveQuery(
     () => readDataPointsByAnnotatedText(activeAnnotatedText?.id),
     [activeAnnotatedText]
-  );
-
+  )?.sort((a, b) => {
+    if (a.match && b.match) {
+      return a.match[0] - b.match[0];
+    } else if (a.match) {
+      return -1;
+    } else if (b.match) {
+      return 1;
+    }
+    return 0;
+  });
   return (
     <div className="col-span-1">
       <Card>
