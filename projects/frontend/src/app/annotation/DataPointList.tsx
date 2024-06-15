@@ -1,9 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnnotationDataPointListProps } from "../types";
 import { useLiveQuery } from "dexie-react-hooks";
-import { readDataPointsByAnnotatedText } from "@/lib/db/crud";
-import { Button } from "@/components/ui/button";
-import { act } from "react";
+import {
+  deleteDataPoint,
+  readDataPointsByAnnotatedText,
+  updateDataPoint,
+} from "@/lib/db/crud";
+import { TiDeleteOutline } from "react-icons/ti";
 
 const DataPointList = (props: AnnotationDataPointListProps) => {
   const {
@@ -53,8 +56,25 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
                 ${!dataPoint.match ? "text-gray-400" : ""}
                 `}
               >
-                <CardHeader>
+                <CardHeader className="flex flex-row gap-1">
                   <CardTitle className="truncate">{dataPoint.name}</CardTitle>
+                  <div className="flex-grow"></div>
+                  <TiDeleteOutline
+                    className="hover:text-red-500 cursor-pointer"
+                    size={24}
+                    onClick={() => {
+                      if (!dataPoint.profilePointId) {
+                        deleteDataPoint(dataPoint.id);
+                      } else {
+                        // reset the data point
+                        updateDataPoint({
+                          ...dataPoint,
+                          match: undefined,
+                          value: undefined,
+                        });
+                      }
+                    }}
+                  />
                 </CardHeader>
               </Card>
             );

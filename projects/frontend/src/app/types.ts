@@ -117,3 +117,9 @@ export interface AnnotatedTextListProps {
   activeAnnotatedText: AnnotatedText | undefined;
   setActiveAnnotatedText: (annotatedText: AnnotatedText | undefined) => void;
 }
+
+export interface TextSliceProps {
+  text: string;
+  startIndex: number;
+  annotatedTextId: string | undefined;
+}

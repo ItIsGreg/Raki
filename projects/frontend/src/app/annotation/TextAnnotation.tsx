@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TextAnnotationProps } from "../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
+  deleteDataPoint,
   readAnnotatedDataset,
   readDataPointsByAnnotatedText,
   readProfile,
@@ -29,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import TextSlice from "./TextSlice";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -53,6 +55,10 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     () => readProfile(activeAnnotatedDataset?.profileId),
     [activeAnnotatedDataset]
   );
+  const activeProfilePoints = useLiveQuery(
+    () => readProfilePointsByProfile(activeProfile?.id),
+    [activeProfile]
+  );
   const activeProfilePoint = useLiveQuery(
     () => readProfilePoint(activeDataPoint?.profilePointId),
     [activeDataPoint]
@@ -70,7 +76,13 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     let highlightedText = [];
     let lastEnd = 0;
     sortedDataPoints.forEach((dataPoint) => {
-      highlightedText.push(text.slice(lastEnd, dataPoint.match![0]));
+      highlightedText.push(
+        <TextSlice
+          startIndex={lastEnd}
+          text={text.slice(lastEnd, dataPoint.match![0])}
+          annotatedTextId={activeAnnotatedText?.id}
+        />
+      );
       highlightedText.push(
         <TooltipProvider>
           <Tooltip open={activeDataPoint === dataPoint}>
@@ -92,7 +104,56 @@ const TextAnnotation = (props: TextAnnotationProps) => {
                   <CardTitle>{dataPoint.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {activeProfilePoint?.datatype === "valueset" ? (
+                  {!dataPoint.profilePointId ? (
+                    <Select
+                      onValueChange={(value: string) => {
+                        // update the placeholder data point
+                        const placeholderDataPoint = dataPoints.find(
+                          (dp) => dp.profilePointId === value
+                        );
+                        if (placeholderDataPoint) {
+                          deleteDataPoint(placeholderDataPoint.id);
+                        }
+                        updateDataPoint({
+                          ...dataPoint,
+                          name:
+                            activeProfilePoints?.find(
+                              (profilePoint) => profilePoint.id === value
+                            )?.name ?? "Unknown",
+                          profilePointId: value,
+                        });
+                        // delete the old placeholder point
+                      }}
+                    >
+                      <SelectTrigger>Select a profile Point</SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {activeProfilePoints
+                            ?.filter((profilePoint) => {
+                              return (
+                                dataPoints.find((dp) => {
+                                  return (
+                                    dp.profilePointId === profilePoint.id &&
+                                    dp.match
+                                  );
+                                }) === undefined
+                              );
+                            })
+                            .map((profilePoint) => (
+                              <SelectItem
+                                key={profilePoint.id}
+                                value={profilePoint.id}
+                              >
+                                {profilePoint.name}
+                              </SelectItem>
+                            ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  ) : null}
+
+                  {dataPoint.profilePointId &&
+                  activeProfilePoint?.datatype === "valueset" ? (
                     <Select
                       onValueChange={(value: string) => {
                         // update the data point value
@@ -145,7 +206,13 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       );
       lastEnd = dataPoint.match![1];
     });
-    highlightedText.push(text.slice(lastEnd));
+    highlightedText.push(
+      <TextSlice
+        startIndex={lastEnd}
+        text={text.slice(lastEnd)}
+        annotatedTextId={activeAnnotatedText?.id}
+      />
+    );
     return highlightedText;
   };
 
