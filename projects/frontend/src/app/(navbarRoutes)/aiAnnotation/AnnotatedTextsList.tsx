@@ -1,19 +1,25 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnnotatedTextListProps } from "../types";
+import { useLiveQuery } from "dexie-react-hooks";
+import { LLMAnnotationAnnotatedTextsListProps } from "../../types";
 import {
+  createAnnotatedDataset,
+  readAllAnnotatedDatasets,
   readAnnotatedTextsByAnnotatedDataset,
   readTextsByIds,
 } from "@/lib/db/crud";
-import { useLiveQuery } from "dexie-react-hooks";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
-const AnnotatedTextList = (props: AnnotatedTextListProps) => {
-  const {
-    activeAnnotatedDataset,
-    activeAnnotatedText,
-    setActiveAnnotatedText,
-  } = props;
-
+const AnnotatedTextsList = (props: LLMAnnotationAnnotatedTextsListProps) => {
+  const { activeAnnotatedDataset } = props;
   const annotatedTexts = useLiveQuery(
     () => readAnnotatedTextsByAnnotatedDataset(activeAnnotatedDataset?.id),
     [activeAnnotatedDataset]
@@ -28,25 +34,12 @@ const AnnotatedTextList = (props: AnnotatedTextListProps) => {
       <Card>
         <CardHeader>
           <CardTitle>Annotated Texts</CardTitle>
+          <CardDescription>{activeAnnotatedDataset?.name}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1">
+        <CardContent>
           {annotatedTexts?.map((annotatedText) => {
             return (
-              <Card
-                key={annotatedText.id}
-                onClick={() =>
-                  setActiveAnnotatedText(
-                    activeAnnotatedText === annotatedText
-                      ? undefined
-                      : annotatedText
-                  )
-                }
-                className={`cursor-pointer ${
-                  activeAnnotatedText?.id === annotatedText.id
-                    ? "bg-gray-100"
-                    : ""
-                }`}
-              >
+              <Card key={annotatedText.id}>
                 <CardHeader>
                   <CardTitle>
                     {
@@ -64,4 +57,4 @@ const AnnotatedTextList = (props: AnnotatedTextListProps) => {
   );
 };
 
-export default AnnotatedTextList;
+export default AnnotatedTextsList;

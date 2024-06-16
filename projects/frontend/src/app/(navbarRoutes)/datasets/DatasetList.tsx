@@ -12,7 +12,7 @@ import { createDataset, deleteDataset, readAllDatasets } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { TiDeleteOutline } from "react-icons/ti";
-import { DatasetListProps } from "../types";
+import { DatasetListProps } from "../../types";
 
 const DatasetList = (props: DatasetListProps) => {
   const { activeDataset, setActiveDataset } = props;

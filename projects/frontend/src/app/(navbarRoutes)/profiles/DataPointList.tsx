@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { MdDownload } from "react-icons/md";
-import { DataPointListProps } from "../types";
+import { DataPointListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import { readProfilePointsByProfile } from "@/lib/db/crud";
 import DataPointCard from "./DataPointCard";

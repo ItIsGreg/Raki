@@ -12,7 +12,7 @@ import { createProfile, deleteProfile, readAllProfiles } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { TiDelete, TiDeleteOutline } from "react-icons/ti";
-import { ProfileListProps } from "../types";
+import { ProfileListProps } from "../../types";
 import ProfileCard from "./ProfileCard";
 
 const ProfileList = (props: ProfileListProps) => {

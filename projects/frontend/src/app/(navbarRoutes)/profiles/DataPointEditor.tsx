@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { SelectGroup } from "@radix-ui/react-select";
 import { TiDeleteOutline } from "react-icons/ti";
-import { DataPointEditorProps } from "../types";
+import { DataPointEditorProps } from "../../types";
 import { createProfilePoint, updateProfilePoint } from "@/lib/db/crud";
 
 export function DataPointEditor(props: DataPointEditorProps) {

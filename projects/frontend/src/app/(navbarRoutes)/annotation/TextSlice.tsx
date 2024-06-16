@@ -1,5 +1,5 @@
 import { createDataPoint } from "@/lib/db/crud";
-import { TextSliceProps } from "../types";
+import { TextSliceProps } from "../../types";
 
 const TextSlice = (props: TextSliceProps) => {
   const { text, startIndex, annotatedTextId } = props;

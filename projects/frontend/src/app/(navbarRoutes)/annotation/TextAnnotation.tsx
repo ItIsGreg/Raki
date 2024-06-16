@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TextAnnotationProps } from "../types";
+import { TextAnnotationProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   deleteDataPoint,

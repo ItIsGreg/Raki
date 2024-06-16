@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AnnotationDatasetListProps } from "../types";
+import { AnnotationDatasetListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   readAllAnnotatedDatasets,
@@ -53,7 +53,6 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
     }
     // generate csv
     const csv = generateCsv(annotatedTextDatapoints, profilePoints);
-    console.log(csv);
     // download csv
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);

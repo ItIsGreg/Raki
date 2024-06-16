@@ -8,7 +8,7 @@ import {
 import { deleteProfilePoint } from "@/lib/db/crud";
 import { ProfilePoint } from "@/lib/db/db";
 import { TiDeleteOutline } from "react-icons/ti";
-import { DataPointCardProps } from "../types";
+import { DataPointCardProps } from "../../types";
 
 const DataPointCard = (props: DataPointCardProps) => {
   const {

@@ -3,7 +3,7 @@ import {
   LLMAnnotationAnnotatedDatasetListProps,
   ReqProfilePoint,
   ResDataPoint,
-} from "../types";
+} from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   createAnnotatedDataset,
@@ -38,7 +38,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TiDeleteOutline } from "react-icons/ti";
 import { DataPoint, DataPointCreate, ProfilePoint, Text } from "@/lib/db/db";
-import { get_api_key } from "../constants";
+import { get_api_key } from "../../constants";
 
 const AnnotatedDatasetList = (
   props: LLMAnnotationAnnotatedDatasetListProps

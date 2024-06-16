@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { createText, deleteText, readTextsByDataset } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
-import { TextListProps } from "../types";
+import { TextListProps } from "../../types";
 import { TiDeleteOutline } from "react-icons/ti";
 import { useRef } from "react";
 

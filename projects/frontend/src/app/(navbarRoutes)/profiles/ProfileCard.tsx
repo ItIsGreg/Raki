@@ -8,7 +8,7 @@ import {
 import { IoMdDownload } from "react-icons/io";
 import { deleteProfile } from "@/lib/db/crud";
 import { TiDeleteOutline } from "react-icons/ti";
-import { ProfileCardProps } from "../types";
+import { ProfileCardProps } from "../../types";
 
 const ProfileCard = (props: ProfileCardProps) => {
   const { profile, activeProfile, setActiveProfile } = props;
