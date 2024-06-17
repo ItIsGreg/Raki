@@ -47,12 +47,15 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
                   )
                 }
                 className={`cursor-pointer ${
-                  activeDataPoint?.id === dataPoint.id
+                  activeDataPoint?.id === dataPoint.id && !dataPoint.verified
                     ? "bg-gray-100"
+                    : activeDataPoint?.id === dataPoint.id && dataPoint.verified
+                    ? "bg-green-100"
                     : !dataPoint.profilePointId
                     ? "bg-red-100"
                     : ""
                 }
+                ${dataPoint.verified ? "text-green-800" : ""}
                 ${!dataPoint.match ? "text-gray-400" : ""}
                 `}
               >

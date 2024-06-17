@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TextSlice from "./TextSlice";
+import { FaCheck } from "react-icons/fa6";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -93,7 +94,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
                     activeDataPoint === dataPoint ? undefined : dataPoint
                   )
                 }
-                className="mr-1"
+                className={`mr-1 ${dataPoint.verified ? "bg-green-800" : ""}`}
               >
                 {text.slice(dataPoint.match![0], dataPoint.match![1])}
               </Badge>
@@ -154,28 +155,42 @@ const TextAnnotation = (props: TextAnnotationProps) => {
 
                   {dataPoint.profilePointId &&
                   activeProfilePoint?.datatype === "valueset" ? (
-                    <Select
-                      onValueChange={(value: string) => {
-                        // update the data point value
-                        updateDataPoint({
-                          ...dataPoint,
-                          value: value as string,
-                        });
-                      }}
-                    >
-                      <SelectTrigger>
-                        {dataPoint.value?.toString() ?? "Value"}
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {activeProfilePoint?.valueset?.map((value) => (
-                            <SelectItem key={value} value={value}>
-                              {value}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex flex-col gap-2">
+                      <Select
+                        onValueChange={(value: string) => {
+                          // update the data point value
+                          updateDataPoint({
+                            ...dataPoint,
+                            value: value as string,
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          {dataPoint.value?.toString() ?? "Value"}
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {activeProfilePoint?.valueset?.map((value) => (
+                              <SelectItem key={value} value={value}>
+                                {value}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        className="bg-green-800"
+                        onClick={() => {
+                          // verify the data point
+                          updateDataPoint({
+                            ...dataPoint,
+                            verified: true,
+                          });
+                        }}
+                      >
+                        <FaCheck size={24} />
+                      </Button>
+                    </div>
                   ) : (
                     <div className="flex flex-col gap-2">
                       <Input
@@ -185,17 +200,32 @@ const TextAnnotation = (props: TextAnnotationProps) => {
                         }
                         placeholder={dataPoint.value?.toString() ?? "Value"}
                       />
-                      <Button
-                        onClick={() => {
-                          // update the data point value
-                          updateDataPoint({
-                            ...dataPoint,
-                            value: activeDataPointValue,
-                          });
-                        }}
-                      >
-                        Update
-                      </Button>
+                      <div className="flex flex-row gap-1">
+                        <Button
+                          onClick={() => {
+                            // update the data point value
+                            updateDataPoint({
+                              ...dataPoint,
+                              value: activeDataPointValue,
+                            });
+                          }}
+                        >
+                          Update
+                        </Button>
+                        <div className="flex-grow"></div>
+                        <Button
+                          className="bg-green-800"
+                          onClick={() => {
+                            // verify the data point
+                            updateDataPoint({
+                              ...dataPoint,
+                              verified: true,
+                            });
+                          }}
+                        >
+                          <FaCheck size={24} />
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </CardContent>

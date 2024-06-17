@@ -39,6 +39,7 @@ export interface AnnotatedTextCreate {
 
 export interface AnnotatedText extends AnnotatedTextCreate {
   id: string;
+  verified: boolean | undefined;
 }
 
 export interface AnnotatedDatasetCreate {
@@ -72,6 +73,7 @@ export interface DataPointCreate {
 
 export interface DataPoint extends DataPointCreate {
   id: string;
+  verified: boolean | undefined;
 }
 
 export class MySubClassedDexie extends Dexie {
