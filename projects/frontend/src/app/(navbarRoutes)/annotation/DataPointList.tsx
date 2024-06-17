@@ -31,7 +31,7 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
     return 0;
   });
   return (
-    <div className="col-span-1">
+    <div className="col-span-1 overflow-y-scroll">
       <Card>
         <CardHeader>
           <CardTitle>Datapoints</CardTitle>

@@ -24,7 +24,7 @@ const Annotation = () => {
   );
 
   return (
-    <div className="grid grid-cols-7 gap-4">
+    <div className="grid grid-cols-7 gap-4 h-full">
       <TextAnnotation
         activeAnnotatedDataset={activeAnnotatedDataset}
         activeDataPoint={activeDataPoint}

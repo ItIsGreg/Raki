@@ -30,7 +30,7 @@ const DataPointCard = (props: DataPointCardProps) => {
       }}
     >
       <CardHeader className="flex flex-row">
-        <CardTitle>{dataPoint.name}</CardTitle>
+        <CardTitle className="truncate">{dataPoint.name}</CardTitle>
         <div className="flex-grow"></div>
         <TiDeleteOutline
           className="hover:text-red-500 cursor-pointer"

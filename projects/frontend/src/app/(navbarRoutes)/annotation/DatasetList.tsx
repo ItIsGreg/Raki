@@ -101,7 +101,7 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
   };
 
   return (
-    <div className="col-span-1">
+    <div className="col-span-1 overflow-y-scroll">
       <Card>
         <CardHeader>
           <CardTitle>Annotated Datasets</CardTitle>
