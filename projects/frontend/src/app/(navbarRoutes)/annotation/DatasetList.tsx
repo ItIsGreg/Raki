@@ -125,7 +125,9 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
                 }`}
               >
                 <CardHeader className="flex flex-row gap-2">
-                  <CardTitle>{annotatedDataset.name}</CardTitle>
+                  <CardTitle className="truncate">
+                    {annotatedDataset.name}
+                  </CardTitle>
                   <div className="flex flex-grow"></div>
                   <TiDownloadOutline
                     size={24}
