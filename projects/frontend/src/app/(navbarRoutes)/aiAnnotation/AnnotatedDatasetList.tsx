@@ -101,7 +101,10 @@ const AnnotatedDatasetList = (
         setAnnotationTexts(
           annotationTexts.filter((text) => {
             return !dbAnnotatedTexts.find((annotatedText) => {
-              return annotatedText.textId === text.id;
+              return (
+                annotatedText.textId === text.id &&
+                annotatedText.annotatedDatasetId === activeAnnotatedDataset?.id
+              );
             });
           })
         );
