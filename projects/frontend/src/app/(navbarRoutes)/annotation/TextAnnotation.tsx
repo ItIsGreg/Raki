@@ -2,36 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TextAnnotationProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
-  deleteDataPoint,
-  readAnnotatedDataset,
   readDataPointsByAnnotatedText,
   readProfile,
   readProfilePoint,
   readProfilePointsByProfile,
   readTextsByDataset,
-  updateDataPoint,
 } from "@/lib/db/crud";
 import { DataPoint } from "@/lib/db/db";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import {
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useEffect, useState } from "react";
 import TextSlice from "./TextSlice";
-import { FaCheck } from "react-icons/fa6";
+import DataPointSlice from "./DataPointSlice";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -64,8 +44,60 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     () => readProfilePoint(activeDataPoint?.profilePointId),
     [activeDataPoint]
   );
+  const [activeDataPointSliceRef, setActiveDataPointSliceRef] =
+    useState<HTMLDivElement | null>(null);
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    switch (event.key) {
+      case "ArrowRight":
+        // find the next data point by index
+        if (!dataPoints?.length) return;
+        if (!activeDataPoint) {
+          setActiveDataPoint(dataPoints[0]);
+          return;
+        }
+        const nextDataPoint = dataPoints?.find(
+          (dataPoint) =>
+            dataPoint.match && dataPoint.match![0] > activeDataPoint?.match![0]
+        );
+        setActiveDataPoint(nextDataPoint ? nextDataPoint : undefined);
+
+        break;
+      case "ArrowLeft":
+        console.log("ArrowLeft");
+        // find the previous data point by index
+        if (!dataPoints?.length) return;
+        if (!activeDataPoint) {
+          setActiveDataPoint(dataPoints[0]);
+          return;
+        }
+        const previousDataPoint = dataPoints
+          ?.slice()
+          .reverse()
+          .find(
+            (dataPoint) =>
+              dataPoint.match && dataPoint.match[0] < activeDataPoint?.match![0]
+          );
+        setActiveDataPoint(
+          previousDataPoint ? previousDataPoint : dataPoints[0]
+        );
+        break;
+      default:
+        break;
+    }
+  };
+
+  useEffect(() => {
+    // Add event listener for keydown
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeDataPoint, dataPoints]);
 
   // create a representation of the text and the data points
   // where the data points are highlighted
@@ -85,154 +117,17 @@ const TextAnnotation = (props: TextAnnotationProps) => {
         />
       );
       highlightedText.push(
-        <TooltipProvider>
-          <Tooltip open={activeDataPoint === dataPoint}>
-            <TooltipTrigger>
-              <Badge
-                onClick={() =>
-                  setActiveDataPoint(
-                    activeDataPoint === dataPoint ? undefined : dataPoint
-                  )
-                }
-                className={`mr-1 ${dataPoint.verified ? "bg-green-800" : ""}`}
-              >
-                {text.slice(dataPoint.match![0], dataPoint.match![1])}
-              </Badge>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{dataPoint.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {!dataPoint.profilePointId ? (
-                    <Select
-                      onValueChange={(value: string) => {
-                        // update the placeholder data point
-                        const placeholderDataPoint = dataPoints.find(
-                          (dp) => dp.profilePointId === value
-                        );
-                        if (placeholderDataPoint) {
-                          deleteDataPoint(placeholderDataPoint.id);
-                        }
-                        updateDataPoint({
-                          ...dataPoint,
-                          name:
-                            activeProfilePoints?.find(
-                              (profilePoint) => profilePoint.id === value
-                            )?.name ?? "Unknown",
-                          profilePointId: value,
-                        });
-                        // delete the old placeholder point
-                      }}
-                    >
-                      <SelectTrigger>Select a profile Point</SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {activeProfilePoints
-                            ?.filter((profilePoint) => {
-                              return (
-                                dataPoints.find((dp) => {
-                                  return (
-                                    dp.profilePointId === profilePoint.id &&
-                                    dp.match
-                                  );
-                                }) === undefined
-                              );
-                            })
-                            .map((profilePoint) => (
-                              <SelectItem
-                                key={profilePoint.id}
-                                value={profilePoint.id}
-                              >
-                                {profilePoint.name}
-                              </SelectItem>
-                            ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  ) : null}
-
-                  {dataPoint.profilePointId &&
-                  activeProfilePoint?.datatype === "valueset" ? (
-                    <div className="flex flex-col gap-2">
-                      <Select
-                        onValueChange={(value: string) => {
-                          // update the data point value
-                          updateDataPoint({
-                            ...dataPoint,
-                            value: value as string,
-                          });
-                        }}
-                      >
-                        <SelectTrigger>
-                          {dataPoint.value?.toString() ?? "Value"}
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {activeProfilePoint?.valueset?.map((value) => (
-                              <SelectItem key={value} value={value}>
-                                {value}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        className="bg-green-800"
-                        onClick={() => {
-                          // verify the data point
-                          updateDataPoint({
-                            ...dataPoint,
-                            verified: true,
-                          });
-                        }}
-                      >
-                        <FaCheck size={24} />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      <Input
-                        value={activeDataPointValue}
-                        onChange={(e) =>
-                          setActiveDataPointValue(e.target.value)
-                        }
-                        placeholder={dataPoint.value?.toString() ?? "Value"}
-                      />
-                      <div className="flex flex-row gap-1">
-                        <Button
-                          onClick={() => {
-                            // update the data point value
-                            updateDataPoint({
-                              ...dataPoint,
-                              value: activeDataPointValue,
-                            });
-                          }}
-                        >
-                          Update
-                        </Button>
-                        <div className="flex-grow"></div>
-                        <Button
-                          className="bg-green-800"
-                          onClick={() => {
-                            // verify the data point
-                            updateDataPoint({
-                              ...dataPoint,
-                              verified: true,
-                            });
-                          }}
-                        >
-                          <FaCheck size={24} />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <DataPointSlice
+          dataPoint={dataPoint}
+          dataPoints={dataPoints}
+          text={text}
+          activeDataPoint={activeDataPoint}
+          setActiveDataPoint={setActiveDataPoint}
+          activeProfilePoints={activeProfilePoints}
+          activeProfilePoint={activeProfilePoint}
+          activeDataPointValue={activeDataPointValue}
+          setActiveDataPointValue={setActiveDataPointValue}
+        />
       );
       lastEnd = dataPoint.match![1];
     });
