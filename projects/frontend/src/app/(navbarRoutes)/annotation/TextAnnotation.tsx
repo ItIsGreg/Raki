@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { TextAnnotationProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -9,9 +15,17 @@ import {
   readTextsByDataset,
 } from "@/lib/db/crud";
 import { DataPoint } from "@/lib/db/db";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TextSlice from "./TextSlice";
 import DataPointSlice from "./DataPointSlice";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import {
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@radix-ui/react-select";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -44,10 +58,10 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     () => readProfilePoint(activeDataPoint?.profilePointId),
     [activeDataPoint]
   );
-  const [activeDataPointSliceRef, setActiveDataPointSliceRef] =
-    useState<HTMLDivElement | null>(null);
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
+
+  const testButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleKeyDown = (event: KeyboardEvent) => {
     switch (event.key) {
@@ -83,6 +97,13 @@ const TextAnnotation = (props: TextAnnotationProps) => {
         setActiveDataPoint(
           previousDataPoint ? previousDataPoint : dataPoints[0]
         );
+        break;
+      case "ArrowDown":
+        console.log("ArrowDown");
+        // focus test button
+        if (testButtonRef.current) {
+          testButtonRef.current.focus();
+        }
         break;
       default:
         break;
@@ -156,6 +177,16 @@ const TextAnnotation = (props: TextAnnotationProps) => {
             <span key={index}>{element}</span>
           ))}
         </CardContent>
+        <CardFooter>
+          <Select>
+            <SelectTrigger>
+              <SelectValue>Option 1</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="t">Option 1</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardFooter>
       </Card>
     </div>
   );
