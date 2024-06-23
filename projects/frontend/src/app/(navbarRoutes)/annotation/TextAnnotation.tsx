@@ -20,12 +20,8 @@ import TextSlice from "./TextSlice";
 import DataPointSlice from "./DataPointSlice";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import {
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@radix-ui/react-select";
+import { Input } from "@/components/ui/input";
+import test from "node:test";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -61,11 +57,15 @@ const TextAnnotation = (props: TextAnnotationProps) => {
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
 
-  const testButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRefs = useRef<{
+    [key: string]: HTMLInputElement | HTMLSelectElement | null;
+  }>({});
 
   const handleKeyDown = (event: KeyboardEvent) => {
     switch (event.key) {
       case "ArrowRight":
+        // reset the active data point value
+        setActiveDataPointValue("");
         // find the next data point by index
         if (!dataPoints?.length) return;
         if (!activeDataPoint) {
@@ -80,7 +80,8 @@ const TextAnnotation = (props: TextAnnotationProps) => {
 
         break;
       case "ArrowLeft":
-        console.log("ArrowLeft");
+        // reset the active data point value
+        setActiveDataPointValue("");
         // find the previous data point by index
         if (!dataPoints?.length) return;
         if (!activeDataPoint) {
@@ -98,11 +99,10 @@ const TextAnnotation = (props: TextAnnotationProps) => {
           previousDataPoint ? previousDataPoint : dataPoints[0]
         );
         break;
-      case "ArrowDown":
-        console.log("ArrowDown");
-        // focus test button
-        if (testButtonRef.current) {
-          testButtonRef.current.focus();
+      case "Enter":
+        // focus the input field of the active data point
+        if (activeDataPoint) {
+          inputRefs.current[activeDataPoint.id]?.focus();
         }
         break;
       default:
@@ -148,6 +148,9 @@ const TextAnnotation = (props: TextAnnotationProps) => {
           activeProfilePoint={activeProfilePoint}
           activeDataPointValue={activeDataPointValue}
           setActiveDataPointValue={setActiveDataPointValue}
+          ref={(ref) => {
+            inputRefs.current[dataPoint.id] = ref;
+          }}
         />
       );
       lastEnd = dataPoint.match![1];
@@ -177,16 +180,6 @@ const TextAnnotation = (props: TextAnnotationProps) => {
             <span key={index}>{element}</span>
           ))}
         </CardContent>
-        <CardFooter>
-          <Select>
-            <SelectTrigger>
-              <SelectValue>Option 1</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="t">Option 1</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardFooter>
       </Card>
     </div>
   );
