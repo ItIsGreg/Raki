@@ -16,6 +16,7 @@ class Extract_Datapoint_Substrings_Template_List:
     }}
 
     For each datapoint, you are supposed to extract the substring from the text, containing the information for the datapoint.
+    Try to select the substring in a way that it is unique and contains the most relevant information for the datapoint.
     If the datapoint is not present in the text, you should leave out the datapoint in the response.
 
     %DATAPOINTS:
@@ -73,6 +74,44 @@ class Extract_Datapoint_Substrings_Template_List:
     JSON_OUTPUT:
 """
 
+        self.select_substring = """
+    You are an assistant to a researcher who is extracting datapoint substrings from a text.
+    You will be provided with a data point definition and a list of text excerpts from a text.
+    In the text excerpt a substring will be marked that supposedly contains the information for the datapoint.
+    The mark will be @@substring@@.
+    Your task is to select the text excerpt that really contains the information for the datapoint.
+
+    %DATAPOINT:
+    {datapoint}
+
+    %SUBSTRINGS:
+    {substrings}
+
+    The output should be the index of the selected substring in the list of substrings.
+    The index should be 0-based, meaning the first substring has the index 0, the second substring has the index 1, and so on.
+
+    %EXAMPLE_DATAPOINT:
+    {{
+        'name': 'IVSD',
+        'explanation': '',
+        'synonyms': ['Interventrikuläres Septum diastolisch']
+    }}
+
+    %EXAMPLE_SUBSTRINGS:
+    [
+    "nicht hypertrophierter (IVSD: 8.5 mm, LVPWD: 10.3 mm) linker Ventrikel",
+    "erhöhte Füllungsdrücke (E/E': 15.8 1). Linker Vorhof erweitert",
+    "it einem RVSP von 31.8mmHg Aortenklappe: zart,  max/mean Gradient:"
+    ]
+
+    %EXAMPLE_OUTPUT:
+    0
+
+    Do not add any additional information to the output, like an explanation of the datapoints or the text.
+
+    Index:
+"""
+
 
 class Extract_Datapoint_Substrings_Prompt_List:
     def __init__(self):
@@ -80,4 +119,8 @@ class Extract_Datapoint_Substrings_Prompt_List:
         self.extract_datapoint_substrings = PromptTemplate(
             input_variables=["datapoints", "text"],
             template=template_list.extract_datapoint_substrings,
+        )
+        self.select_substring = PromptTemplate(
+            input_variables=["datapoint", "substrings"],
+            template=template_list.select_substring,
         )

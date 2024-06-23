@@ -23,3 +23,11 @@ def get_matches(text: str, substring: str):
     re_matches = list(re.finditer(pattern, text, re.IGNORECASE))
     matches = [[match.start(), match.end()] for match in re_matches]
     return matches
+
+
+def create_select_substring_text_excerpt(match, text, window_size=50):
+    start = max(0, match[0] - window_size)
+    end = min(len(text), match[1] + window_size)
+    # mark the match with @@
+    text = text[: match[0]] + "@@" + text[match[0] : match[1]] + "@@" + text[match[1] :]
+    return text[start:end]

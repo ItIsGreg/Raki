@@ -1,15 +1,17 @@
 from typing import Callable
+from uu import Error
 
 from app.llm_calls import call_llm
 from app.models.models import (
     DataPointSubstring,
     DataPointSubstringMatch,
     ExtractDatapointSubstringsReq,
+    SelectSubstringReq,
 )
 from app.prompts.substrings import (
     Extract_Datapoint_Substrings_Prompt_List,
 )
-from app.utils.matching import get_matches
+from app.utils.matching import create_select_substring_text_excerpt, get_matches
 
 prompt_list = Extract_Datapoint_Substrings_Prompt_List()
 
@@ -62,13 +64,67 @@ async def extract_datapoint_substrings_and_match_service(
                 )
             )
             continue
-        for match in matches:
-            datapoint_w_match = DataPointSubstringMatch(
-                name=datapoint.name,
-                substring=datapoint.substring,
-                match=match,
+
+        # if there are multiple matches, make another llm call to select the correct one
+        if len(matches) > 1:
+            text_excerpts = []
+            for match in matches:
+                text_excerpts.append(
+                    create_select_substring_text_excerpt(match, req.text)
+                )
+            base_datapoint = next(
+                (dp for dp in req.datapoints if dp.name == datapoint.name), None
             )
-            datapoints_w_matches.append(datapoint_w_match)
+            index = await select_substring_service(
+                SelectSubstringReq(
+                    api_key=req.api_key,
+                    llm_provider=req.llm_provider,
+                    model=req.model,
+                    datapoint=base_datapoint,
+                    substrings=text_excerpts,
+                )
+            )
+            try:
+                datapoint_w_match = DataPointSubstringMatch(
+                    name=datapoint.name,
+                    substring=datapoint.substring,
+                    match=matches[int(index)],
+                )
+                datapoints_w_matches.append(datapoint_w_match)
+            except Error as e:
+                print(e)
+                datapoints_w_matches.append(
+                    DataPointSubstringMatch(
+                        name=datapoint.name,
+                        substring=datapoint.substring,
+                        match=None,
+                    )
+                )
+        else:
+            datapoints_w_matches.append(
+                DataPointSubstringMatch(
+                    name=datapoint.name,
+                    substring=datapoint.substring,
+                    match=matches[0],
+                )
+            )
 
     return datapoints_w_matches
-    #
+
+
+async def select_substring_service(
+    req: SelectSubstringReq,
+    call_llm_function: Callable = call_llm,
+) -> int:
+    result = await call_llm_function(
+        prompt_list.select_substring,
+        {
+            "datapoint": req.datapoint,
+            "substrings": req.substrings,
+        },
+        llm_provider=req.llm_provider,
+        model=req.model,
+        api_key=req.api_key,
+    )
+
+    return result

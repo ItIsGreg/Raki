@@ -55,3 +55,8 @@ class PipelineResDatapoint(BaseModel):
     name: str
     match: Tuple[int, int] | None
     value: str | int | float | None
+
+
+class SelectSubstringReq(BaseRequest):
+    datapoint: BaseDataPoint | None
+    substrings: list[str]
