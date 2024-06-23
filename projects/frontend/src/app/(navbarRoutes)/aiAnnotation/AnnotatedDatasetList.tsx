@@ -8,14 +8,18 @@ import { useLiveQuery } from "dexie-react-hooks";
 import {
   createAnnotatedDataset,
   createAnnotatedText,
+  createApiKey,
   createDataPoint,
   deleteAnnotatedDataset,
+  deleteApiKey,
   readAllAnnotatedDatasets,
   readAllAnnotatedTexts,
+  readAllApiKeys,
   readAllDatasets,
   readAllProfilePoints,
   readAllProfiles,
   readAllTexts,
+  readApiKey,
   readProfile,
   readProfilePointsByProfile,
 } from "@/lib/db/crud";
@@ -39,6 +43,7 @@ import { Input } from "@/components/ui/input";
 import { TiDeleteOutline } from "react-icons/ti";
 import { DataPoint, DataPointCreate, ProfilePoint, Text } from "@/lib/db/db";
 import { get_api_key } from "../../constants";
+import { get } from "http";
 
 const AnnotatedDatasetList = (
   props: LLMAnnotationAnnotatedDatasetListProps
@@ -62,6 +67,7 @@ const AnnotatedDatasetList = (
   const [isRunning, setIsRunning] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [annotationTexts, setAnnotationTexts] = useState<Text[]>([]);
+  const [newApiKey, setNewApiKey] = useState<string>("");
 
   const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
   const dbTexts = useLiveQuery(() => readAllTexts());
@@ -69,6 +75,7 @@ const AnnotatedDatasetList = (
   const profiles = useLiveQuery(() => readAllProfiles());
   const datasets = useLiveQuery(() => readAllDatasets());
   const profilePoints = useLiveQuery(() => readAllProfilePoints());
+  const apiKeys = useLiveQuery(() => readAllApiKeys());
 
   const getReqProfilePoints = useCallback(
     (activeProfilePoints: ProfilePoint[]) => {
@@ -128,6 +135,7 @@ const AnnotatedDatasetList = (
           match: undefined,
           annotatedTextId: annotatedTextId,
           profilePointId: profilePoint.id,
+          verified: undefined,
         });
       }
     });
@@ -137,11 +145,14 @@ const AnnotatedDatasetList = (
   // start annotating the text
   const annotateText = useCallback(
     async (text: Text) => {
+      if (!apiKeys || apiKeys.length === 0) {
+        throw new Error("No API key found");
+      }
       try {
         const body = {
           llm_provider: "openai",
           model: "gpt-4o",
-          api_key: get_api_key(),
+          api_key: apiKeys && apiKeys.length > 0 ? apiKeys[0].key : "",
           text: text.text,
           datapoints: getReqProfilePoints(activeProfilePoints),
         };
@@ -162,6 +173,7 @@ const AnnotatedDatasetList = (
         const annotatedTextID = await createAnnotatedText({
           annotatedDatasetId: activeAnnotatedDataset!.id,
           textId: text.id,
+          verified: undefined,
         });
         let dataPoints: DataPointCreate[] = data.map((dataPoint) => {
           return {
@@ -172,6 +184,7 @@ const AnnotatedDatasetList = (
             profilePointId: activeProfilePoints.find(
               (profilePoint) => profilePoint.name === dataPoint.name
             )?.id,
+            verified: undefined,
           };
         });
         // add missing empty data points according to profile points
@@ -191,6 +204,7 @@ const AnnotatedDatasetList = (
             match: dataPoint.match,
             annotatedTextId: annotatedTextID,
             profilePointId: profilePoint?.id,
+            verified: undefined,
           });
         });
       } catch (error) {
@@ -242,11 +256,41 @@ const AnnotatedDatasetList = (
     }
   };
 
+  const getPlaceholder = () => {
+    if (apiKeys && apiKeys.length > 0 && apiKeys[0].key) {
+      const key = apiKeys[0].key;
+      return `${key.slice(0, 3)}...${key.slice(-3)}`;
+    }
+    return "Add Api Key";
+  };
+
   return (
     <div className="overflow-y-scroll">
       <Card>
         <CardHeader className="flex flex-row">
           <CardTitle>Annotated Datasets</CardTitle>
+          <div className="flex-grow"></div>
+          <div className="flex flex-row gap-2">
+            <Input
+              placeholder={getPlaceholder()}
+              onChange={(e) => {
+                setNewApiKey(e.target.value);
+              }}
+            />
+            <Button
+              onClick={() => {
+                // remove old api key
+                if (apiKeys && apiKeys.length > 0) {
+                  apiKeys.forEach((key) => {
+                    deleteApiKey(key.id);
+                  });
+                }
+                createApiKey(newApiKey);
+              }}
+            >
+              Set
+            </Button>
+          </div>
           <div className="flex-grow"></div>
           <Button
             onClick={() => {
@@ -415,6 +459,7 @@ const AnnotatedDatasetList = (
                       setActiveAnnotatedDataset(dataset);
                       handleStart();
                     }}
+                    disabled={!apiKeys || apiKeys.length === 0}
                   >
                     Start Annotation
                   </Button>

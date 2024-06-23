@@ -282,3 +282,26 @@ export const updateDataPoint = async (dataPoint: DataPoint) => {
 export const deleteDataPoint = async (id: string) => {
   return db.DataPoints.delete(id);
 };
+
+// crud operations for api key table
+
+export const createApiKey = async (key: string) => {
+  const id = v4();
+  return db.ApiKeys.add({ id, key });
+};
+
+export const readApiKey = async (id: string) => {
+  return db.ApiKeys.get(id);
+};
+
+export const readAllApiKeys = async () => {
+  return db.ApiKeys.toArray();
+};
+
+export const updateApiKey = async (id: string, key: string) => {
+  return db.ApiKeys.put({ id, key });
+};
+
+export const deleteApiKey = async (id: string) => {
+  return db.ApiKeys.delete(id);
+};

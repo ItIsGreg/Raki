@@ -35,11 +35,11 @@ export interface Dataset extends DatasetCreate {
 export interface AnnotatedTextCreate {
   textId: string;
   annotatedDatasetId: string;
+  verified: boolean | undefined;
 }
 
 export interface AnnotatedText extends AnnotatedTextCreate {
   id: string;
-  verified: boolean | undefined;
 }
 
 export interface AnnotatedDatasetCreate {
@@ -76,6 +76,11 @@ export interface DataPoint extends DataPointCreate {
   id: string;
 }
 
+export interface ApiKey {
+  id: string;
+  key: string;
+}
+
 export class MySubClassedDexie extends Dexie {
   // 'friends' is added by dexie when declaring the stores()
   // We just tell the typing system this is the case
@@ -86,6 +91,7 @@ export class MySubClassedDexie extends Dexie {
   AnnotatedDatasets!: Table<AnnotatedDataset>;
   Texts!: Table<Text>;
   DataPoints!: Table<DataPoint>;
+  ApiKeys!: Table<ApiKey>;
 
   constructor() {
     super("myDatabase");
@@ -98,6 +104,7 @@ export class MySubClassedDexie extends Dexie {
       AnnotatedDatasets: "++id, datasetId, profileId, name",
       Texts: "++id, datasetId, filename",
       DataPoints: "++id, annotatedTextId, name",
+      ApiKeys: "++id, key",
     });
   }
 }
