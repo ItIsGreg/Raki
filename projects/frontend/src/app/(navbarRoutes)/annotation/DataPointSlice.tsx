@@ -19,6 +19,7 @@ import {
 import { deleteDataPoint, updateDataPoint } from "@/lib/db/crud";
 import { DataPoint, ProfilePoint } from "@/lib/db/db";
 import { FaCheck } from "react-icons/fa6";
+import { TiDeleteOutline } from "react-icons/ti";
 
 const DataPointSlice = (props: DataPointSliceProps) => {
   const {
@@ -50,8 +51,25 @@ const DataPointSlice = (props: DataPointSliceProps) => {
         </TooltipTrigger>
         <TooltipContent side="bottom">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row gap-2">
               <CardTitle>{dataPoint.name}</CardTitle>
+              <div className="flex-grow"></div>
+              <TiDeleteOutline
+                className="hover:text-red-500 cursor-pointer"
+                size={24}
+                onClick={() => {
+                  if (!dataPoint.profilePointId) {
+                    deleteDataPoint(dataPoint.id);
+                  } else {
+                    // reset the data point
+                    updateDataPoint({
+                      ...dataPoint,
+                      match: undefined,
+                      value: undefined,
+                    });
+                  }
+                }}
+              />
             </CardHeader>
             <CardContent>
               {!dataPoint.profilePointId ? (
