@@ -13,6 +13,7 @@ import {
   readProfilePoint,
   readProfilePointsByProfile,
   readTextsByDataset,
+  updateDataPoint,
 } from "@/lib/db/crud";
 import { DataPoint } from "@/lib/db/db";
 import { useEffect, useRef, useState } from "react";
@@ -22,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import test from "node:test";
+import next from "next";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -40,7 +42,16 @@ const TextAnnotation = (props: TextAnnotationProps) => {
   const dataPoints = useLiveQuery(
     () => readDataPointsByAnnotatedText(activeAnnotatedText?.id),
     [activeAnnotatedText]
-  );
+  )?.sort((a, b) => {
+    if (a.match && b.match) {
+      return a.match[0] - b.match[0];
+    } else if (a.match) {
+      return -1;
+    } else if (b.match) {
+      return 1;
+    }
+    return 0;
+  });
 
   const activeProfile = useLiveQuery(
     () => readProfile(activeAnnotatedDataset?.profileId),
@@ -57,60 +68,70 @@ const TextAnnotation = (props: TextAnnotationProps) => {
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
 
-  const inputRefs = useRef<{
-    [key: string]: HTMLInputElement | HTMLSelectElement | null;
-  }>({});
-
-  const handleKeyDown = (event: KeyboardEvent) => {
-    switch (event.key) {
-      case "ArrowRight":
-        // reset the active data point value
-        setActiveDataPointValue("");
-        // find the next data point by index
-        if (!dataPoints?.length) return;
-        if (!activeDataPoint) {
-          setActiveDataPoint(dataPoints[0]);
-          return;
-        }
-        const nextDataPoint = dataPoints?.find(
-          (dataPoint) =>
-            dataPoint.match && dataPoint.match![0] > activeDataPoint?.match![0]
-        );
-        setActiveDataPoint(nextDataPoint ? nextDataPoint : undefined);
-
-        break;
-      case "ArrowLeft":
-        // reset the active data point value
-        setActiveDataPointValue("");
-        // find the previous data point by index
-        if (!dataPoints?.length) return;
-        if (!activeDataPoint) {
-          setActiveDataPoint(dataPoints[0]);
-          return;
-        }
-        const previousDataPoint = dataPoints
-          ?.slice()
-          .reverse()
-          .find(
-            (dataPoint) =>
-              dataPoint.match && dataPoint.match[0] < activeDataPoint?.match![0]
-          );
-        setActiveDataPoint(
-          previousDataPoint ? previousDataPoint : dataPoints[0]
-        );
-        break;
-      case "Enter":
-        // focus the input field of the active data point
-        if (activeDataPoint) {
-          inputRefs.current[activeDataPoint.id]?.focus();
-        }
-        break;
-      default:
-        break;
-    }
-  };
-
   useEffect(() => {
+    const arrowRight = () => {
+      // reset the active data point value
+      setActiveDataPointValue("");
+      // find the next data point by index
+      if (!dataPoints?.length) return;
+      if (!activeDataPoint) {
+        setActiveDataPoint(dataPoints[0]);
+        return;
+      }
+      const nextDataPoint = dataPoints?.find(
+        (dataPoint) =>
+          dataPoint.match && dataPoint.match![0] > activeDataPoint?.match![0]
+      );
+      setActiveDataPoint(nextDataPoint ? nextDataPoint : undefined);
+    };
+
+    const arrowLeft = () => {
+      // reset the active data point value
+      setActiveDataPointValue("");
+      // find the previous data point by index
+      if (!dataPoints?.length) return;
+      if (!activeDataPoint) {
+        setActiveDataPoint(dataPoints[0]);
+        return;
+      }
+      const previousDataPoint = dataPoints
+        ?.slice()
+        .reverse()
+        .find(
+          (dataPoint) =>
+            dataPoint.match && dataPoint.match[0] < activeDataPoint?.match![0]
+        );
+      setActiveDataPoint(previousDataPoint ? previousDataPoint : dataPoints[0]);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case "ArrowRight":
+          arrowRight();
+          break;
+        case "ArrowLeft":
+          arrowLeft();
+          break;
+        case "Enter":
+          if (activeDataPointValue === "") {
+            updateDataPoint({
+              ...activeDataPoint!,
+              verified: true,
+            });
+          } else {
+            updateDataPoint({
+              ...activeDataPoint!,
+              value: activeDataPointValue,
+              verified: true,
+            });
+          }
+          arrowRight();
+          break;
+        default:
+          break;
+      }
+    };
+
     // Add event listener for keydown
     window.addEventListener("keydown", handleKeyDown);
 
@@ -118,7 +139,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [activeDataPoint, dataPoints]);
+  }, [activeDataPoint, dataPoints, activeDataPointValue]);
 
   // create a representation of the text and the data points
   // where the data points are highlighted
@@ -148,9 +169,6 @@ const TextAnnotation = (props: TextAnnotationProps) => {
           activeProfilePoint={activeProfilePoint}
           activeDataPointValue={activeDataPointValue}
           setActiveDataPointValue={setActiveDataPointValue}
-          ref={(ref) => {
-            inputRefs.current[dataPoint.id] = ref;
-          }}
         />
       );
       lastEnd = dataPoint.match![1];

@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/tooltip";
 import { deleteDataPoint, updateDataPoint } from "@/lib/db/crud";
 import { DataPoint, ProfilePoint } from "@/lib/db/db";
-import { forwardRef, use, useEffect, useImperativeHandle, useRef } from "react";
 import { FaCheck } from "react-icons/fa6";
 
 interface DataPointSliceProps {
@@ -32,10 +31,7 @@ interface DataPointSliceProps {
   setActiveDataPointValue: (value: string) => void;
 }
 
-const DataPointSlice = forwardRef<
-  HTMLInputElement | HTMLButtonElement,
-  DataPointSliceProps
->((props, ref) => {
+const DataPointSlice = (props: DataPointSliceProps) => {
   const {
     dataPoint,
     dataPoints,
@@ -47,13 +43,6 @@ const DataPointSlice = forwardRef<
     activeDataPointValue,
     setActiveDataPointValue,
   } = props;
-
-  const localInputRef = useRef<HTMLInputElement>(null);
-  const localSelectRef = useRef<HTMLButtonElement>(null);
-
-  useImperativeHandle(ref, () => {
-    return localInputRef.current ?? localSelectRef.current;
-  });
 
   return (
     <TooltipProvider>
@@ -137,7 +126,7 @@ const DataPointSlice = forwardRef<
                       });
                     }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger autoFocus>
                       {dataPoint.value?.toString() ?? "Value"}
                     </SelectTrigger>
                     <SelectContent>
@@ -167,12 +156,7 @@ const DataPointSlice = forwardRef<
                     value={activeDataPointValue}
                     onChange={(e) => setActiveDataPointValue(e.target.value)}
                     placeholder={dataPoint.value?.toString() ?? "Value"}
-                    ref={localInputRef}
-                    type={
-                      activeProfilePoint?.datatype === "number"
-                        ? "number"
-                        : "text"
-                    }
+                    autoFocus
                   />
                   <div className="flex flex-row gap-1">
                     <Button
@@ -209,8 +193,6 @@ const DataPointSlice = forwardRef<
       </Tooltip>
     </TooltipProvider>
   );
-});
-
-DataPointSlice.displayName = "DataPointSlice";
+};
 
 export default DataPointSlice;
