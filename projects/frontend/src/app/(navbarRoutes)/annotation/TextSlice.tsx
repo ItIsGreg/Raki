@@ -2,11 +2,11 @@ import { createDataPoint } from "@/lib/db/crud";
 import { TextSliceProps } from "../../types";
 
 const TextSlice = (props: TextSliceProps) => {
-  const { text, startIndex, annotatedTextId } = props;
+  const { text, startIndex, annotatedTextId, setActiveDataPointId } = props;
 
   return (
     <span
-      onMouseUp={() => {
+      onMouseUp={async () => {
         const selection = window.getSelection();
         if (selection) {
           const [start, end] = [
@@ -15,13 +15,15 @@ const TextSlice = (props: TextSliceProps) => {
           ].sort();
           console.log(start, end);
 
-          createDataPoint({
+          const id = await createDataPoint({
             name: selection.toString(),
             annotatedTextId: annotatedTextId!,
             match: [startIndex + start, startIndex + end],
             profilePointId: undefined,
             value: undefined,
+            verified: undefined,
           });
+          setActiveDataPointId(id);
         }
       }}
     >

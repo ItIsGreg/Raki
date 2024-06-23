@@ -86,8 +86,8 @@ export interface TextAnnotationProps {
   setActiveAnnotatedDataset: (
     annotatedDataset: AnnotatedDataset | undefined
   ) => void;
-  activeDataPoint: DataPoint | undefined;
-  setActiveDataPoint: (dataPoint: DataPoint | undefined) => void;
+  activeDataPointId: string | undefined;
+  setActiveDataPointId: (dataPointId: string | undefined) => void;
   activeAnnotatedText: AnnotatedText | undefined;
 }
 
@@ -96,8 +96,8 @@ export interface AnnotationDataPointListProps {
   setActiveAnnotatedDataset: (
     annotatedDataset: AnnotatedDataset | undefined
   ) => void;
-  activeDataPoint: DataPoint | undefined;
-  setActiveDataPoint: (dataPoint: DataPoint | undefined) => void;
+  activeDataPointId: string | undefined;
+  setActiveDataPointId: (dataPointId: string | undefined) => void;
   activeAnnotatedText: AnnotatedText | undefined;
   setActiveAnnotatedText: (annotatedText: AnnotatedText | undefined) => void;
 }
@@ -122,4 +122,17 @@ export interface TextSliceProps {
   text: string;
   startIndex: number;
   annotatedTextId: string | undefined;
+  setActiveDataPointId: (dataPointId: string | undefined) => void;
+}
+
+export interface DataPointSliceProps {
+  dataPoint: DataPoint;
+  dataPoints: DataPoint[];
+  text: string;
+  activeDataPointId: string | undefined;
+  setActiveDataPointId: (dataPointId: string | undefined) => void;
+  activeProfilePoints: ProfilePoint[] | undefined;
+  activeProfilePoint: ProfilePoint | undefined;
+  activeDataPointValue: string;
+  setActiveDataPointValue: (value: string) => void;
 }

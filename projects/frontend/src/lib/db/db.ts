@@ -69,11 +69,11 @@ export interface DataPointCreate {
   value: string | number | undefined;
   match: number[] | undefined;
   profilePointId: string | undefined;
+  verified: boolean | undefined;
 }
 
 export interface DataPoint extends DataPointCreate {
   id: string;
-  verified: boolean | undefined;
 }
 
 export class MySubClassedDexie extends Dexie {

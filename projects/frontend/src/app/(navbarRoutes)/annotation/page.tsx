@@ -19,24 +19,24 @@ const Annotation = () => {
   const [activeAnnotatedText, setActiveAnnotatedText] = useState<
     AnnotatedText | undefined
   >(undefined);
-  const [activeDataPoint, setActiveDataPoint] = useState<DataPoint | undefined>(
-    undefined
-  );
+  const [activeDataPointId, setActiveDataPointId] = useState<
+    string | undefined
+  >(undefined);
 
   return (
     <div className="grid grid-cols-7 gap-4 h-full">
       <TextAnnotation
         activeAnnotatedDataset={activeAnnotatedDataset}
-        activeDataPoint={activeDataPoint}
+        activeDataPointId={activeDataPointId}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-        setActiveDataPoint={setActiveDataPoint}
+        setActiveDataPointId={setActiveDataPointId}
         activeAnnotatedText={activeAnnotatedText}
       />
       <DataPointList
         activeAnnotatedDataset={activeAnnotatedDataset}
-        activeDataPoint={activeDataPoint}
+        activeDataPointId={activeDataPointId}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-        setActiveDataPoint={setActiveDataPoint}
+        setActiveDataPointId={setActiveDataPointId}
         activeAnnotatedText={activeAnnotatedText}
         setActiveAnnotatedText={setActiveAnnotatedText}
       />

@@ -1,3 +1,4 @@
+import { DataPointSliceProps } from "@/app/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,25 +20,13 @@ import { deleteDataPoint, updateDataPoint } from "@/lib/db/crud";
 import { DataPoint, ProfilePoint } from "@/lib/db/db";
 import { FaCheck } from "react-icons/fa6";
 
-interface DataPointSliceProps {
-  dataPoint: DataPoint;
-  dataPoints: DataPoint[];
-  text: string;
-  activeDataPoint: DataPoint | undefined;
-  setActiveDataPoint: (dataPoint: DataPoint | undefined) => void;
-  activeProfilePoints: ProfilePoint[] | undefined;
-  activeProfilePoint: ProfilePoint | undefined;
-  activeDataPointValue: string;
-  setActiveDataPointValue: (value: string) => void;
-}
-
 const DataPointSlice = (props: DataPointSliceProps) => {
   const {
     dataPoint,
     dataPoints,
     text,
-    activeDataPoint,
-    setActiveDataPoint,
+    activeDataPointId,
+    setActiveDataPointId,
     activeProfilePoints,
     activeProfilePoint,
     activeDataPointValue,
@@ -46,12 +35,12 @@ const DataPointSlice = (props: DataPointSliceProps) => {
 
   return (
     <TooltipProvider>
-      <Tooltip open={activeDataPoint === dataPoint}>
+      <Tooltip open={activeDataPointId === dataPoint.id}>
         <TooltipTrigger>
           <Badge
             onClick={() =>
-              setActiveDataPoint(
-                activeDataPoint === dataPoint ? undefined : dataPoint
+              setActiveDataPointId(
+                activeDataPointId === dataPoint.id ? undefined : dataPoint.id
               )
             }
             className={`mr-1 ${dataPoint.verified ? "bg-green-800" : ""}`}

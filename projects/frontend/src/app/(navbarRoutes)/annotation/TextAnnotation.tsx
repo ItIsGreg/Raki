@@ -8,6 +8,7 @@ import {
 import { TextAnnotationProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
+  readDataPoint,
   readDataPointsByAnnotatedText,
   readProfile,
   readProfilePoint,
@@ -29,8 +30,8 @@ const TextAnnotation = (props: TextAnnotationProps) => {
   const {
     activeAnnotatedDataset,
     setActiveAnnotatedDataset,
-    activeDataPoint,
-    setActiveDataPoint,
+    activeDataPointId,
+    setActiveDataPointId,
     activeAnnotatedText,
   } = props;
 
@@ -57,6 +58,10 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     () => readProfile(activeAnnotatedDataset?.profileId),
     [activeAnnotatedDataset]
   );
+  const activeDataPoint = useLiveQuery(
+    () => readDataPoint(activeDataPointId),
+    [activeDataPointId]
+  );
   const activeProfilePoints = useLiveQuery(
     () => readProfilePointsByProfile(activeProfile?.id),
     [activeProfile]
@@ -75,14 +80,14 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       // find the next data point by index
       if (!dataPoints?.length) return;
       if (!activeDataPoint) {
-        setActiveDataPoint(dataPoints[0]);
+        setActiveDataPointId(dataPoints[0].id);
         return;
       }
       const nextDataPoint = dataPoints?.find(
         (dataPoint) =>
           dataPoint.match && dataPoint.match![0] > activeDataPoint?.match![0]
       );
-      setActiveDataPoint(nextDataPoint ? nextDataPoint : undefined);
+      setActiveDataPointId(nextDataPoint ? nextDataPoint.id : undefined);
     };
 
     const arrowLeft = () => {
@@ -91,7 +96,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       // find the previous data point by index
       if (!dataPoints?.length) return;
       if (!activeDataPoint) {
-        setActiveDataPoint(dataPoints[0]);
+        setActiveDataPointId(dataPoints[0].id);
         return;
       }
       const previousDataPoint = dataPoints
@@ -101,7 +106,9 @@ const TextAnnotation = (props: TextAnnotationProps) => {
           (dataPoint) =>
             dataPoint.match && dataPoint.match[0] < activeDataPoint?.match![0]
         );
-      setActiveDataPoint(previousDataPoint ? previousDataPoint : dataPoints[0]);
+      setActiveDataPointId(
+        previousDataPoint ? previousDataPoint.id : dataPoints[0].id
+      );
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -156,6 +163,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
           startIndex={lastEnd}
           text={text.slice(lastEnd, dataPoint.match![0])}
           annotatedTextId={activeAnnotatedText?.id}
+          setActiveDataPointId={setActiveDataPointId}
         />
       );
       highlightedText.push(
@@ -163,8 +171,8 @@ const TextAnnotation = (props: TextAnnotationProps) => {
           dataPoint={dataPoint}
           dataPoints={dataPoints}
           text={text}
-          activeDataPoint={activeDataPoint}
-          setActiveDataPoint={setActiveDataPoint}
+          activeDataPointId={activeDataPointId}
+          setActiveDataPointId={setActiveDataPointId}
           activeProfilePoints={activeProfilePoints}
           activeProfilePoint={activeProfilePoint}
           activeDataPointValue={activeDataPointValue}
@@ -178,6 +186,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
         startIndex={lastEnd}
         text={text.slice(lastEnd)}
         annotatedTextId={activeAnnotatedText?.id}
+        setActiveDataPointId={setActiveDataPointId}
       />
     );
     return highlightedText;

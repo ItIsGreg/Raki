@@ -7,13 +7,14 @@ import {
   updateDataPoint,
 } from "@/lib/db/crud";
 import { TiDeleteOutline } from "react-icons/ti";
+import { Button } from "@/components/ui/button";
 
 const DataPointList = (props: AnnotationDataPointListProps) => {
   const {
     activeAnnotatedDataset,
-    activeDataPoint,
+    activeDataPointId,
     setActiveAnnotatedDataset,
-    setActiveDataPoint,
+    setActiveDataPointId,
     activeAnnotatedText,
   } = props;
 
@@ -42,14 +43,16 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
               <Card
                 key={dataPoint.id}
                 onClick={() =>
-                  setActiveDataPoint(
-                    activeDataPoint === dataPoint ? undefined : dataPoint
+                  setActiveDataPointId(
+                    activeDataPointId === dataPoint.id
+                      ? undefined
+                      : dataPoint.id
                   )
                 }
                 className={`cursor-pointer ${
-                  activeDataPoint?.id === dataPoint.id && !dataPoint.verified
+                  activeDataPointId === dataPoint.id && !dataPoint.verified
                     ? "bg-gray-100"
-                    : activeDataPoint?.id === dataPoint.id && dataPoint.verified
+                    : activeDataPointId === dataPoint.id && dataPoint.verified
                     ? "bg-green-100"
                     : !dataPoint.profilePointId
                     ? "bg-red-100"
