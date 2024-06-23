@@ -123,6 +123,7 @@ export interface TextSliceProps {
   startIndex: number;
   annotatedTextId: string | undefined;
   setActiveDataPointId: (dataPointId: string | undefined) => void;
+  activeDataPointId: string | undefined;
 }
 
 export interface DataPointSliceProps {

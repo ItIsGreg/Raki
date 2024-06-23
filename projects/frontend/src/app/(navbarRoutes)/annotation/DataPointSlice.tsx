@@ -72,7 +72,6 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                         )?.name ?? "Unknown",
                       profilePointId: value,
                     });
-                    // delete the old placeholder point
                   }}
                 >
                   <SelectTrigger>Select a profile Point</SelectTrigger>

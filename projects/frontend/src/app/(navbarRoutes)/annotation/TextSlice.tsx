@@ -1,8 +1,20 @@
-import { createDataPoint } from "@/lib/db/crud";
+import { createDataPoint, readDataPoint, updateDataPoint } from "@/lib/db/crud";
 import { TextSliceProps } from "../../types";
+import { useLiveQuery } from "dexie-react-hooks";
 
 const TextSlice = (props: TextSliceProps) => {
-  const { text, startIndex, annotatedTextId, setActiveDataPointId } = props;
+  const {
+    text,
+    startIndex,
+    annotatedTextId,
+    setActiveDataPointId,
+    activeDataPointId,
+  } = props;
+
+  const activeDataPoint = useLiveQuery(
+    () => readDataPoint(activeDataPointId),
+    [activeDataPointId]
+  );
 
   return (
     <span
@@ -13,17 +25,23 @@ const TextSlice = (props: TextSliceProps) => {
             selection.anchorOffset,
             selection.focusOffset,
           ].sort();
-          console.log(start, end);
 
-          const id = await createDataPoint({
-            name: selection.toString(),
-            annotatedTextId: annotatedTextId!,
-            match: [startIndex + start, startIndex + end],
-            profilePointId: undefined,
-            value: undefined,
-            verified: undefined,
-          });
-          setActiveDataPointId(id);
+          if (activeDataPoint && !activeDataPoint.match) {
+            updateDataPoint({
+              ...activeDataPoint,
+              match: [startIndex + start, startIndex + end],
+            });
+          } else {
+            const id = await createDataPoint({
+              name: selection.toString(),
+              annotatedTextId: annotatedTextId!,
+              match: [startIndex + start, startIndex + end],
+              profilePointId: undefined,
+              value: undefined,
+              verified: undefined,
+            });
+            setActiveDataPointId(id);
+          }
         }
       }}
     >
