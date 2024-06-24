@@ -27,10 +27,6 @@ venv/
 *.tsbuildinfo
 node_modules/
 
-# Tailwind CSS
-tailwind.config.js
-tailwind.config.ts
-postcss.config.js
 
 # Next.js
 .next/
