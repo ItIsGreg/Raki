@@ -188,6 +188,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
         text={text.slice(lastEnd)}
         annotatedTextId={activeAnnotatedText?.id}
         setActiveDataPointId={setActiveDataPointId}
+        activeDataPointId={activeDataPointId}
       />
     );
     return highlightedText;
