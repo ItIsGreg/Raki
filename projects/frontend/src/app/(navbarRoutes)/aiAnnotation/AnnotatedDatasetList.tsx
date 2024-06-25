@@ -42,7 +42,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TiDeleteOutline } from "react-icons/ti";
 import { DataPoint, DataPointCreate, ProfilePoint, Text } from "@/lib/db/db";
-import { backendURL, get_api_key } from "../../constants";
+import { backendURL } from "../../constants";
 import { get } from "http";
 
 const AnnotatedDatasetList = (
