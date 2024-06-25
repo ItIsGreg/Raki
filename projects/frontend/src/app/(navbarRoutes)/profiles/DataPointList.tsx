@@ -26,7 +26,6 @@ const DataPointList = (props: DataPointListProps) => {
   );
 
   const handleDownloadDatapoints = () => {
-    console.log("Download");
     // remove ids from dataPoints
     if (!dataPoints) return;
     const data = JSON.stringify(

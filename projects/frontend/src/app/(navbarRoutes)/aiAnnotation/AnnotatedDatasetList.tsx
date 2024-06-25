@@ -42,7 +42,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TiDeleteOutline } from "react-icons/ti";
 import { DataPoint, DataPointCreate, ProfilePoint, Text } from "@/lib/db/db";
-import { get_api_key } from "../../constants";
+import { backendURL, get_api_key } from "../../constants";
 import { get } from "http";
 
 const AnnotatedDatasetList = (
@@ -156,16 +156,14 @@ const AnnotatedDatasetList = (
           text: text.text,
           datapoints: getReqProfilePoints(activeProfilePoints),
         };
-        const response = await fetch(
-          `http://localhost:8000/pipeline/pipeline/`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-          }
-        );
+        const response = await fetch(`${backendURL}/pipeline/pipeline/`, {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -236,12 +234,10 @@ const AnnotatedDatasetList = (
 
   const handleStart = () => {
     setIsRunning(true);
-    console.log("Start");
   };
 
   const handleStop = () => {
     setIsRunning(false);
-    console.log("Stop");
   };
 
   const identifyActiveProfilePoints = (profileId: string) => {

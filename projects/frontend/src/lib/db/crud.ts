@@ -248,7 +248,6 @@ export const deleteText = async (id: string) => {
 
 // The CRUD operations for the DataPoint table
 export const createDataPoint = async (dataPoint: DataPointCreate) => {
-  console.log(dataPoint);
   const id = v4();
   await db.DataPoints.add({ ...dataPoint, id });
   return id;
