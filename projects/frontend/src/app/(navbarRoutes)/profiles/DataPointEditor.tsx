@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { SelectGroup } from "@radix-ui/react-select";
 import { TiDeleteOutline } from "react-icons/ti";
 import { DataPointEditorProps } from "../../types";
@@ -102,7 +103,6 @@ export function DataPointEditor(props: DataPointEditorProps) {
 
   useEffect(() => {
     const popuplateDataPoint = () => {
-      console.log("Populating Data Point");
       if (activeDataPoint) {
         setName(activeDataPoint.name);
         setExplanation(activeDataPoint.explanation);
@@ -160,7 +160,12 @@ export function DataPointEditor(props: DataPointEditorProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Input
+                {/* <Input
+                  placeholder="Explanation"
+                  value={explanation}
+                  onChange={(e) => setExplanation(e.target.value)}
+                /> */}
+                <Textarea
                   placeholder="Explanation"
                   value={explanation}
                   onChange={(e) => setExplanation(e.target.value)}
@@ -176,7 +181,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2 flex-wrap">
-                <div className="flex flex-row gap-1">
+                <div className="flex flex-row gap-1 flex-wrap">
                   {synonyms.map((synonym, index) => (
                     <Badge key={index}>
                       {synonym}
