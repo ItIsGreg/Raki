@@ -43,6 +43,22 @@ export function DataPointEditor(props: DataPointEditorProps) {
   const [currentSynonym, setCurrentSynonym] = useState<string>("");
   const [currentValuesetItem, setCurrentValuesetItem] = useState<string>("");
 
+  const handleKeyPress = (
+    event: React.KeyboardEvent,
+    type: "synonym" | "valueset"
+  ) => {
+    if (event.key == "Enter") {
+      event.preventDefault();
+      if (type === "synonym" && currentSynonym.trim() !== "") {
+        setSynonyms([...synonyms, currentSynonym.trim()]);
+        setCurrentSynonym("");
+      } else if (type === "valueset" && currentValuesetItem.trim() !== "") {
+        setValueset([...valueset, currentValuesetItem.trim()]);
+        setCurrentValuesetItem("");
+      }
+    }
+  };
+
   const resetEditor = () => {
     setName("");
     setExplanation("");
@@ -160,11 +176,6 @@ export function DataPointEditor(props: DataPointEditorProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* <Input
-                  placeholder="Explanation"
-                  value={explanation}
-                  onChange={(e) => setExplanation(e.target.value)}
-                /> */}
                 <Textarea
                   placeholder="Explanation"
                   value={explanation}
@@ -197,6 +208,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                     placeholder="Synonym"
                     value={currentSynonym}
                     onChange={(e) => setCurrentSynonym(e.target.value)}
+                    onKeyDown={(e) => handleKeyPress(e, "synonym")}
                   />
                   <Button
                     onClick={() => {
@@ -260,6 +272,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                       placeholder="Valueset Item"
                       value={currentValuesetItem}
                       onChange={(e) => setCurrentValuesetItem(e.target.value)}
+                      onKeyDown={(e) => handleKeyPress(e, "valueset")}
                     />
                     <Button
                       onClick={() => {

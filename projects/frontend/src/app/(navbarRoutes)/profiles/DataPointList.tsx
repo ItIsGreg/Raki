@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MdDownload } from "react-icons/md";
+import { MdDownload, MdUpload } from "react-icons/md";
 import { DataPointListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import { readProfilePointsByProfile } from "@/lib/db/crud";
@@ -44,6 +44,8 @@ const DataPointList = (props: DataPointListProps) => {
     element.click();
   };
 
+  const handleUploadDatapoints = () => {};
+
   return (
     <div className="overflow-y-scroll">
       <Card>
@@ -52,6 +54,10 @@ const DataPointList = (props: DataPointListProps) => {
           <div className="flex-grow"></div>
           {activeProfile && (
             <div className="flex flex-row gap-3 justify-center items-center">
+              <MdUpload
+                size={26}
+                className="hover:text-blue-500 cursor-pointer"
+              />
               <MdDownload
                 size={26}
                 className="hover:text-blue-500 cursor-pointer"
