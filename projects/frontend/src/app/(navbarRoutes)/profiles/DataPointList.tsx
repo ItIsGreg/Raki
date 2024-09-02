@@ -10,8 +10,13 @@ import {
 import { MdDownload, MdUpload } from "react-icons/md";
 import { DataPointListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
-import { readProfilePointsByProfile } from "@/lib/db/crud";
+import {
+  createProfile,
+  createProfilePoint,
+  readProfilePointsByProfile,
+} from "@/lib/db/crud";
 import DataPointCard from "./DataPointCard";
+import { useRef } from "react";
 
 const DataPointList = (props: DataPointListProps) => {
   const {
@@ -20,6 +25,9 @@ const DataPointList = (props: DataPointListProps) => {
     setActiveDataPoint,
     setCreatingNewDataPoint,
   } = props;
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const dataPoints = useLiveQuery(
     () => readProfilePointsByProfile(activeProfile?.id),
     [activeProfile]
@@ -44,7 +52,32 @@ const DataPointList = (props: DataPointListProps) => {
     element.click();
   };
 
-  const handleUploadDatapoints = () => {};
+  const handleUploadDatapoints = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file && activeProfile) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const content = e.target?.result as string;
+          const uploadDataPoints = JSON.parse(content);
+
+          for (const dataPoint of uploadDataPoints) {
+            await createProfilePoint({
+              ...dataPoint,
+              profileId: activeDataPoint?.id,
+            });
+          }
+          alert("Data Points uploading successfull!");
+        } catch (error) {
+          console.error("Error uploading data points: ", error);
+          alert("Error uploading data points. Please check the file format");
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
 
   return (
     <div className="overflow-y-scroll">
@@ -57,6 +90,13 @@ const DataPointList = (props: DataPointListProps) => {
               <MdUpload
                 size={26}
                 className="hover:text-blue-500 cursor-pointer"
+              />
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept=".json"
+                onChange={handleUploadDatapoints}
               />
               <MdDownload
                 size={26}
