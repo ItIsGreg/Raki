@@ -9,9 +9,9 @@ class Extract_Values_Template_List:
         For each datapoint you will be provided with a text excerpt, that should contain the datapoint.
 
         Your task is to extract the value of the datapoint from the text and provide it in the specified format.
-        If the datapoint is not present in the text, you should provide a value of None.
-        If the datapoint is present in the text, but the value is not present, you should provide a value of None.
-        If the datapoint is present in the text, but the value is not in the specified valueset, you should provide a value of None.
+        If the datapoint is not present in the text, just leave it out in the output.
+        If the datapoint is present in the text, but the value is not present, just insert an empty string.
+        If the datapoint is present in the text, but the value is not in the specified valueset, just insert an empty string.
 
         %DATAPOINTS:
         {datapoints}
@@ -24,8 +24,9 @@ class Extract_Values_Template_List:
             ...
         }}
 
-        The output should be valid JSON. Do not add any additional information to the output, like an explanation of the datapoints or how you processed the datapoints.
-        Do not use trailing commas in the JSON output.
+        The output should be valid JSON and only valid JSON.
+        Do not add any additional information to the output, like an explanation of the datapoints or how you processed the datapoints.
+        Do not use trailing commas in the JSON output. Do not fall into endless loops of a certain text passage.
 
         %EXAMPLE_DATAPOINTS:
 

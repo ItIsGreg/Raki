@@ -74,7 +74,10 @@ async def call_self_hosted_model(
 
     # Configure OpenAI to use the self-hosted model
     llm_model = ChatOpenAI(
-        temperature=0.1, model=model, openai_api_base=api_base, openai_api_key=api_key
+        temperature=1,
+        model=model,
+        openai_api_key=api_key,
+        openai_base_url=api_base,
     )
 
     output_parser = StrOutputParser()

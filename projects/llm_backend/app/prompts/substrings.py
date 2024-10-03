@@ -18,6 +18,7 @@ class Extract_Datapoint_Substrings_Template_List:
     For each datapoint, you are supposed to extract the substring from the text, containing the information for the datapoint.
     Try to select the substring in a way that it is unique and contains the most relevant information for the datapoint.
     If the datapoint is not present in the text, you should leave out the datapoint in the response.
+    Do not provide any explanations or additional information in the response.
 
     %DATAPOINTS:
     {datapoints}
@@ -35,7 +36,7 @@ class Extract_Datapoint_Substrings_Template_List:
     }}
 
     The output should be valid JSON. Do not add any additional information to the output, like an explanation of the datapoints or the text.
-    Do not use trailing commas in the JSON output.
+    Do not use trailing commas in the JSON output. Do not fall into endless loops of a certain text passage.
 
     %EXAMPLE_TEXT:
     Dilatierter, nicht hypertrophierter (IVSD: 12.2 mm, LVPWD: 10.0 mm) linker Ventrikel mit einer mittlelgradig eingeschränkten systolischen Funktion (EF n. Simpson - 35 %).
@@ -107,7 +108,7 @@ class Extract_Datapoint_Substrings_Template_List:
     %EXAMPLE_OUTPUT:
     0
 
-    Do not add any additional information to the output, like an explanation of the datapoints or the text.
+    Do not add any additional information to the output, like an explanation of the datapoints or the text.  Do not fall into endless loops of a certain text passage.
 
     Index:
 """
