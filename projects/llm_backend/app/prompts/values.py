@@ -24,11 +24,35 @@ class Extract_Values_Template_List:
             ...
         }}
 
-        The output should be valid JSON. Do not add any additional information to the output, like an explanation of the datapoints or the text.
+        The output should be valid JSON. Do not add any additional information to the output, like an explanation of the datapoints or how you processed the datapoints.
         Do not use trailing commas in the JSON output.
 
-    JSON_OUTPUT:
-"""
+        %EXAMPLE_DATAPOINTS:
+
+        {{
+            "name": "IVSD",
+            "data_type": "number",
+            "valueset": [],
+            "unit": "mm",
+            "text": "nicht hypertrophierter (IVSD: 8.5 mm, LVPWD: 10.3 mm) linker Ventrikel"
+        }},
+        {{
+            "name": "LVPWD",
+            "data_type": "number",
+            "valueset": [],
+            "unit": "mm",
+            "text": "nicht hypertrophierter (IVSD: 8.5 mm, LVPWD: 10.3 mm) linker Ventrikel"
+        }}
+
+
+        %EXAMPLE_OUTPUT:
+        {{
+            "IVSD": "8.5",
+            "LVPWD": "10.3"
+        }}
+
+        JSON_OUTPUT:
+        """
 
 
 class Extract_Values_Prompt_List:

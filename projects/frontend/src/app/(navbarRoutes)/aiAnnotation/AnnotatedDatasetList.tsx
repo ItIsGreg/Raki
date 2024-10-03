@@ -42,7 +42,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TiDeleteOutline } from "react-icons/ti";
 import { DataPoint, DataPointCreate, ProfilePoint, Text } from "@/lib/db/db";
-import { backendURL } from "../../constants";
+import { backendURL, llmModel, llmProvider } from "../../constants";
 import { get } from "http";
 
 const AnnotatedDatasetList = (
@@ -150,8 +150,8 @@ const AnnotatedDatasetList = (
       }
       try {
         const body = {
-          llm_provider: "openai",
-          model: "gpt-4o",
+          llm_provider: llmProvider,
+          model: llmModel,
           api_key: apiKeys && apiKeys.length > 0 ? apiKeys[0].key : "",
           text: text.text,
           datapoints: getReqProfilePoints(activeProfilePoints),
