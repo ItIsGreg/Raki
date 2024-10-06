@@ -1,5 +1,6 @@
 import json
 from typing import Any
+import re
 
 
 from langchain_core.prompts.base import BasePromptTemplate
@@ -76,8 +77,8 @@ async def call_self_hosted_model(
     llm_model = ChatOpenAI(
         temperature=1,
         model=model,
-        openai_api_key=api_key,
-        openai_base_url=api_base,
+        api_key=api_key,
+        base_url=api_base,
     )
 
     output_parser = StrOutputParser()
@@ -89,6 +90,7 @@ async def call_self_hosted_model(
 
         # Assuming handle_json_prefix is a function you've defined elsewhere
         result_structured = handle_json_prefix(result_structured)
+        result_structured = clean_llm_response(result_structured)
 
         result_structured_list = json.loads(result_structured)
         return result_structured_list
@@ -160,3 +162,19 @@ async def call_llm(
     else:
         logger.error("Unknown LLM provider")
         raise Exception("Unknown LLM provider")
+
+
+def clean_llm_response(text):
+    # find json in llm response that could contain prose
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if match:
+        json_str = match.group(0)
+        try:
+            # Parse the JSON string
+            json_obj = json.loads(json_str)
+            # Convert back to a formatted JSON string
+            return json.dumps(json_obj, indent=2)
+        except json.JSONDecodeError:
+            return "Error: Invalid JSON found in the text"
+    else:
+        return "Error: No JSON object found in the text"

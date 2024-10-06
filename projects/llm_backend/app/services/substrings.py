@@ -54,6 +54,7 @@ async def extract_datapoint_substrings_and_match_service(
 
     # Match substrings
     for datapoint in datapoints_wo_match:
+
         matches = get_matches(req.text, datapoint.substring)
         if not matches:
             datapoints_w_matches.append(
