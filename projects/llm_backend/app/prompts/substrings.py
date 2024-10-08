@@ -17,6 +17,7 @@ class Extract_Datapoint_Substrings_Template_List:
 
     For each datapoint, you are supposed to extract the substring from the text, containing the information for the datapoint.
     Try to select the substring in a way that it is unique and contains the most relevant information for the datapoint.
+    If the substring is representing a medication, only extract the name of the medication, not the dosage or frequency.
     If the datapoint is not present in the text, you should leave out the datapoint in the response.
     Do not provide any explanations or additional information in the response.
 
@@ -81,6 +82,7 @@ class Extract_Datapoint_Substrings_Template_List:
     In the text excerpt a substring will be marked that supposedly contains the information for the datapoint.
     The mark will be @@substring@@.
     Your task is to select the text excerpt that really contains the information for the datapoint.
+    If all substrings contain the information, you can select any of them.
 
     %DATAPOINT:
     {datapoint}
@@ -106,11 +108,13 @@ class Extract_Datapoint_Substrings_Template_List:
     ]
 
     %EXAMPLE_OUTPUT:
-    0
+    {{
+        "index": 0
+    }}
 
-    Do not add any additional information to the output, like an explanation of the datapoints or the text.  Do not fall into endless loops of a certain text passage.
+    Do not add any additional information to the output, like an explanation of the datapoints or the text.
 
-    Index:
+    JSON_OUTPUT:
 """
 
 

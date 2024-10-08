@@ -51,10 +51,12 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             extract_values_datapoints.append(
                 ExtractValuesReqDatapoint(
                     name=substring.name,
-                    text=text_excerpt,
-                    dataType=corresponding_profile_point.datatype,
+                    text_excerpt=text_excerpt,
+                    datatype=corresponding_profile_point.datatype,
                     valueset=corresponding_profile_point.valueset,
                     unit=corresponding_profile_point.unit,
+                    explanation=corresponding_profile_point.explanation,
+                    synonyms=corresponding_profile_point.synonyms,
                 )
             )
 

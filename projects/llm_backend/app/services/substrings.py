@@ -89,7 +89,7 @@ async def extract_datapoint_substrings_and_match_service(
                 datapoint_w_match = DataPointSubstringMatch(
                     name=datapoint.name,
                     substring=datapoint.substring,
-                    match=matches[int(index)],
+                    match=matches[int(index["index"])],
                 )
                 datapoints_w_matches.append(datapoint_w_match)
             except Error as e:
@@ -116,7 +116,7 @@ async def extract_datapoint_substrings_and_match_service(
 async def select_substring_service(
     req: SelectSubstringReq,
     call_llm_function: Callable = call_llm,
-) -> int:
+) -> dict:
     result = await call_llm_function(
         prompt_list.select_substring,
         {

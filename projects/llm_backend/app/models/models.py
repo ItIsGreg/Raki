@@ -34,12 +34,8 @@ class DataPointSubstringMatch(DataPointSubstring):
     match: Tuple[int, int] | None
 
 
-class ExtractValuesReqDatapoint(BaseModel):
-    name: str
-    dataType: str
-    valueset: list[str]
-    unit: str
-    text: str
+class ExtractValuesReqDatapoint(DataPoint):
+    text_excerpt: str
 
 
 class ExtractValuesReq(BaseRequest):

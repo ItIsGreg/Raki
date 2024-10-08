@@ -195,12 +195,12 @@ const TextAnnotation = (props: TextAnnotationProps) => {
   };
 
   return (
-    <div className="col-span-4">
+    <div className="col-span-4 overflow-y-auto">
       <Card>
         <CardHeader>
           <CardTitle>Annotation</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="whitespace-pre-wrap">
           {generateHighlightedText(
             texts?.find((text) => text.id === activeAnnotatedText?.textId)
               ?.text ?? "",

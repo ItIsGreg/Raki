@@ -34,6 +34,8 @@ class Extract_Values_Template_List:
             "name": "IVSD",
             "data_type": "number",
             "valueset": [],
+            "explanation": "Interventricular septum thickness at end-diastole",
+            "synonyms": ["Interventricular septum thickness at end-diastole"],
             "unit": "mm",
             "text": "nicht hypertrophierter (IVSD: 8.5 mm, LVPWD: 10.3 mm) linker Ventrikel"
         }},
@@ -41,6 +43,8 @@ class Extract_Values_Template_List:
             "name": "LVPWD",
             "data_type": "number",
             "valueset": [],
+            "explanation": "Left ventricular posterior wall thickness at end-diastole",
+            "synonyms": ["Left ventricular posterior wall thickness at end-diastole"],
             "unit": "mm",
             "text": "nicht hypertrophierter (IVSD: 8.5 mm, LVPWD: 10.3 mm) linker Ventrikel"
         }}
