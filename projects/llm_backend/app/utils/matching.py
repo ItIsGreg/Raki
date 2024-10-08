@@ -14,6 +14,8 @@ def create_pattern(substring: str):
     # escaped_substring = escaped_substring.replace("(", r"\(")
     # escaped_substring = escaped_substring.replace(")", r"\)")
     # escaped_substring = escaped_substring.replace("$", r"\$")
+    # escape pipes
+    escaped_substring = escaped_substring.replace("|", r"\|")
 
     # # Replace escaped newline characters with a pattern that allows optional whitespace
     # pattern = escaped_substring.replace(r"\n", r"\s*?\n")
