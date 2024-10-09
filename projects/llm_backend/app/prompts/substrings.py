@@ -16,7 +16,7 @@ class Extract_Datapoint_Substrings_Template_List:
     }}
 
     For each datapoint, you are supposed to extract the substring from the text, containing the information for the datapoint.
-    Try to select the substring in a way that it is unique and contains the most relevant information for the datapoint.
+    Try to extract a substring that contains the main point of the datapoint. The substring ideally should be 2 words long.
     If the substring is representing a medication, only extract the name of the medication, not the dosage or frequency.
     If the datapoint is not present in the text, you should leave out the datapoint in the response.
     Do not provide any explanations or additional information in the response.
