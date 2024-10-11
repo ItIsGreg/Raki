@@ -1,4 +1,3 @@
-from os import name
 from app.models.models import (
     BaseDataPoint,
     DataPoint,

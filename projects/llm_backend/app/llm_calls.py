@@ -1,4 +1,5 @@
 import json
+from math import log
 from typing import Any
 import re
 
@@ -112,6 +113,8 @@ async def call_llama3(
     logger.debug("Parameters:")
     logger.debug(f"Model: {model}")
     logger.debug(f"API key: {api_key}")
+    logger.debug(f"Prompt: {prompt}")
+    logger.debug(f"Prompt parameters: {prompt_parameters}")
 
     llm_model = AzureMLChatOnlineEndpoint(
         endpoint_url=llama3_url,

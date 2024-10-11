@@ -11,6 +11,7 @@ from app.models.models import (
 from app.prompts.substrings import (
     Extract_Datapoint_Substrings_Prompt_List,
 )
+from app.config.environment import prompt_language
 from app.utils.matching import create_select_substring_text_excerpt, get_matches
 
 prompt_list = Extract_Datapoint_Substrings_Prompt_List()
@@ -18,10 +19,17 @@ prompt_list = Extract_Datapoint_Substrings_Prompt_List()
 
 async def extract_datapoint_substrings_service(
     req: ExtractDatapointSubstringsReq,
+    lang: str = prompt_language,
     call_llm_function: Callable = call_llm,
 ) -> list[DataPointSubstring]:
+
+    lang_prompts = {
+        "de": prompt_list.extract_datapoint_substrings_german,
+        "en": prompt_list.extract_datapoint_substrings,
+    }
+
     result = await call_llm_function(
-        prompt_list.extract_datapoint_substrings,
+        lang_prompts[lang],
         {
             "datapoints": req.datapoints,
             "text": req.text,
@@ -44,10 +52,12 @@ async def extract_datapoint_substrings_service(
 
 async def extract_datapoint_substrings_and_match_service(
     req: ExtractDatapointSubstringsReq,
+    lang: str = prompt_language,
     call_llm_function: Callable = call_llm,
 ) -> list[DataPointSubstringMatch]:
     datapoints_wo_match = await extract_datapoint_substrings_service(
         req,
+        lang,
         call_llm_function,
     )
     datapoints_w_matches: list[DataPointSubstringMatch] = []
@@ -115,10 +125,16 @@ async def extract_datapoint_substrings_and_match_service(
 
 async def select_substring_service(
     req: SelectSubstringReq,
+    lang: str = prompt_language,
     call_llm_function: Callable = call_llm,
 ) -> dict:
+
+    lang_prompts = {
+        "de": prompt_list.select_substring_german,
+        "en": prompt_list.select_substring,
+    }
     result = await call_llm_function(
-        prompt_list.select_substring,
+        lang_prompts[lang],
         {
             "datapoint": req.datapoint,
             "substrings": req.substrings,
