@@ -1,5 +1,7 @@
 import re
 import logging
+from fuzzywuzzy import process, fuzz
+from rich import print
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -24,6 +26,24 @@ def create_pattern(substring: str):
     return pattern
 
 
+def fuzzy_matching(substring, main_string):
+    # Split the main string into words
+    words = main_string.split()
+
+    # Create a list of all possible substrings of the same length as the input substring
+    possible_matches = [
+        " ".join(words[i : i + len(substring.split())])
+        for i in range(len(words) - len(substring.split()) + 1)
+    ]
+
+    # Find the best match using fuzzywuzzy
+    best_match, score = process.extractOne(
+        substring, possible_matches, scorer=fuzz.ratio
+    )
+
+    return best_match, score
+
+
 def get_matches(text: str, substring: str):
     # filter out if substring is an empty string
     if substring == "":
@@ -32,6 +52,20 @@ def get_matches(text: str, substring: str):
     pattern = create_pattern(substring)
     re_matches = list(re.finditer(pattern, text, re.IGNORECASE))
     matches = [[match.start(), match.end()] for match in re_matches]
+
+    # add fuzzy matching if no matches are found
+    if len(matches) == 0:
+        print(f"No matches found for substring: {substring}")
+        print("Using fuzzy matching")
+        best_match, score = fuzzy_matching(substring, text)
+        print(f"Best match: {best_match}")
+        print(f"Score: {score}")
+        if score > 80:
+            matches.append(
+                [text.find(best_match), text.find(best_match) + len(best_match)]
+            )
+        else:
+            print("No good fuzzy match found")
 
     # add some logging
     # log if more than one match is found
