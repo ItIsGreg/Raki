@@ -33,6 +33,11 @@ const DataPointList = (props: DataPointListProps) => {
     [activeProfile]
   );
 
+  const handleUploadButtonClick = () => {
+    if (!fileInputRef.current) return;
+    fileInputRef.current?.click();
+  };
+
   const handleDownloadDatapoints = () => {
     // remove ids from dataPoints
     if (!dataPoints) return;
@@ -66,7 +71,7 @@ const DataPointList = (props: DataPointListProps) => {
           for (const dataPoint of uploadDataPoints) {
             await createProfilePoint({
               ...dataPoint,
-              profileId: activeDataPoint?.id,
+              profileId: activeProfile.id,
             });
           }
           alert("Data Points uploading successfull!");
@@ -90,6 +95,7 @@ const DataPointList = (props: DataPointListProps) => {
               <MdUpload
                 size={26}
                 className="hover:text-blue-500 cursor-pointer"
+                onClick={handleUploadButtonClick}
               />
               <input
                 type="file"
