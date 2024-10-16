@@ -2,34 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import { LLMAnnotationAnnotatedDatasetListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
-  createApiKey,
-  deleteAnnotatedDataset,
-  deleteApiKey,
   readAllAnnotatedDatasets,
   readAllAnnotatedTexts,
   readAllApiKeys,
-  readAllDatasets,
   readAllProfilePoints,
-  readAllProfiles,
   readAllTexts,
 } from "@/lib/db/crud";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { TiDeleteOutline, TiDownloadOutline } from "react-icons/ti";
 import { ProfilePoint, Text } from "@/lib/db/db";
-import {
-  annotateText,
-  downloadAnnotatedDataset,
-  handleUploadAnnotatedDataset,
-} from "./annotationUtils";
+import { annotateText, handleUploadAnnotatedDataset } from "./annotationUtils";
 import { AddDatasetForm } from "./AddDatasetForm";
+import { ApiKeyInput } from "./ApiKeyInput";
+import { AnnotatedDatasetCard } from "./AnnotatedDatasetCard";
 
 const AnnotatedDatasetList = (
   props: LLMAnnotationAnnotatedDatasetListProps
@@ -44,15 +29,12 @@ const AnnotatedDatasetList = (
   const [isRunning, setIsRunning] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [annotationTexts, setAnnotationTexts] = useState<Text[]>([]);
-  const [newApiKey, setNewApiKey] = useState<string>("");
 
-  const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
-  const dbTexts = useLiveQuery(() => readAllTexts());
   const dbAnnotatedDatasets = useLiveQuery(() => readAllAnnotatedDatasets());
-  const dbProfiles = useLiveQuery(() => readAllProfiles());
-  const dbDatasets = useLiveQuery(() => readAllDatasets());
-  const dbProfilePoints = useLiveQuery(() => readAllProfilePoints());
   const dbApiKeys = useLiveQuery(() => readAllApiKeys());
+  const dbTexts = useLiveQuery(() => readAllTexts());
+  const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
+  const dbProfilePoints = useLiveQuery(() => readAllProfilePoints());
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -132,14 +114,6 @@ const AnnotatedDatasetList = (
     }
   };
 
-  const getPlaceholder = () => {
-    if (dbApiKeys && dbApiKeys.length > 0 && dbApiKeys[0].key) {
-      const key = dbApiKeys[0].key;
-      return `${key.slice(0, 3)}...${key.slice(-3)}`;
-    }
-    return "Add Api Key";
-  };
-
   const handleUploadButtonClick = () => {
     if (!fileInputRef.current) return;
     fileInputRef.current?.click();
@@ -166,36 +140,9 @@ const AnnotatedDatasetList = (
         <CardHeader className="flex flex-row">
           <CardTitle>Annotated Datasets</CardTitle>
           <div className="flex-grow"></div>
-          <div className="flex flex-row gap-2">
-            <Input
-              placeholder={getPlaceholder()}
-              onChange={(e) => {
-                setNewApiKey(e.target.value);
-              }}
-            />
-            <Button
-              onClick={() => {
-                // remove old api key
-                if (dbApiKeys && dbApiKeys.length > 0) {
-                  dbApiKeys.forEach((key) => {
-                    deleteApiKey(key.id);
-                  });
-                }
-                createApiKey(newApiKey);
-              }}
-            >
-              Set
-            </Button>
-          </div>
+          <ApiKeyInput />
           <div className="flex-grow"></div>
-          <Button
-            onClick={() => {
-              setAddingDataset(true);
-            }}
-          >
-            New Dataset
-          </Button>
-
+          <Button onClick={() => setAddingDataset(true)}>New Dataset</Button>
           <input
             type="file"
             ref={fileInputRef}
@@ -211,106 +158,22 @@ const AnnotatedDatasetList = (
           )}
 
           {dbAnnotatedDatasets?.map((dataset) => (
-            <Card
+            <AnnotatedDatasetCard
               key={dataset.id}
-              className={`${
-                activeAnnotatedDataset == dataset &&
-                "bg-gray-100 shadow-lg border-black border-2"
-              } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
-              onClick={() => {
+              dataset={dataset}
+              isActive={activeAnnotatedDataset === dataset}
+              isRunning={isRunning}
+              onSelect={() => {
                 identifyActiveProfilePoints(dataset.profileId);
                 setActiveAnnotatedDataset(dataset);
               }}
-            >
-              <CardHeader className="flex flex-row gap-2">
-                <CardTitle>{dataset.name}</CardTitle>
-                <div className="flex-grow"></div>
-                <TiDownloadOutline
-                  className="hover:text-gray-500 cursor-pointer mr-2"
-                  size={24}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    downloadAnnotatedDataset(dataset);
-                  }}
-                />
-                <TiDeleteOutline
-                  className="hover:text-red-500 cursor-pointer"
-                  size={24}
-                  onClick={() => {
-                    deleteAnnotatedDataset(dataset.id);
-                  }}
-                />
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                <div className="flex flex-row gap-2">
-                  {dbProfiles && (
-                    <CardDescription>
-                      Profile:{" "}
-                      {
-                        dbProfiles.find(
-                          (profile) => profile.id === dataset.profileId
-                        )?.name
-                      }
-                    </CardDescription>
-                  )}
-                  <div className="flex-grow"></div>
-                  {dbDatasets && (
-                    <CardDescription>
-                      Dataset:{" "}
-                      {
-                        dbDatasets.find(
-                          (dbDataset) => dbDataset.id === dataset.datasetId
-                        )?.name
-                      }
-                    </CardDescription>
-                  )}
-                  <div className="flex-grow"></div>
-                </div>
-                <CardDescription>
-                  Description: {dataset.description}
-                </CardDescription>
-                {dbTexts && dbAnnotatedTexts && (
-                  <CardDescription>
-                    Annotated Texts:{" "}
-                    {
-                      dbAnnotatedTexts.filter((text) => {
-                        return text.annotatedDatasetId === dataset.id;
-                      }).length
-                    }{" "}
-                    /{" "}
-                    {
-                      dbTexts.filter((text) => {
-                        return text.datasetId === dataset.datasetId;
-                      }).length
-                    }
-                  </CardDescription>
-                )}
-                {!isRunning && (
-                  <Button
-                    onClick={() => {
-                      identifyActiveProfilePoints(dataset.profileId);
-                      setActiveAnnotatedDataset(dataset);
-                      handleStart();
-                    }}
-                    disabled={!dbApiKeys || dbApiKeys.length === 0}
-                  >
-                    Start Annotation
-                  </Button>
-                )}
-
-                {isRunning && (
-                  <Button
-                    onClick={() => {
-                      identifyActiveProfilePoints(dataset.profileId);
-                      setActiveAnnotatedDataset(dataset);
-                      handleStop();
-                    }}
-                  >
-                    Stop Annotation
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+              onStart={() => {
+                identifyActiveProfilePoints(dataset.profileId);
+                setActiveAnnotatedDataset(dataset);
+                handleStart();
+              }}
+              onStop={handleStop}
+            />
           ))}
         </CardContent>
       </Card>
