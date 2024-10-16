@@ -66,7 +66,9 @@ export const deleteProfilePoint = async (id: string) => {
 // The CRUD operations for the Profile table
 export const createProfile = async (profile: ProfileCreate) => {
   const id = v4();
-  return db.Profiles.add({ ...profile, id });
+  const newProfile = { ...profile, id };
+  await db.Profiles.add(newProfile);
+  return newProfile;
 };
 
 export const readProfile = async (id: string | undefined) => {
@@ -96,7 +98,9 @@ export const deleteProfile = async (id: string) => {
 // The CRUD operations for the Dataset table
 export const createDataset = async (dataset: DatasetCreate) => {
   const id = v4();
-  return db.Datasets.add({ ...dataset, id });
+  const newDataset = { ...dataset, id };
+  await db.Datasets.add(newDataset);
+  return newDataset;
 };
 
 export const readDataset = async (id: string) => {
@@ -130,8 +134,9 @@ export const createAnnotatedText = async (
   annotatedText: AnnotatedTextCreate
 ) => {
   const id = v4();
-  db.AnnotatedTexts.add({ ...annotatedText, id });
-  return id;
+  const newAnnotatedText = { ...annotatedText, id };
+  await db.AnnotatedTexts.add(newAnnotatedText);
+  return newAnnotatedText;
 };
 
 export const readAnnotatedText = async (id: string) => {
@@ -175,7 +180,9 @@ export const createAnnotatedDataset = async (
   annotatedDataset: AnnotatedDatasetCreate
 ) => {
   const id = v4();
-  return db.AnnotatedDatasets.add({ ...annotatedDataset, id });
+  const newAnnotatedDataset = { ...annotatedDataset, id };
+  await db.AnnotatedDatasets.add(newAnnotatedDataset);
+  return newAnnotatedDataset;
 };
 
 export const readAnnotatedDataset = async (id: string) => {
@@ -209,7 +216,9 @@ export const deleteAnnotatedDataset = async (id: string) => {
 // The CRUD operations for the Texts table
 export const createText = async (text: TextCreate) => {
   const id = v4();
-  return db.Texts.add({ ...text, id });
+  const newText = { ...text, id };
+  await db.Texts.add(newText);
+  return newText;
 };
 
 export const readText = async (id: string) => {
@@ -249,8 +258,9 @@ export const deleteText = async (id: string) => {
 // The CRUD operations for the DataPoint table
 export const createDataPoint = async (dataPoint: DataPointCreate) => {
   const id = v4();
-  await db.DataPoints.add({ ...dataPoint, id });
-  return id;
+  const newDataPoint = { ...dataPoint, id };
+  await db.DataPoints.add(newDataPoint);
+  return newDataPoint;
 };
 
 export const readDataPoint = async (id: string | undefined) => {

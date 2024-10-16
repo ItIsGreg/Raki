@@ -32,14 +32,15 @@ const TextSlice = (props: TextSliceProps) => {
               match: [startIndex + start, startIndex + end],
             });
           } else {
-            const id = await createDataPoint({
+            const newDataPoint = await createDataPoint({
               name: selection.toString(),
               annotatedTextId: annotatedTextId!,
               match: [startIndex + start, startIndex + end],
               profilePointId: undefined,
-              value: undefined,
+              value: "",
               verified: undefined,
             });
+            const id = newDataPoint.id;
             setActiveDataPointId(id);
           }
         }
