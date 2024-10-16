@@ -24,13 +24,16 @@ export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
   const id = v4();
   try {
     const profile = await db.Profiles.get(profilePoint.profileId);
-    if (profile) {
-      return db.profilePoints.add({ ...profilePoint, id });
-    } else {
+    if (!profile) {
       throw new Error("Profile not found");
     }
+    const newProfilePoint = { ...profilePoint, id };
+    await db.profilePoints.add(newProfilePoint);
+    return newProfilePoint;
   } catch (error) {
-    throw new Error("Profile not found");
+    throw new Error(
+      "Failed to create profile point: " + (error as Error).message
+    );
   }
 };
 

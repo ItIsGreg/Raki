@@ -420,18 +420,19 @@ const AnnotatedDatasetList = (
           dataPoint.annotatedTextId
         );
         if (newAnnotatedTextId) {
+          const profilePointId = newProfilePoints.find(
+            (pp) => pp.name === dataPoint.name
+          )?.id;
+
           await createDataPoint({
             ...dataPoint,
             id: undefined, // Let the create function generate the ID
             annotatedTextId: newAnnotatedTextId,
-            profilePointId: newProfilePoints.find(
-              (pp) => pp.name === dataPoint.name
-            )?.id,
+            profilePointId: profilePointId,
           });
         }
       }
 
-      console.log("Annotated dataset uploaded successfully");
       // You might want to refresh the list of annotated datasets here
     } catch (error) {
       console.error("Error uploading annotated dataset:", error);

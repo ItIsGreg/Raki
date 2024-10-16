@@ -42,18 +42,6 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
       <Card>
         <CardHeader className="flex flex-row justify-between">
           <CardTitle>Datapoints</CardTitle>
-          {/* <Button
-            onClick={() => {
-              if (dataPoints) {
-                console.log("Datapoints:", dataPoints);
-              } else {
-                console.log("No datapoints available");
-              }
-            }}
-            className="mt-2"
-          >
-            Log Datapoints
-          </Button> */}
         </CardHeader>
         <CardContent className="flex flex-col gap-1">
           {dataPoints?.map((dataPoint) => {
