@@ -5,6 +5,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { AnnotationDatasetListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -109,34 +115,43 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
         <CardContent>
           {annotatedDatasets?.map((annotatedDataset) => {
             return (
-              <Card
-                key={annotatedDataset.id}
-                onClick={() =>
-                  setActiveAnnotatedDataset(
-                    activeAnnotatedDataset === annotatedDataset
-                      ? undefined
-                      : annotatedDataset
-                  )
-                }
-                className={`cursor-pointer ${
-                  activeAnnotatedDataset?.id === annotatedDataset.id
-                    ? "bg-gray-100"
-                    : ""
-                }`}
-              >
-                <CardHeader className="flex flex-row gap-2">
-                  <CardTitle className="truncate">
-                    {annotatedDataset.name}
-                  </CardTitle>
-                  <div className="flex flex-grow"></div>
-                  <TiDownloadOutline
-                    size={24}
-                    className="cursor-pointer"
-                    onClick={() => downLoadAnnotatedDataset(annotatedDataset)}
-                  />
-                </CardHeader>
-                <CardFooter>{annotatedDataset.description}</CardFooter>
-              </Card>
+              <TooltipProvider key={annotatedDataset.id} delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Card
+                      onClick={() =>
+                        setActiveAnnotatedDataset(
+                          activeAnnotatedDataset === annotatedDataset
+                            ? undefined
+                            : annotatedDataset
+                        )
+                      }
+                      className={`cursor-pointer ${
+                        activeAnnotatedDataset?.id === annotatedDataset.id
+                          ? "bg-gray-100"
+                          : ""
+                      }`}
+                    >
+                      <CardHeader className="flex flex-row gap-2">
+                        <CardTitle className="truncate">
+                          {annotatedDataset.name}
+                        </CardTitle>
+                        <div className="flex flex-grow"></div>
+                        <TiDownloadOutline
+                          size={24}
+                          className="cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downLoadAnnotatedDataset(annotatedDataset);
+                          }}
+                        />
+                      </CardHeader>
+                      <CardFooter>{annotatedDataset.description}</CardFooter>
+                    </Card>
+                  </TooltipTrigger>
+                  <TooltipContent>{annotatedDataset.name}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             );
           })}
         </CardContent>
