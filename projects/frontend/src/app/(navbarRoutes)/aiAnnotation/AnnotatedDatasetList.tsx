@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   LLMAnnotationAnnotatedDatasetListProps,
   ReqProfilePoint,
-  ResDataPoint,
 } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -45,15 +44,12 @@ import { Input } from "@/components/ui/input";
 import { TiDeleteOutline, TiDownloadOutline } from "react-icons/ti";
 import {
   AnnotatedDataset,
-  DataPoint,
   DataPointCreate,
   db,
   ProfilePoint,
-  ProfilePointCreate,
   Text,
 } from "@/lib/db/db";
-import { backendURL, llmModel, llmProvider } from "../../constants";
-import { v4 as uuidv4 } from "uuid";
+import { annotateText } from "./annotationUtils";
 
 const AnnotatedDatasetList = (
   props: LLMAnnotationAnnotatedDatasetListProps
@@ -82,10 +78,10 @@ const AnnotatedDatasetList = (
   const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
   const dbTexts = useLiveQuery(() => readAllTexts());
   const dbAnnotatedDatasets = useLiveQuery(() => readAllAnnotatedDatasets());
-  const profiles = useLiveQuery(() => readAllProfiles());
-  const datasets = useLiveQuery(() => readAllDatasets());
-  const profilePoints = useLiveQuery(() => readAllProfilePoints());
-  const apiKeys = useLiveQuery(() => readAllApiKeys());
+  const dbProfiles = useLiveQuery(() => readAllProfiles());
+  const dbDatasets = useLiveQuery(() => readAllDatasets());
+  const dbProfilePoints = useLiveQuery(() => readAllProfilePoints());
+  const dbApiKeys = useLiveQuery(() => readAllApiKeys());
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -154,84 +150,18 @@ const AnnotatedDatasetList = (
     return dataPoints.concat(missingDataPoints);
   };
 
-  // start annotating the text
-  const annotateText = useCallback(
-    async (text: Text) => {
-      if (!apiKeys || apiKeys.length === 0) {
-        throw new Error("No API key found");
-      }
-      try {
-        const body = {
-          llm_provider: llmProvider,
-          model: llmModel,
-          api_key: apiKeys && apiKeys.length > 0 ? apiKeys[0].key : "",
-          text: text.text,
-          datapoints: getReqProfilePoints(activeProfilePoints),
-        };
-        const response = await fetch(`${backendURL}/pipeline/pipeline/`, {
-          method: "POST",
-          mode: "cors",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        });
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data: ResDataPoint[] = await response.json();
-        const annotatedText = await createAnnotatedText({
-          annotatedDatasetId: activeAnnotatedDataset!.id,
-          textId: text.id,
-          verified: undefined,
-        });
-        const annotatedTextID = annotatedText.id;
-        let dataPoints: DataPointCreate[] = data.map((dataPoint) => {
-          return {
-            name: dataPoint.name,
-            value: dataPoint.value,
-            match: dataPoint.match,
-            annotatedTextId: annotatedTextID,
-            profilePointId: activeProfilePoints.find(
-              (profilePoint) => profilePoint.name === dataPoint.name
-            )?.id,
-            verified: undefined,
-          };
-        });
-        // add missing empty data points according to profile points
-        dataPoints = complementMissingDatapoints(
-          dataPoints,
-          activeProfilePoints,
-          annotatedTextID
-        );
-
-        dataPoints.forEach((dataPoint) => {
-          const profilePoint = activeProfilePoints.find(
-            (profilePoint) => profilePoint.name === dataPoint.name
-          );
-          createDataPoint({
-            name: dataPoint.name,
-            value: dataPoint.value,
-            match: dataPoint.match,
-            annotatedTextId: annotatedTextID,
-            profilePointId: profilePoint?.id,
-            verified: undefined,
-          });
-        });
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    },
-    [getReqProfilePoints, activeProfilePoints]
-  );
-
   // annotation control useEffect
   useEffect(() => {
     let isCancelled = false;
 
     const runAnnotation = async () => {
       if (isRunning && currentIndex < annotationTexts.length) {
-        const annotation = await annotateText(annotationTexts[currentIndex]);
+        await annotateText(
+          annotationTexts[currentIndex],
+          activeAnnotatedDataset!,
+          activeProfilePoints,
+          dbApiKeys
+        );
         if (!isCancelled) {
           setCurrentIndex(currentIndex + 1);
         }
@@ -243,7 +173,14 @@ const AnnotatedDatasetList = (
     return () => {
       isCancelled = true;
     };
-  }, [isRunning, currentIndex, annotationTexts]);
+  }, [
+    isRunning,
+    currentIndex,
+    annotationTexts,
+    activeAnnotatedDataset,
+    activeProfilePoints,
+    dbApiKeys,
+  ]);
 
   const handleStart = () => {
     setIsRunning(true);
@@ -254,9 +191,9 @@ const AnnotatedDatasetList = (
   };
 
   const identifyActiveProfilePoints = (profileId: string) => {
-    if (profilePoints) {
+    if (dbProfilePoints) {
       const activeProfilePoints: ProfilePoint[] = [];
-      profilePoints.forEach((profilePoint) => {
+      dbProfilePoints.forEach((profilePoint) => {
         if (profilePoint.profileId === profileId) {
           activeProfilePoints.push(profilePoint);
         }
@@ -266,8 +203,8 @@ const AnnotatedDatasetList = (
   };
 
   const getPlaceholder = () => {
-    if (apiKeys && apiKeys.length > 0 && apiKeys[0].key) {
-      const key = apiKeys[0].key;
+    if (dbApiKeys && dbApiKeys.length > 0 && dbApiKeys[0].key) {
+      const key = dbApiKeys[0].key;
       return `${key.slice(0, 3)}...${key.slice(-3)}`;
     }
     return "Add Api Key";
@@ -455,8 +392,8 @@ const AnnotatedDatasetList = (
             <Button
               onClick={() => {
                 // remove old api key
-                if (apiKeys && apiKeys.length > 0) {
-                  apiKeys.forEach((key) => {
+                if (dbApiKeys && dbApiKeys.length > 0) {
+                  dbApiKeys.forEach((key) => {
                     deleteApiKey(key.id);
                   });
                 }
@@ -509,7 +446,7 @@ const AnnotatedDatasetList = (
                     <SelectValue placeholder="Select a dataset" />
                   </SelectTrigger>
                   <SelectContent>
-                    {datasets?.map((dataset) => (
+                    {dbDatasets?.map((dataset) => (
                       <SelectItem key={dataset.id} value={dataset.id}>
                         {dataset.name}
                       </SelectItem>
@@ -524,7 +461,7 @@ const AnnotatedDatasetList = (
                     <SelectValue placeholder="Select a profile" />
                   </SelectTrigger>
                   <SelectContent>
-                    {profiles?.map((profile) => (
+                    {dbProfiles?.map((profile) => (
                       <SelectItem key={profile.id} value={profile.id}>
                         {profile.name}
                       </SelectItem>
@@ -602,22 +539,22 @@ const AnnotatedDatasetList = (
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 <div className="flex flex-row gap-2">
-                  {profiles && (
+                  {dbProfiles && (
                     <CardDescription>
                       Profile:{" "}
                       {
-                        profiles.find(
+                        dbProfiles.find(
                           (profile) => profile.id === dataset.profileId
                         )?.name
                       }
                     </CardDescription>
                   )}
                   <div className="flex-grow"></div>
-                  {datasets && (
+                  {dbDatasets && (
                     <CardDescription>
                       Dataset:{" "}
                       {
-                        datasets.find(
+                        dbDatasets.find(
                           (dbDataset) => dbDataset.id === dataset.datasetId
                         )?.name
                       }
@@ -651,7 +588,7 @@ const AnnotatedDatasetList = (
                       setActiveAnnotatedDataset(dataset);
                       handleStart();
                     }}
-                    disabled={!apiKeys || apiKeys.length === 0}
+                    disabled={!dbApiKeys || dbApiKeys.length === 0}
                   >
                     Start Annotation
                   </Button>
