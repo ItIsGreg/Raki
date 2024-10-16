@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { LLMAnnotationAnnotatedDatasetListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
-  createAnnotatedDataset,
   createApiKey,
   deleteAnnotatedDataset,
   deleteApiKey,
@@ -18,17 +17,9 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TiDeleteOutline, TiDownloadOutline } from "react-icons/ti";
@@ -38,6 +29,7 @@ import {
   downloadAnnotatedDataset,
   handleUploadAnnotatedDataset,
 } from "./annotationUtils";
+import { AddDatasetForm } from "./AddDatasetForm";
 
 const AnnotatedDatasetList = (
   props: LLMAnnotationAnnotatedDatasetListProps
@@ -45,15 +37,6 @@ const AnnotatedDatasetList = (
   const { activeAnnotatedDataset, setActiveAnnotatedDataset } = props;
 
   const [addingDataset, setAddingDataset] = useState(false);
-  const [addDatasetName, setAddDatasetName] = useState<string>("");
-  const [addDatasetDescription, setAddDatasetDescription] =
-    useState<string>("");
-  const [addDatasetDatasetId, setAddDatasetDatasetId] = useState<
-    string | undefined
-  >(undefined);
-  const [addDatasetProfileId, setAddDatasetProfileId] = useState<
-    string | undefined
-  >(undefined);
   const [activeProfilePoints, setActiveProfilePoints] = useState<
     ProfilePoint[]
   >([]);
@@ -224,87 +207,7 @@ const AnnotatedDatasetList = (
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {addingDataset && (
-            <Card>
-              <CardHeader>
-                <CardDescription>New Dataset</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2">
-                <Input
-                  placeholder="Name"
-                  value={addDatasetName}
-                  onChange={(e) => setAddDatasetName(e.target.value)}
-                />
-                <Input
-                  placeholder="Description"
-                  value={addDatasetDescription}
-                  onChange={(e) => setAddDatasetDescription(e.target.value)}
-                />
-                <Select
-                  onValueChange={setAddDatasetDatasetId}
-                  value={addDatasetDatasetId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a dataset" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {dbDatasets?.map((dataset) => (
-                      <SelectItem key={dataset.id} value={dataset.id}>
-                        {dataset.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select
-                  onValueChange={setAddDatasetProfileId}
-                  value={addDatasetProfileId}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a profile" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {dbProfiles?.map((profile) => (
-                      <SelectItem key={profile.id} value={profile.id}>
-                        {profile.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </CardContent>
-              <CardFooter className="flex flex-row gap-2">
-                <Button
-                  onClick={() => {
-                    if (
-                      !addDatasetDatasetId ||
-                      !addDatasetProfileId ||
-                      !addDatasetName ||
-                      !addDatasetDescription
-                    ) {
-                      return;
-                    }
-                    createAnnotatedDataset({
-                      name: addDatasetName,
-                      description: addDatasetDescription,
-                      datasetId: addDatasetDatasetId,
-                      profileId: addDatasetProfileId,
-                    });
-                    setAddingDataset(false);
-                    setAddDatasetName("");
-                    setAddDatasetDescription("");
-                    setAddDatasetDatasetId(undefined);
-                    setAddDatasetProfileId(undefined);
-                  }}
-                  disabled={
-                    !addDatasetDatasetId ||
-                    !addDatasetProfileId ||
-                    !addDatasetName ||
-                    !addDatasetDescription
-                  }
-                >
-                  Save
-                </Button>
-                <Button onClick={() => setAddingDataset(false)}>Cancel</Button>
-              </CardFooter>
-            </Card>
+            <AddDatasetForm onClose={() => setAddingDataset(false)} />
           )}
 
           {dbAnnotatedDatasets?.map((dataset) => (
