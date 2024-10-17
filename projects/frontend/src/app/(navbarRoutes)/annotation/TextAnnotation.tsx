@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TextAnnotationProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -14,17 +8,12 @@ import {
   readProfilePoint,
   readProfilePointsByProfile,
   readTextsByDataset,
-  updateDataPoint,
 } from "@/lib/db/crud";
 import { DataPoint } from "@/lib/db/db";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import TextSlice from "./TextSlice";
 import DataPointSlice from "./DataPointSlice";
-import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import test from "node:test";
-import next from "next";
+import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -73,80 +62,13 @@ const TextAnnotation = (props: TextAnnotationProps) => {
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
 
-  useEffect(() => {
-    const arrowRight = () => {
-      // reset the active data point value
-      setActiveDataPointValue("");
-      // find the next data point by index
-      if (!dataPoints?.length) return;
-      if (!activeDataPoint) {
-        setActiveDataPointId(dataPoints[0].id);
-        return;
-      }
-      const nextDataPoint = dataPoints?.find(
-        (dataPoint) =>
-          dataPoint.match && dataPoint.match![0] > activeDataPoint?.match![0]
-      );
-      setActiveDataPointId(nextDataPoint ? nextDataPoint.id : undefined);
-    };
-
-    const arrowLeft = () => {
-      // reset the active data point value
-      setActiveDataPointValue("");
-      // find the previous data point by index
-      if (!dataPoints?.length) return;
-      if (!activeDataPoint) {
-        setActiveDataPointId(dataPoints[0].id);
-        return;
-      }
-      const previousDataPoint = dataPoints
-        ?.slice()
-        .reverse()
-        .find(
-          (dataPoint) =>
-            dataPoint.match && dataPoint.match[0] < activeDataPoint?.match![0]
-        );
-      setActiveDataPointId(
-        previousDataPoint ? previousDataPoint.id : dataPoints[0].id
-      );
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      switch (event.key) {
-        case "ArrowRight":
-          arrowRight();
-          break;
-        case "ArrowLeft":
-          arrowLeft();
-          break;
-        case "Enter":
-          if (activeDataPointValue === "") {
-            updateDataPoint({
-              ...activeDataPoint!,
-              verified: true,
-            });
-          } else {
-            updateDataPoint({
-              ...activeDataPoint!,
-              value: activeDataPointValue,
-              verified: true,
-            });
-          }
-          arrowRight();
-          break;
-        default:
-          break;
-      }
-    };
-
-    // Add event listener for keydown
-    window.addEventListener("keydown", handleKeyDown);
-
-    // Cleanup event listener on component unmount
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [activeDataPoint, dataPoints, activeDataPointValue]);
+  useKeyboardNavigation({
+    dataPoints,
+    activeDataPoint,
+    setActiveDataPointId,
+    activeDataPointValue,
+    setActiveDataPointValue,
+  });
 
   // create a representation of the text and the data points
   // where the data points are highlighted
