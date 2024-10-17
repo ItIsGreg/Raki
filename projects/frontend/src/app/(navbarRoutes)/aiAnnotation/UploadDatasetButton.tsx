@@ -1,6 +1,12 @@
 import { useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { handleUploadAnnotatedDataset } from "./annotationUtils";
+import { TiUpload } from "react-icons/ti";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const UploadDatasetButton = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,8 +32,20 @@ export const UploadDatasetButton = () => {
   };
 
   return (
-    <>
-      <Button onClick={handleUploadButtonClick}>Upload Dataset</Button>
+    <TooltipProvider>
+      <Tooltip delayDuration={100}>
+        <TooltipTrigger asChild>
+          <button
+            className="p-0 bg-transparent border-none cursor-pointer"
+            onClick={handleUploadButtonClick}
+          >
+            <TiUpload className="h-6 w-6 hover:text-gray-500" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Upload Dataset</p>
+        </TooltipContent>
+      </Tooltip>
       <input
         type="file"
         ref={fileInputRef}
@@ -35,6 +53,6 @@ export const UploadDatasetButton = () => {
         accept=".json"
         onChange={handleFileUpload}
       />
-    </>
+    </TooltipProvider>
   );
 };

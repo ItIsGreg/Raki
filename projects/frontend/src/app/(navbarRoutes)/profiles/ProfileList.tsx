@@ -7,6 +7,7 @@ import { ProfileListProps } from "../../types";
 import ProfileCard from "./ProfileCard";
 import EntityForm from "@/components/EntityForm";
 import { Profile } from "@/lib/db/db";
+import { AddButton } from "@/components/AddButton";
 
 const ProfileList = (props: ProfileListProps) => {
   const { activeProfile, setActiveProfile } = props;
@@ -35,7 +36,7 @@ const ProfileList = (props: ProfileListProps) => {
         <CardHeader className="flex flex-row">
           <CardTitle>Profiles</CardTitle>
           <div className="flex-grow"></div>
-          <Button onClick={() => setAddingProfile(true)}>Add</Button>
+          <AddButton onClick={() => setAddingProfile(true)} label="Profile" />
         </CardHeader>
         <CardContent>
           {addingProfile && (

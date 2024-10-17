@@ -1,7 +1,5 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { handleUploadAnnotatedDataset } from "./annotationUtils";
 import { AddDatasetForm } from "./AddDatasetForm";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { AnnotatedDatasetCard } from "./AnnotatedDatasetCard";
@@ -11,6 +9,7 @@ import EntityForm from "@/components/EntityForm";
 import { AnnotatedDataset } from "@/lib/db/db";
 import { updateAnnotatedDataset } from "@/lib/db/crud";
 import { UploadDatasetButton } from "./UploadDatasetButton";
+import { AddButton } from "@/components/AddButton";
 
 const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   const {
@@ -52,7 +51,8 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
           <div className="flex-grow"></div>
           <ApiKeyInput />
           <div className="flex-grow"></div>
-          <Button onClick={() => setAddingDataset(true)}>New Dataset</Button>
+          <AddButton onClick={() => setAddingDataset(true)} label="Dataset" />
+          <div className="w-2"></div> {/* Add a small gap */}
           <UploadDatasetButton />
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

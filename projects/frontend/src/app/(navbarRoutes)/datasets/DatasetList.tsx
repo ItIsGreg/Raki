@@ -1,17 +1,12 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  createDataset,
-  deleteDataset,
-  readAllDatasets,
-  updateDataset,
-} from "@/lib/db/crud";
+import { createDataset, readAllDatasets, updateDataset } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { DatasetListProps } from "../../types";
 import EntityForm from "@/components/EntityForm";
 import { Dataset } from "@/lib/db/db";
 import DatasetCard from "./DatasetCard";
+import { AddButton } from "@/components/AddButton";
 
 const DatasetList = (props: DatasetListProps) => {
   const { activeDataset, setActiveDataset } = props;
@@ -43,7 +38,7 @@ const DatasetList = (props: DatasetListProps) => {
         <CardHeader className="flex flex-row">
           <CardTitle>Datasets</CardTitle>
           <div className="flex-grow"></div>
-          <Button onClick={() => setAddingDataset(true)}>New Dataset</Button>
+          <AddButton onClick={() => setAddingDataset(true)} label="Dataset" />
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {addingDataset && (
