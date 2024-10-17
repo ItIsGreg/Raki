@@ -5,9 +5,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TiEdit, TiDeleteOutline } from "react-icons/ti";
+import { TiEdit } from "react-icons/ti";
 import { deleteDataset } from "@/lib/db/crud";
 import { Dataset } from "@/lib/db/db";
+import DeleteButton from "@/components/DeleteButton";
 
 interface DatasetCardProps {
   dataset: Dataset;
@@ -38,13 +39,9 @@ const DatasetCard = (props: DatasetCardProps) => {
             setEditingDataset(dataset);
           }}
         />
-        <TiDeleteOutline
-          className="hover:text-red-500 cursor-pointer"
-          size={24}
-          onClick={(e) => {
-            e.stopPropagation();
-            deleteDataset(dataset.id);
-          }}
+        <DeleteButton
+          onDelete={() => deleteDataset(dataset.id)}
+          itemName="dataset"
         />
       </CardHeader>
       <CardContent>

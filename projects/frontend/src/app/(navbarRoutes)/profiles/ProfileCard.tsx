@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/card";
 import { TiEdit } from "react-icons/ti";
 import { deleteProfile } from "@/lib/db/crud";
-import { TiDeleteOutline } from "react-icons/ti";
 import { ProfileCardProps } from "../../types";
+import DeleteButton from "@/components/DeleteButton";
 
 const ProfileCard = (props: ProfileCardProps) => {
   const { profile, activeProfile, setActiveProfile, setEditingProfile } = props;
@@ -32,13 +32,9 @@ const ProfileCard = (props: ProfileCardProps) => {
             setEditingProfile(profile);
           }}
         />
-        <TiDeleteOutline
-          className="hover:text-red-500 cursor-pointer"
-          size={24}
-          onClick={(e) => {
-            e.stopPropagation();
-            deleteProfile(profile.id);
-          }}
+        <DeleteButton
+          onDelete={() => deleteProfile(profile.id)}
+          itemName="profile"
         />
       </CardHeader>
       <CardContent>

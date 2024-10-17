@@ -10,9 +10,10 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.4.2",
+    "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-select": "^2.0.0",
-    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.0.7",
     "@types/uuid": "^9.0.8",
     "class-variance-authority": "^0.7.0",

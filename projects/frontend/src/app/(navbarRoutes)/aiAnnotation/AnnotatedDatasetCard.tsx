@@ -15,8 +15,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TiDeleteOutline, TiDownloadOutline, TiEdit } from "react-icons/ti";
+import { TiDownloadOutline, TiEdit } from "react-icons/ti";
 import { downloadAnnotatedDataset } from "./annotationUtils";
+import DeleteButton from "@/components/DeleteButton";
 
 interface AnnotatedDatasetCardProps {
   dataset: AnnotatedDataset;
@@ -68,13 +69,9 @@ export const AnnotatedDatasetCard = ({
             downloadAnnotatedDataset(dataset);
           }}
         />
-        <TiDeleteOutline
-          className="hover:text-red-500 cursor-pointer"
-          size={24}
-          onClick={(e) => {
-            e.stopPropagation();
-            deleteAnnotatedDataset(dataset.id);
-          }}
+        <DeleteButton
+          onDelete={() => deleteAnnotatedDataset(dataset.id)}
+          itemName="annotated dataset"
         />
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
