@@ -15,10 +15,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TiDownloadOutline } from "react-icons/ti";
-import { downloadAnnotatedDataset } from "./annotationUtils";
 import DeleteButton from "@/components/DeleteButton";
 import EditButton from "@/components/EditButton";
+import DownloadButton from "./DownloadButton";
 
 interface AnnotatedDatasetCardProps {
   dataset: AnnotatedDataset;
@@ -55,14 +54,7 @@ export const AnnotatedDatasetCard = ({
         <CardTitle>{dataset.name}</CardTitle>
         <div className="flex-grow"></div>
         <EditButton onClick={onEdit} />
-        <TiDownloadOutline
-          className="hover:text-gray-500 cursor-pointer mr-2"
-          size={24}
-          onClick={(e) => {
-            e.stopPropagation();
-            downloadAnnotatedDataset(dataset);
-          }}
-        />
+        <DownloadButton dataset={dataset} />
         <DeleteButton
           onDelete={() => deleteAnnotatedDataset(dataset.id)}
           itemName="annotated dataset"
