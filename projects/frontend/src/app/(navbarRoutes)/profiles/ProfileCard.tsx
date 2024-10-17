@@ -5,10 +5,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TiEdit } from "react-icons/ti";
 import { deleteProfile } from "@/lib/db/crud";
 import { ProfileCardProps } from "../../types";
 import DeleteButton from "@/components/DeleteButton";
+import EditButton from "@/components/EditButton";
 
 const ProfileCard = (props: ProfileCardProps) => {
   const { profile, activeProfile, setActiveProfile, setEditingProfile } = props;
@@ -24,9 +24,7 @@ const ProfileCard = (props: ProfileCardProps) => {
       <CardHeader className="flex flex-row gap-3">
         <CardTitle>{profile.name}</CardTitle>
         <div className="flex-grow"></div>
-        <TiEdit
-          className="hover:text-gray-500 cursor-pointer mr-2"
-          size={24}
+        <EditButton
           onClick={(e) => {
             e.stopPropagation();
             setEditingProfile(profile);
