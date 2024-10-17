@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { TiDeleteOutline, TiDownloadOutline } from "react-icons/ti";
+import { TiDeleteOutline, TiDownloadOutline, TiEdit } from "react-icons/ti";
 import { downloadAnnotatedDataset } from "./annotationUtils";
 
 interface AnnotatedDatasetCardProps {
@@ -25,6 +25,7 @@ interface AnnotatedDatasetCardProps {
   onSelect: () => void;
   onStart: () => void;
   onStop: () => void;
+  onEdit: () => void;
 }
 
 export const AnnotatedDatasetCard = ({
@@ -34,6 +35,7 @@ export const AnnotatedDatasetCard = ({
   onSelect,
   onStart,
   onStop,
+  onEdit,
 }: AnnotatedDatasetCardProps) => {
   const dbProfiles = useLiveQuery(() => readAllProfiles());
   const dbDatasets = useLiveQuery(() => readAllDatasets());
@@ -50,6 +52,14 @@ export const AnnotatedDatasetCard = ({
       <CardHeader className="flex flex-row gap-2">
         <CardTitle>{dataset.name}</CardTitle>
         <div className="flex-grow"></div>
+        <TiEdit
+          className="hover:text-gray-500 cursor-pointer mr-2"
+          size={24}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+        />
         <TiDownloadOutline
           className="hover:text-gray-500 cursor-pointer mr-2"
           size={24}
