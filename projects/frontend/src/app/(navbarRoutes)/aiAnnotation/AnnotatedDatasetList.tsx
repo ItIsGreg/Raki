@@ -10,6 +10,7 @@ import { AnnotatedDatasetListProps } from "@/app/types";
 import EntityForm from "@/components/EntityForm";
 import { AnnotatedDataset } from "@/lib/db/db";
 import { updateAnnotatedDataset } from "@/lib/db/crud";
+import { UploadDatasetButton } from "./UploadDatasetButton";
 
 const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   const {
@@ -34,28 +35,6 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
     setActiveProfilePoints,
   });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleUploadButtonClick = () => {
-    if (!fileInputRef.current) return;
-    fileInputRef.current?.click();
-  };
-
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      await handleUploadAnnotatedDataset(file);
-      // You might want to refresh the list of annotated datasets here
-    } catch (error) {
-      console.error("Error uploading annotated dataset:", error);
-      // You might want to show an error message to the user here
-    }
-  };
-
   const [editingDataset, setEditingDataset] = useState<
     AnnotatedDataset | undefined
   >(undefined);
@@ -74,14 +53,7 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
           <ApiKeyInput />
           <div className="flex-grow"></div>
           <Button onClick={() => setAddingDataset(true)}>New Dataset</Button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            className="hidden"
-            accept=".json"
-            onChange={handleFileUpload}
-          />
-          <Button onClick={handleUploadButtonClick}>Upload Dataset</Button>
+          <UploadDatasetButton />
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {addingDataset && (
