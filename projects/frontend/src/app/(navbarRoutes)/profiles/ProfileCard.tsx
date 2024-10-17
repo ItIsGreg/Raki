@@ -9,9 +9,21 @@ import { deleteProfile } from "@/lib/db/crud";
 import { ProfileCardProps } from "../../types";
 import DeleteButton from "@/components/DeleteButton";
 import EditButton from "@/components/EditButton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const ProfileCard = (props: ProfileCardProps) => {
   const { profile, activeProfile, setActiveProfile, setEditingProfile } = props;
+
+  // Function to truncate text
+  const truncateText = (text: string, maxLength: number) => {
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  };
+
   return (
     <Card
       key={profile.id}
@@ -22,7 +34,18 @@ const ProfileCard = (props: ProfileCardProps) => {
       onClick={() => setActiveProfile(profile)}
     >
       <CardHeader className="flex flex-row gap-3">
-        <CardTitle>{profile.name}</CardTitle>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <CardTitle className="truncate max-w-[200px]">
+                {truncateText(profile.name, 20)}
+              </CardTitle>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{profile.name}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <div className="flex-grow"></div>
         <EditButton
           onClick={(e) => {

@@ -30,12 +30,11 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({ onDelete, itemName }) => {
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
             <AlertDialogTrigger asChild>
-              <button className="p-0 bg-transparent border-none cursor-pointer">
-                <TiTrash
-                  className="hover:text-red-500"
-                  size={24}
-                  onClick={(e) => e.stopPropagation()}
-                />
+              <button
+                className="p-0 bg-transparent border-none cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <TiTrash className="hover:text-red-500" size={24} />
               </button>
             </AlertDialogTrigger>
           </TooltipTrigger>
