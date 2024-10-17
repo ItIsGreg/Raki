@@ -64,20 +64,11 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     ]
   );
 
-  const handleLogHighlightedText = () => {
-    console.log("Highlighted Text:", highlightedText);
-  };
-
   return (
     <div className="col-span-4 overflow-y-auto">
       <Card>
         <CardHeader>
           <CardTitle>Annotation</CardTitle>
-          <div className="p-4">
-            <Button onClick={handleLogHighlightedText}>
-              Log Highlighted Text
-            </Button>
-          </div>
         </CardHeader>
         <CardContent className="whitespace-pre-wrap">
           {highlightedText.map((element, index) => (
