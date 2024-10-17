@@ -1,118 +1,36 @@
-import { useEffect, useRef, useState } from "react";
-import { LLMAnnotationAnnotatedDatasetListProps } from "../../types";
-import { useLiveQuery } from "dexie-react-hooks";
-import {
-  readAllAnnotatedDatasets,
-  readAllAnnotatedTexts,
-  readAllApiKeys,
-  readAllProfilePoints,
-  readAllTexts,
-} from "@/lib/db/crud";
+import { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ProfilePoint, Text } from "@/lib/db/db";
-import { annotateText, handleUploadAnnotatedDataset } from "./annotationUtils";
+import { handleUploadAnnotatedDataset } from "./annotationUtils";
 import { AddDatasetForm } from "./AddDatasetForm";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { AnnotatedDatasetCard } from "./AnnotatedDatasetCard";
-
-const AnnotatedDatasetList = (
-  props: LLMAnnotationAnnotatedDatasetListProps
-) => {
-  const { activeAnnotatedDataset, setActiveAnnotatedDataset } = props;
-
-  const [addingDataset, setAddingDataset] = useState(false);
-  const [activeProfilePoints, setActiveProfilePoints] = useState<
-    ProfilePoint[]
-  >([]);
-
-  const [isRunning, setIsRunning] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [annotationTexts, setAnnotationTexts] = useState<Text[]>([]);
-
-  const dbAnnotatedDatasets = useLiveQuery(() => readAllAnnotatedDatasets());
-  const dbApiKeys = useLiveQuery(() => readAllApiKeys());
-  const dbTexts = useLiveQuery(() => readAllTexts());
-  const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
-  const dbProfilePoints = useLiveQuery(() => readAllProfilePoints());
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // create the array containing the text that should be annotated
-  useEffect(() => {
-    const annotationTexts: Text[] = [];
-    if (dbTexts && dbAnnotatedDatasets) {
-      dbTexts.forEach((text) => {
-        if (text.datasetId === activeAnnotatedDataset?.datasetId) {
-          annotationTexts.push(text);
-        }
-      });
-      if (dbAnnotatedTexts) {
-        setAnnotationTexts(
-          annotationTexts.filter((text) => {
-            return !dbAnnotatedTexts.find((annotatedText) => {
-              return (
-                annotatedText.textId === text.id &&
-                annotatedText.annotatedDatasetId === activeAnnotatedDataset?.id
-              );
-            });
-          })
-        );
-      }
-    }
-  }, [isRunning, activeAnnotatedDataset]);
-
-  // annotation control useEffect
-  useEffect(() => {
-    let isCancelled = false;
-
-    const runAnnotation = async () => {
-      if (isRunning && currentIndex < annotationTexts.length) {
-        await annotateText(
-          annotationTexts[currentIndex],
-          activeAnnotatedDataset!,
-          activeProfilePoints,
-          dbApiKeys
-        );
-        if (!isCancelled) {
-          setCurrentIndex(currentIndex + 1);
-        }
-      }
-    };
-
-    runAnnotation();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [
-    isRunning,
-    currentIndex,
-    annotationTexts,
+import { useAnnotationState } from "./hooks/useAnnotationState";
+import { AnnotatedDatasetListProps } from "@/app/types";
+const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
+  const {
     activeAnnotatedDataset,
     activeProfilePoints,
-    dbApiKeys,
-  ]);
+    setActiveAnnotatedDataset,
+    setActiveProfilePoints,
+  } = props;
 
-  const handleStart = () => {
-    setIsRunning(true);
-  };
+  const {
+    addingDataset,
+    setAddingDataset,
+    isRunning,
+    dbAnnotatedDatasets,
+    handleStart,
+    handleStop,
+    identifyActiveProfilePoints,
+  } = useAnnotationState({
+    activeAnnotatedDataset,
+    activeProfilePoints,
+    setActiveAnnotatedDataset,
+    setActiveProfilePoints,
+  });
 
-  const handleStop = () => {
-    setIsRunning(false);
-  };
-
-  const identifyActiveProfilePoints = (profileId: string) => {
-    if (dbProfilePoints) {
-      const activeProfilePoints: ProfilePoint[] = [];
-      dbProfilePoints.forEach((profilePoint) => {
-        if (profilePoint.profileId === profileId) {
-          activeProfilePoints.push(profilePoint);
-        }
-      });
-      setActiveProfilePoints(activeProfilePoints);
-    }
-  };
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUploadButtonClick = () => {
     if (!fileInputRef.current) return;
@@ -166,11 +84,13 @@ const AnnotatedDatasetList = (
               onSelect={() => {
                 identifyActiveProfilePoints(dataset.profileId);
                 setActiveAnnotatedDataset(dataset);
+                // The useEffect in useAnnotationState will handle updating annotationTexts
               }}
               onStart={() => {
                 identifyActiveProfilePoints(dataset.profileId);
                 setActiveAnnotatedDataset(dataset);
                 handleStart();
+                // The useEffect in useAnnotationState will handle updating annotationTexts
               }}
               onStop={handleStop}
             />

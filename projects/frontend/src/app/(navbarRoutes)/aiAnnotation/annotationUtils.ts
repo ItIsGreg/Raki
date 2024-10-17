@@ -1,5 +1,10 @@
 import { backendURL, llmModel, llmProvider } from "../../constants";
-import { ProfilePoint, Text, AnnotatedDataset } from "@/lib/db/db";
+import {
+  ProfilePoint,
+  Text,
+  AnnotatedDataset,
+  AnnotatedText,
+} from "@/lib/db/db";
 import { ReqProfilePoint, ResDataPoint } from "../../types";
 import {
   readProfilePointsByProfile,
@@ -10,8 +15,100 @@ import {
   createProfilePoint,
   createText,
   createDataPoint,
+  updateDataPoint,
+  updateAnnotatedText,
 } from "@/lib/db/crud";
 import { db } from "@/lib/db/db";
+
+const updateExistingAndCreateNewDataPoints = async (
+  data: ResDataPoint[],
+  annotatedTextId: string,
+  activeProfilePoints: ProfilePoint[],
+  aiFaulty: boolean
+) => {
+  let newDataPoints = aiFaulty
+    ? []
+    : data.map((dataPoint) => ({
+        name: dataPoint.name,
+        value: dataPoint.value,
+        match: dataPoint.match,
+        annotatedTextId: annotatedTextId,
+        profilePointId: activeProfilePoints.find(
+          (profilePoint) => profilePoint.name === dataPoint.name
+        )?.id,
+        verified: undefined,
+      }));
+
+  // find existing data points
+  const existingDataPoints = await db.DataPoints.where({
+    annotatedTextId: annotatedTextId,
+  }).toArray();
+
+  // update existing data points
+  await Promise.all(
+    existingDataPoints.map((dataPoint) => {
+      const newDataPoint = newDataPoints.find(
+        (newDataPoint) => newDataPoint.name === dataPoint.name
+      );
+      if (newDataPoint) {
+        return updateDataPoint({ ...newDataPoint, id: dataPoint.id });
+      }
+      return dataPoint;
+    })
+  );
+
+  // for all new data points, that are not in existingDataPoints, create them
+  const newDataPointsToCreate = newDataPoints.filter(
+    (newDataPoint) =>
+      !existingDataPoints.find(
+        (existingDataPoint) => existingDataPoint.name === newDataPoint.name
+      )
+  );
+  await Promise.all(
+    newDataPointsToCreate.map((dataPoint) => createDataPoint(dataPoint))
+  );
+};
+
+export const reannotateFaultyText = async (
+  annotatedFaultyText: AnnotatedText,
+  activeProfilePoints: ProfilePoint[],
+  dbApiKeys: { key: string }[] | undefined
+) => {
+  try {
+    if (!dbApiKeys || dbApiKeys.length === 0) {
+      throw new Error("No API key found");
+    }
+
+    const text = await db.Texts.get(annotatedFaultyText.textId);
+    if (!text) {
+      throw new Error("Text not found");
+    }
+
+    const { data, aiFaulty } = await callAnnotationAPI(
+      text,
+      activeProfilePoints,
+      dbApiKeys[0].key
+    );
+
+    await updateExistingAndCreateNewDataPoints(
+      data,
+      annotatedFaultyText.id,
+      activeProfilePoints,
+      aiFaulty
+    );
+
+    await updateAnnotatedText({ ...annotatedFaultyText, aiFaulty: aiFaulty });
+  } catch (error) {
+    console.error("Error in reannotateFaultyText:", error);
+    if (error instanceof Error) {
+      throw new Error(`Failed to reannotate faulty text: ${error.message}`);
+    } else {
+      throw new Error(
+        "An unknown error occurred while reannotating faulty text"
+      );
+    }
+  }
+};
 
 export const annotateText = async (
   text: Text,
@@ -22,11 +119,43 @@ export const annotateText = async (
   if (!dbApiKeys || dbApiKeys.length === 0) {
     throw new Error("No API key found");
   }
+
+  const { data, aiFaulty } = await callAnnotationAPI(
+    text,
+    activeProfilePoints,
+    dbApiKeys[0].key
+  );
+
+  try {
+    const annotatedText = await createAnnotatedText({
+      annotatedDatasetId: activeAnnotatedDataset.id,
+      textId: text.id,
+      verified: undefined,
+      aiFaulty: aiFaulty,
+    });
+
+    await createDataPointsForAnnotatedText(
+      data,
+      annotatedText.id,
+      activeProfilePoints,
+      aiFaulty
+    );
+  } catch (error) {
+    console.error("Error creating annotated text or data points:", error);
+    throw error;
+  }
+};
+
+async function callAnnotationAPI(
+  text: Text,
+  activeProfilePoints: ProfilePoint[],
+  apiKey: string
+) {
   try {
     const body = {
       llm_provider: llmProvider,
       model: llmModel,
-      api_key: dbApiKeys[0].key,
+      api_key: apiKey,
       text: text.text,
       datapoints: getReqProfilePoints(activeProfilePoints),
     };
@@ -39,37 +168,44 @@ export const annotateText = async (
       body: JSON.stringify(body),
     });
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      console.error("Network response was not ok. Status:", response.status);
+      return { data: [], aiFaulty: true };
     }
-    const data: ResDataPoint[] = await response.json();
-    const annotatedText = await createAnnotatedText({
-      annotatedDatasetId: activeAnnotatedDataset.id,
-      textId: text.id,
-      verified: undefined,
-    });
-    const annotatedTextID = annotatedText.id;
-    let dataPoints = data.map((dataPoint) => ({
-      name: dataPoint.name,
-      value: dataPoint.value,
-      match: dataPoint.match,
-      annotatedTextId: annotatedTextID,
-      profilePointId: activeProfilePoints.find(
-        (profilePoint) => profilePoint.name === dataPoint.name
-      )?.id,
-      verified: undefined,
-    }));
-
-    dataPoints = complementMissingDatapoints(
-      dataPoints,
-      activeProfilePoints,
-      annotatedTextID
-    );
-
-    await Promise.all(dataPoints.map(createDataPoint));
+    const data = await response.json();
+    return { data, aiFaulty: false };
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error in callAnnotationAPI:", error);
+    return { data: [], aiFaulty: true };
   }
-};
+}
+
+async function createDataPointsForAnnotatedText(
+  data: ResDataPoint[],
+  annotatedTextId: string,
+  activeProfilePoints: ProfilePoint[],
+  aiFaulty: boolean
+) {
+  let dataPoints = aiFaulty
+    ? []
+    : data.map((dataPoint) => ({
+        name: dataPoint.name,
+        value: dataPoint.value,
+        match: dataPoint.match,
+        annotatedTextId: annotatedTextId,
+        profilePointId: activeProfilePoints.find(
+          (profilePoint) => profilePoint.name === dataPoint.name
+        )?.id,
+        verified: undefined,
+      }));
+
+  dataPoints = complementMissingDatapoints(
+    dataPoints,
+    activeProfilePoints,
+    annotatedTextId
+  );
+
+  await Promise.all(dataPoints.map(createDataPoint));
+}
 
 const getReqProfilePoints = (
   activeProfilePoints: ProfilePoint[]

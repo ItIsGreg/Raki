@@ -36,6 +36,7 @@ export interface AnnotatedTextCreate {
   textId: string;
   annotatedDatasetId: string;
   verified: boolean | undefined;
+  aiFaulty: boolean | undefined; // New field
 }
 
 export interface AnnotatedText extends AnnotatedTextCreate {
@@ -95,12 +96,12 @@ export class MySubClassedDexie extends Dexie {
 
   constructor() {
     super("myDatabase");
-    this.version(1).stores({
+    this.version(2).stores({
       // friends: "++id, name, age", // Primary key and indexed props
       profilePoints: "++id, name, profileId",
       Profiles: "++id, name",
       Datasets: "++id, name",
-      AnnotatedTexts: "++id, textId, annotatedDatasetId",
+      AnnotatedTexts: "++id, textId, annotatedDatasetId, aiFaulty",
       AnnotatedDatasets: "++id, datasetId, profileId, name",
       Texts: "++id, datasetId, filename",
       DataPoints: "++id, annotatedTextId, name",

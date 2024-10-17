@@ -55,15 +55,18 @@ export interface DatasetListProps {
   setActiveDataset: (dataset: Dataset) => void;
 }
 
-export interface LLMAnnotationAnnotatedDatasetListProps {
-  activeAnnotatedDataset: AnnotatedDataset | undefined;
-  setActiveAnnotatedDataset: (
-    annotatedDataset: AnnotatedDataset | undefined
-  ) => void;
+export interface AnnotatedTextsListProps {
+  activeAnnotatedDataset: AnnotatedDataset | null;
+  activeProfilePoints: ProfilePoint[];
+  setActiveAnnotatedDataset: (dataset: AnnotatedDataset | null) => void;
+  setActiveProfilePoints: (points: ProfilePoint[]) => void;
 }
 
-export interface LLMAnnotationAnnotatedTextsListProps {
-  activeAnnotatedDataset: AnnotatedDataset | undefined;
+export interface AnnotatedDatasetListProps {
+  activeAnnotatedDataset: AnnotatedDataset | null;
+  activeProfilePoints: ProfilePoint[];
+  setActiveAnnotatedDataset: (dataset: AnnotatedDataset | null) => void;
+  setActiveProfilePoints: (points: ProfilePoint[]) => void;
 }
 
 export interface ReqProfilePoint {
@@ -103,9 +106,9 @@ export interface AnnotationDataPointListProps {
 }
 
 export interface AnnotationDatasetListProps {
-  activeAnnotatedDataset: AnnotatedDataset | undefined;
+  activeAnnotatedDataset: AnnotatedDataset | null;
   setActiveAnnotatedDataset: (
-    annotatedDataset: AnnotatedDataset | undefined
+    annotatedDataset: AnnotatedDataset | null
   ) => void;
 }
 
