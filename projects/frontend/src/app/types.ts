@@ -17,6 +17,7 @@ export interface ProfileCardProps {
   profile: Profile;
   activeProfile: Profile | undefined;
   setActiveProfile: (profile: Profile) => void;
+  setEditingProfile: (profile: Profile | undefined) => void;
 }
 
 export interface DataPointCardProps {

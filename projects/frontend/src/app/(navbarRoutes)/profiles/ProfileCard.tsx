@@ -5,13 +5,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { IoMdDownload } from "react-icons/io";
+import { TiEdit } from "react-icons/ti";
 import { deleteProfile } from "@/lib/db/crud";
 import { TiDeleteOutline } from "react-icons/ti";
 import { ProfileCardProps } from "../../types";
 
 const ProfileCard = (props: ProfileCardProps) => {
-  const { profile, activeProfile, setActiveProfile } = props;
+  const { profile, activeProfile, setActiveProfile, setEditingProfile } = props;
   return (
     <Card
       key={profile.id}
@@ -24,10 +24,19 @@ const ProfileCard = (props: ProfileCardProps) => {
       <CardHeader className="flex flex-row gap-3">
         <CardTitle>{profile.name}</CardTitle>
         <div className="flex-grow"></div>
+        <TiEdit
+          className="hover:text-gray-500 cursor-pointer mr-2"
+          size={24}
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingProfile(profile);
+          }}
+        />
         <TiDeleteOutline
           className="hover:text-red-500 cursor-pointer"
           size={24}
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             deleteProfile(profile.id);
           }}
         />

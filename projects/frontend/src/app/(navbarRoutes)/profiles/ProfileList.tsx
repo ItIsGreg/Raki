@@ -5,12 +5,16 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { ProfileListProps } from "../../types";
 import ProfileCard from "./ProfileCard";
-import AddProfileForm from "./AddProfileForm";
+import ProfileForm from "./ProfileForm";
+import { Profile } from "@/lib/db/db";
 
 const ProfileList = (props: ProfileListProps) => {
   const { activeProfile, setActiveProfile } = props;
 
   const [addingProfile, setAddingProfile] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<Profile | undefined>(
+    undefined
+  );
   const dbProfiles = useLiveQuery(() => readAllProfiles());
 
   const handleCancelAddProfile = () => {
@@ -32,17 +36,25 @@ const ProfileList = (props: ProfileListProps) => {
           </Button>
         </CardHeader>
         <CardContent>
-          {addingProfile && (
-            <AddProfileForm onCancel={handleCancelAddProfile} />
-          )}
+          {addingProfile && <ProfileForm onCancel={handleCancelAddProfile} />}
           {dbProfiles &&
             dbProfiles.map((profile) => {
+              if (editingProfile && editingProfile.id === profile.id) {
+                return (
+                  <ProfileForm
+                    key={profile.id}
+                    onCancel={() => setEditingProfile(undefined)}
+                    existingProfile={editingProfile}
+                  />
+                );
+              }
               return (
                 <ProfileCard
                   key={profile.id}
                   profile={profile}
                   activeProfile={activeProfile}
                   setActiveProfile={setActiveProfile}
+                  setEditingProfile={setEditingProfile}
                 />
               );
             })}
