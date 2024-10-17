@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddDatasetForm } from "./AddDatasetForm";
 import { ApiKeyInput } from "./ApiKeyInput";
+import { BatchSizeInput } from "./BatchSizeInput";
 import { AnnotatedDatasetCard } from "./AnnotatedDatasetCard";
 import { useAnnotationState } from "./hooks/useAnnotationState";
 import { AnnotatedDatasetListProps } from "@/app/types";
@@ -18,6 +19,7 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
     setActiveAnnotatedDataset,
     setActiveProfilePoints,
   } = props;
+  const [batchSize, setBatchSize] = useState<number>(10);
 
   const {
     addingDataset,
@@ -32,6 +34,7 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
     activeProfilePoints,
     setActiveAnnotatedDataset,
     setActiveProfilePoints,
+    batchSize,
   });
 
   const [editingDataset, setEditingDataset] = useState<
@@ -46,10 +49,12 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   return (
     <div className="overflow-y-scroll">
       <Card>
-        <CardHeader className="flex flex-row">
+        <CardHeader className="flex flex-row items-center">
           <CardTitle>Annotated Datasets</CardTitle>
           <div className="flex-grow"></div>
           <ApiKeyInput />
+          <div className="w-4"></div> {/* Add a small gap */}
+          <BatchSizeInput batchSize={batchSize} setBatchSize={setBatchSize} />
           <div className="flex-grow"></div>
           <AddButton onClick={() => setAddingDataset(true)} label="Dataset" />
           <div className="w-2"></div> {/* Add a small gap */}

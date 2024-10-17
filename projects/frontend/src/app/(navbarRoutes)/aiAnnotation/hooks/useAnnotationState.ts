@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   readAllAnnotatedDatasets,
@@ -7,14 +7,15 @@ import {
   readAllAnnotatedTexts,
   readAllProfilePoints,
 } from "@/lib/db/crud";
-import { AnnotatedDataset, ProfilePoint } from "@/lib/db/db";
-import { annotateText } from "../annotationUtils";
+import { AnnotatedDataset, ProfilePoint, Text } from "@/lib/db/db";
+import { annotateTextBatch } from "../annotationUtils";
 
 interface UseAnnotationStateProps {
   activeAnnotatedDataset: AnnotatedDataset | null;
   setActiveAnnotatedDataset: (dataset: AnnotatedDataset | null) => void;
   activeProfilePoints: ProfilePoint[];
   setActiveProfilePoints: (points: ProfilePoint[]) => void;
+  batchSize: number;
 }
 
 export const useAnnotationState = ({
@@ -22,11 +23,14 @@ export const useAnnotationState = ({
   setActiveAnnotatedDataset,
   activeProfilePoints,
   setActiveProfilePoints,
+  batchSize,
 }: UseAnnotationStateProps) => {
   // state definitions
   const [addingDataset, setAddingDataset] = useState(false);
 
   const [isRunning, setIsRunning] = useState(false);
+  const [batchIndex, setBatchIndex] = useState(0);
+  const [textBatches, setTextBatches] = useState<Text[][]>([]);
 
   // db queries
   const dbAnnotatedDatasets = useLiveQuery(() => readAllAnnotatedDatasets());
@@ -35,71 +39,78 @@ export const useAnnotationState = ({
   const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
   const dbProfilePoints = useLiveQuery(() => readAllProfilePoints());
 
-  // effect to run annotation
-  useEffect(() => {
-    if (
-      !isRunning ||
-      !activeAnnotatedDataset ||
-      !dbTexts ||
-      !dbAnnotatedTexts
-    ) {
-      return;
+  const prepareTextBatches = useCallback(() => {
+    if (!activeAnnotatedDataset || !dbTexts || !dbAnnotatedTexts) return;
+
+    const annotatedTextIds = new Set(
+      dbAnnotatedTexts
+        .filter((at) => at.annotatedDatasetId === activeAnnotatedDataset.id)
+        .map((at) => at.textId)
+    );
+
+    const unannotatedTexts = dbTexts.filter(
+      (text) =>
+        text.datasetId === activeAnnotatedDataset.datasetId &&
+        !annotatedTextIds.has(text.id)
+    );
+
+    const batches: Text[][] = [];
+    for (let i = 0; i < unannotatedTexts.length; i += batchSize) {
+      batches.push(unannotatedTexts.slice(i, i + batchSize));
     }
 
-    let isCancelled = false;
+    console.log(batches);
 
-    const runAnnotation = async () => {
-      const textsToAnnotate = dbTexts.filter(
-        (text) => text.datasetId === activeAnnotatedDataset.datasetId
-      );
-      const annotatedTextIds = dbAnnotatedTexts
-        .filter((at) => at.annotatedDatasetId === activeAnnotatedDataset.id)
-        .map((at) => at.textId);
+    setTextBatches(batches);
+    setBatchIndex(0);
+  }, [activeAnnotatedDataset, dbTexts, batchSize, dbAnnotatedTexts]);
 
-      const unannotatedTexts = textsToAnnotate.filter(
-        (text) => !annotatedTextIds.includes(text.id)
-      );
+  useEffect(() => {
+    if (
+      isRunning &&
+      textBatches.length > 0 &&
+      batchIndex < textBatches.length
+    ) {
+      const runAnnotation = async () => {
+        if (!activeAnnotatedDataset || !dbApiKeys) return;
 
-      if (unannotatedTexts.length === 0) {
-        console.log("All texts annotated");
-        return;
-      }
+        await annotateTextBatch(
+          textBatches[batchIndex],
+          activeAnnotatedDataset,
+          activeProfilePoints,
+          dbApiKeys[0].key
+        );
 
-      const textToAnnotate = unannotatedTexts[0];
+        setBatchIndex((prevIndex) => prevIndex + 1);
+      };
 
-      await annotateText(
-        textToAnnotate,
-        { id: activeAnnotatedDataset.id },
-        activeProfilePoints,
-        dbApiKeys
-      );
-
-      if (!isCancelled) {
-        // Trigger the effect again to process the next text
-        runAnnotation();
-      }
-    };
-
-    runAnnotation();
-
-    return () => {
-      isCancelled = true;
-    };
+      runAnnotation();
+    } else if (
+      isRunning &&
+      (textBatches.length === 0 || batchIndex >= textBatches.length)
+    ) {
+      setIsRunning(false);
+      console.log("Annotation completed");
+    }
   }, [
     isRunning,
+    textBatches,
+    batchIndex,
     activeAnnotatedDataset,
-    dbTexts,
-    dbAnnotatedTexts,
     activeProfilePoints,
     dbApiKeys,
+    batchSize,
   ]);
 
   const handleStart = () => {
+    prepareTextBatches();
     setIsRunning(true);
   };
 
   const handleStop = () => {
     setIsRunning(false);
+    setTextBatches([]);
+    setBatchIndex(0);
   };
 
   const identifyActiveProfilePoints = (profileId: string) => {

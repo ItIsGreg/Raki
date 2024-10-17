@@ -28,13 +28,16 @@ export const ApiKeyInput = () => {
   };
 
   return (
-    <div className="flex flex-row gap-2">
-      <Input
-        placeholder={getPlaceholder()}
-        value={newApiKey}
-        onChange={(e) => setNewApiKey(e.target.value)}
-      />
-      <Button onClick={handleSetApiKey}>Set</Button>
+    <div className="flex flex-col items-start">
+      <h4 className="text-sm font-semibold mb-1">API Key</h4>
+      <div className="flex flex-row gap-2">
+        <Input
+          placeholder={getPlaceholder()}
+          value={newApiKey}
+          onChange={(e) => setNewApiKey(e.target.value)}
+        />
+        <Button onClick={handleSetApiKey}>Set</Button>
+      </div>
     </div>
   );
 };

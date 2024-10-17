@@ -397,3 +397,38 @@ export const handleUploadAnnotatedDataset = async (file: File) => {
     throw error;
   }
 };
+
+export const annotateTextBatch = async (
+  texts: Text[],
+  activeAnnotatedDataset: AnnotatedDataset,
+  activeProfilePoints: ProfilePoint[],
+  apiKey: string
+) => {
+  const annotationPromises = texts.map(async (text) => {
+    try {
+      const { data, aiFaulty } = await callAnnotationAPI(
+        text,
+        activeProfilePoints,
+        apiKey
+      );
+
+      const annotatedText = await createAnnotatedText({
+        annotatedDatasetId: activeAnnotatedDataset.id,
+        textId: text.id,
+        verified: undefined,
+        aiFaulty: aiFaulty,
+      });
+
+      await createDataPointsForAnnotatedText(
+        data,
+        annotatedText.id,
+        activeProfilePoints,
+        aiFaulty
+      );
+    } catch (error) {
+      console.error(`Error annotating text ${text.id}:`, error);
+    }
+  });
+
+  await Promise.all(annotationPromises);
+};
