@@ -1,15 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { TextAnnotationProps } from "../../types";
-import { useLiveQuery } from "dexie-react-hooks";
-import {
-  readDataPoint,
-  readDataPointsByAnnotatedText,
-  readProfile,
-  readProfilePoint,
-  readProfilePointsByProfile,
-  readTextsByDataset,
-} from "@/lib/db/crud";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useAnnotationData } from "./hooks/useAnnotationData";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 import { generateHighlightedText } from "./utils/textAnnotationUtils";
 
@@ -22,43 +15,19 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     activeAnnotatedText,
   } = props;
 
-  const texts = useLiveQuery(
-    () => readTextsByDataset(activeAnnotatedDataset?.datasetId),
-    [activeAnnotatedDataset]
-  );
-
-  const dataPoints = useLiveQuery(
-    () => readDataPointsByAnnotatedText(activeAnnotatedText?.id),
-    [activeAnnotatedText]
-  )?.sort((a, b) => {
-    if (a.match && b.match) {
-      return a.match[0] - b.match[0];
-    } else if (a.match) {
-      return -1;
-    } else if (b.match) {
-      return 1;
-    }
-    return 0;
-  });
-
-  const activeProfile = useLiveQuery(
-    () => readProfile(activeAnnotatedDataset?.profileId),
-    [activeAnnotatedDataset]
-  );
-  const activeDataPoint = useLiveQuery(
-    () => readDataPoint(activeDataPointId),
-    [activeDataPointId]
-  );
-  const activeProfilePoints = useLiveQuery(
-    () => readProfilePointsByProfile(activeProfile?.id),
-    [activeProfile]
-  );
-  const activeProfilePoint = useLiveQuery(
-    () => readProfilePoint(activeDataPoint?.profilePointId),
-    [activeDataPoint]
-  );
-
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
+
+  const {
+    texts,
+    dataPoints,
+    activeDataPoint,
+    activeProfilePoints,
+    activeProfilePoint,
+  } = useAnnotationData({
+    activeAnnotatedDataset,
+    activeAnnotatedText,
+    activeDataPointId,
+  });
 
   useKeyboardNavigation({
     dataPoints,
@@ -68,26 +37,50 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     setActiveDataPointValue,
   });
 
+  const highlightedText = useMemo(
+    () =>
+      generateHighlightedText({
+        text:
+          texts?.find((text) => text.id === activeAnnotatedText?.textId)
+            ?.text ?? "",
+        dataPoints: dataPoints ?? [],
+        activeAnnotatedText,
+        setActiveDataPointId,
+        activeDataPointId,
+        activeProfilePoints,
+        activeProfilePoint,
+        activeDataPointValue,
+        setActiveDataPointValue,
+      }),
+    [
+      texts,
+      dataPoints,
+      activeAnnotatedText,
+      activeDataPointId,
+      activeProfilePoints,
+      activeProfilePoint,
+      activeDataPointValue,
+      setActiveDataPointId,
+    ]
+  );
+
+  const handleLogHighlightedText = () => {
+    console.log("Highlighted Text:", highlightedText);
+  };
+
   return (
     <div className="col-span-4 overflow-y-auto">
       <Card>
         <CardHeader>
           <CardTitle>Annotation</CardTitle>
+          <div className="p-4">
+            <Button onClick={handleLogHighlightedText}>
+              Log Highlighted Text
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="whitespace-pre-wrap">
-          {generateHighlightedText({
-            text:
-              texts?.find((text) => text.id === activeAnnotatedText?.textId)
-                ?.text ?? "",
-            dataPoints: dataPoints ?? [],
-            activeAnnotatedText,
-            setActiveDataPointId,
-            activeDataPointId,
-            activeProfilePoints,
-            activeProfilePoint,
-            activeDataPointValue,
-            setActiveDataPointValue,
-          }).map((element, index) => (
+          {highlightedText.map((element, index) => (
             <span key={index}>{element}</span>
           ))}
         </CardContent>

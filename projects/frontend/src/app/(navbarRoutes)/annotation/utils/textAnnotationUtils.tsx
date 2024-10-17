@@ -30,6 +30,7 @@ export const generateHighlightedText = ({
   const sortedDataPoints = matchedDataPoints.sort(
     (a, b) => a.match![0] - b.match![0]
   );
+
   let highlightedText = [];
   let lastEnd = 0;
   sortedDataPoints.forEach((dataPoint) => {
@@ -69,5 +70,6 @@ export const generateHighlightedText = ({
       activeDataPointId={activeDataPointId}
     />
   );
+
   return highlightedText;
 };

@@ -24,13 +24,14 @@ const TextSlice = (props: TextSliceProps) => {
           const [start, end] = [
             selection.anchorOffset,
             selection.focusOffset,
-          ].sort();
+          ].sort((a, b) => a - b); // Use a numeric comparison
 
           if (activeDataPoint && !activeDataPoint.match) {
-            updateDataPoint({
+            const updatedDataPoint = {
               ...activeDataPoint,
               match: [startIndex + start, startIndex + end],
-            });
+            };
+            updateDataPoint(updatedDataPoint);
           } else {
             const newDataPoint = await createDataPoint({
               name: selection.toString(),
