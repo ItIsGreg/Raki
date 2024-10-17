@@ -9,11 +9,9 @@ import {
   readProfilePointsByProfile,
   readTextsByDataset,
 } from "@/lib/db/crud";
-import { DataPoint } from "@/lib/db/db";
 import { useState } from "react";
-import TextSlice from "./TextSlice";
-import DataPointSlice from "./DataPointSlice";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
+import { generateHighlightedText } from "./utils/textAnnotationUtils";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -70,52 +68,6 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     setActiveDataPointValue,
   });
 
-  // create a representation of the text and the data points
-  // where the data points are highlighted
-  const generateHighlightedText = (text: string, dataPoints: DataPoint[]) => {
-    const matchedDataPoints = dataPoints.filter((dataPoint) => dataPoint.match);
-    const sortedDataPoints = matchedDataPoints.sort(
-      (a, b) => a.match![0] - b.match![0]
-    );
-    let highlightedText = [];
-    let lastEnd = 0;
-    sortedDataPoints.forEach((dataPoint) => {
-      highlightedText.push(
-        <TextSlice
-          startIndex={lastEnd}
-          text={text.slice(lastEnd, dataPoint.match![0])}
-          annotatedTextId={activeAnnotatedText?.id}
-          setActiveDataPointId={setActiveDataPointId}
-          activeDataPointId={activeDataPointId}
-        />
-      );
-      highlightedText.push(
-        <DataPointSlice
-          dataPoint={dataPoint}
-          dataPoints={dataPoints}
-          text={text}
-          activeDataPointId={activeDataPointId}
-          setActiveDataPointId={setActiveDataPointId}
-          activeProfilePoints={activeProfilePoints}
-          activeProfilePoint={activeProfilePoint}
-          activeDataPointValue={activeDataPointValue}
-          setActiveDataPointValue={setActiveDataPointValue}
-        />
-      );
-      lastEnd = dataPoint.match![1];
-    });
-    highlightedText.push(
-      <TextSlice
-        startIndex={lastEnd}
-        text={text.slice(lastEnd)}
-        annotatedTextId={activeAnnotatedText?.id}
-        setActiveDataPointId={setActiveDataPointId}
-        activeDataPointId={activeDataPointId}
-      />
-    );
-    return highlightedText;
-  };
-
   return (
     <div className="col-span-4 overflow-y-auto">
       <Card>
@@ -123,11 +75,19 @@ const TextAnnotation = (props: TextAnnotationProps) => {
           <CardTitle>Annotation</CardTitle>
         </CardHeader>
         <CardContent className="whitespace-pre-wrap">
-          {generateHighlightedText(
-            texts?.find((text) => text.id === activeAnnotatedText?.textId)
-              ?.text ?? "",
-            dataPoints ?? []
-          ).map((element, index) => (
+          {generateHighlightedText({
+            text:
+              texts?.find((text) => text.id === activeAnnotatedText?.textId)
+                ?.text ?? "",
+            dataPoints: dataPoints ?? [],
+            activeAnnotatedText,
+            setActiveDataPointId,
+            activeDataPointId,
+            activeProfilePoints,
+            activeProfilePoint,
+            activeDataPointValue,
+            setActiveDataPointValue,
+          }).map((element, index) => (
             <span key={index}>{element}</span>
           ))}
         </CardContent>
