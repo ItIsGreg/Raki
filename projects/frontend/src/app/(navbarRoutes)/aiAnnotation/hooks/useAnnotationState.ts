@@ -101,8 +101,6 @@ export const useAnnotationState = ({
 
       if (annotationState === "regular") {
         if (textBatches.length > 0 && batchIndex < textBatches.length) {
-          console.log("Annotating batch", batchIndex);
-          console.log(textBatches[batchIndex]);
           await annotateTextBatch(
             textBatches[batchIndex],
             activeAnnotatedDataset,
