@@ -55,19 +55,12 @@ def get_matches(text: str, substring: str):
 
     # add fuzzy matching if no matches are found
     if len(matches) == 0:
-        print(f"No matches found for substring: {substring}")
-        print("Using fuzzy matching")
         best_match, score = fuzzy_matching(substring, text)
-        print(f"Best match: {best_match}")
-        print(f"Score: {score}")
         if score > 80:
-            matches.append(
-                [text.find(best_match), text.find(best_match) + len(best_match)]
-            )
-        else:
-            print("No good fuzzy match found")
+            start_index = text.find(best_match)
+            if start_index != -1:
+                matches.append([start_index, start_index + len(best_match)])
 
-    # add some logging
     # log if more than one match is found
     if len(matches) > 1:
         logger.debug(f"More than one match found for substring: {substring}")

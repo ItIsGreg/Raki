@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { TextAnnotationProps } from "../../types";
 import { useState, useMemo } from "react";
 import { useAnnotationData } from "./hooks/useAnnotationData";

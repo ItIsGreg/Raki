@@ -32,7 +32,7 @@ openai.base_url = (
     ***REMOVED***  # Replace with your local server's address
 )
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR)  # Changed to ERROR level
 logger = logging.getLogger(__name__)
 
 
@@ -42,7 +42,7 @@ async def call_openai(
     model: str,
     api_key: str,
 ):
-    logger.debug("Using OpenAI")
+    # logger.debug("Using OpenAI")
 
     llm_model = ChatOpenAI(temperature=0, model=model, api_key=api_key)
     output_parser = StrOutputParser()
@@ -50,14 +50,14 @@ async def call_openai(
     chain = prompt | llm_model | output_parser
     try:
         result_structured = await chain.ainvoke(prompt_parameters)
-        logger.debug(f"OpenAI response: {result_structured}")
+        # logger.debug(f"OpenAI response: {result_structured}")
         result_structured = handle_json_prefix(result_structured)
         result_structured_list = json.loads(result_structured)
         return result_structured_list
     except Exception as e:
         logger.error(f"Error in call_openai: {e}")
-        logger.debug(f"Prompt: {prompt}")
-        logger.debug(f"Result structured: {result_structured}")
+        # logger.debug(f"Prompt: {prompt}")
+        # logger.debug(f"Result structured: {result_structured}")
         return None
 
 
@@ -68,11 +68,11 @@ async def call_self_hosted_model(
     api_base: str,
     api_key: str,
 ):
-    logger.debug("Using self-hosted model")
-    logger.debug("Parameters:")
-    logger.debug(f"Model: {model}")
-    logger.debug(f"API base: {api_base}")
-    logger.debug(f"API key: {api_key}")
+    # logger.debug("Using self-hosted model")
+    # logger.debug("Parameters:")
+    # logger.debug(f"Model: {model}")
+    # logger.debug(f"API base: {api_base}")
+    # logger.debug(f"API key: {api_key}")
 
     # Configure OpenAI to use the self-hosted model
     llm_model = ChatOpenAI(
@@ -87,9 +87,8 @@ async def call_self_hosted_model(
 
     try:
         result_structured = await chain.ainvoke(prompt_parameters)
-        logger.debug(f"Self-hosted model response: {result_structured}")
+        # logger.debug(f"Self-hosted model response: {result_structured}")
 
-        # Assuming handle_json_prefix is a function you've defined elsewhere
         result_structured = handle_json_prefix(result_structured)
         result_structured = clean_llm_response(result_structured)
 
@@ -98,8 +97,8 @@ async def call_self_hosted_model(
 
     except Exception as e:
         logger.error(f"Error in call_self_hosted_model: {e}")
-        logger.debug(f"Prompt: {prompt}")
-        logger.debug(f"Result structured: {result_structured}")
+        # logger.debug(f"Prompt: {prompt}")
+        # logger.debug(f"Result structured: {result_structured}")
         return None
 
 
@@ -109,12 +108,12 @@ async def call_llama3(
     model: str,
     api_key: str,
 ):
-    logger.debug("Using Llama3")
-    logger.debug("Parameters:")
-    logger.debug(f"Model: {model}")
-    logger.debug(f"API key: {api_key}")
-    logger.debug(f"Prompt: {prompt}")
-    logger.debug(f"Prompt parameters: {prompt_parameters}")
+    # logger.debug("Using Llama3")
+    # logger.debug("Parameters:")
+    # logger.debug(f"Model: {model}")
+    # logger.debug(f"API key: {api_key}")
+    # logger.debug(f"Prompt: {prompt}")
+    # logger.debug(f"Prompt parameters: {prompt_parameters}")
 
     llm_model = AzureMLChatOnlineEndpoint(
         endpoint_url=llama3_url,
@@ -127,9 +126,8 @@ async def call_llama3(
     chain = prompt | llm_model | output_parser
     try:
         result_structured = await chain.ainvoke(prompt_parameters)
-        logger.debug(f"Llama3 response: {result_structured}")
+        # logger.debug(f"Llama3 response: {result_structured}")
 
-        # Assuming handle_json_prefix is a function you've defined elsewhere
         result_structured = handle_json_prefix(result_structured)
         result_structured = clean_llm_response(result_structured)
 
@@ -138,8 +136,8 @@ async def call_llama3(
 
     except Exception as e:
         logger.error(f"Error in call_llama3: {e}")
-        logger.debug(f"Prompt: {prompt}")
-        logger.debug(f"Result structured: {result_structured}")
+        # logger.debug(f"Prompt: {prompt}")
+        # logger.debug(f"Result structured: {result_structured}")
         return None
 
 
