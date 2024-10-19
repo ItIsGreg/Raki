@@ -18,11 +18,13 @@ import { Button } from "@/components/ui/button";
 import DeleteButton from "@/components/DeleteButton";
 import EditButton from "@/components/EditButton";
 import DownloadButton from "./DownloadButton";
+import { Progress } from "@/components/ui/progress";
+import { Loader2 } from "lucide-react";
 
 interface AnnotatedDatasetCardProps {
   dataset: AnnotatedDataset;
   isActive: boolean;
-  isRunning: boolean;
+  annotationState: "idle" | "regular" | "faulty";
   onSelect: () => void;
   onStart: () => void;
   onStop: () => void;
@@ -32,7 +34,7 @@ interface AnnotatedDatasetCardProps {
 export const AnnotatedDatasetCard = ({
   dataset,
   isActive,
-  isRunning,
+  annotationState,
   onSelect,
   onStart,
   onStop,
@@ -86,25 +88,70 @@ export const AnnotatedDatasetCard = ({
         </div>
         <CardDescription>Description: {dataset.description}</CardDescription>
         {dbTexts && dbAnnotatedTexts && (
-          <CardDescription>
-            Annotated Texts:{" "}
-            {
-              dbAnnotatedTexts.filter((text) => {
-                return text.annotatedDatasetId === dataset.id;
-              }).length
-            }{" "}
-            /{" "}
-            {
-              dbTexts.filter((text) => {
-                return text.datasetId === dataset.datasetId;
-              }).length
-            }
-          </CardDescription>
+          <>
+            <CardDescription>
+              Annotated Texts:{" "}
+              {
+                dbAnnotatedTexts.filter((text) => {
+                  return text.annotatedDatasetId === dataset.id;
+                }).length
+              }{" "}
+              /{" "}
+              {
+                dbTexts.filter((text) => {
+                  return text.datasetId === dataset.datasetId;
+                }).length
+              }
+            </CardDescription>
+            <CardDescription>
+              Faulty Texts:{" "}
+              {
+                dbAnnotatedTexts.filter((text) => {
+                  return (
+                    text.annotatedDatasetId === dataset.id &&
+                    text.aiFaulty === true
+                  );
+                }).length
+              }
+            </CardDescription>
+          </>
         )}
-        {!isRunning ? (
-          <Button onClick={onStart}>Start Annotation</Button>
-        ) : (
-          <Button onClick={onStop}>Stop Annotation</Button>
+        {isActive &&
+          dbTexts &&
+          dbAnnotatedTexts &&
+          annotationState === "regular" && (
+            <Progress
+              value={
+                (dbAnnotatedTexts.filter(
+                  (text) => text.annotatedDatasetId === dataset.id
+                ).length /
+                  dbTexts.filter((text) => text.datasetId === dataset.datasetId)
+                    .length) *
+                100
+              }
+              className="w-full bg-green-200"
+            />
+          )}
+        {isActive && (
+          <>
+            {annotationState === "idle" ? (
+              <Button onClick={onStart}>Start Annotation</Button>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <Button onClick={onStop} className="w-full">
+                  Stop {annotationState === "faulty" ? "Faulty " : ""}Annotation
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-gray-500">
+                    {annotationState === "regular"
+                      ? "Annotating texts..."
+                      : "Re-Annotating faulty texts..."}
+                  </span>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

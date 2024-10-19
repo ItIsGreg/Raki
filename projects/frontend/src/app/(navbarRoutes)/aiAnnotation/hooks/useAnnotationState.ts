@@ -181,7 +181,6 @@ export const useAnnotationState = ({
   return {
     addingDataset,
     setAddingDataset,
-    isRunning: annotationState !== "idle",
     dbAnnotatedDatasets,
     dbApiKeys,
     dbAnnotatedTexts,
@@ -190,5 +189,6 @@ export const useAnnotationState = ({
     handleStop,
     identifyActiveProfilePoints,
     autoRerunFaulty,
+    annotationState,
   };
 };

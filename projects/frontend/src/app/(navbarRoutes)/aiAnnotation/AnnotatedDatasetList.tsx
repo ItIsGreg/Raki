@@ -25,7 +25,7 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   const {
     addingDataset,
     setAddingDataset,
-    isRunning,
+    annotationState,
     dbAnnotatedDatasets,
     handleStart,
     handleStop,
@@ -90,7 +90,7 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
                 key={dataset.id}
                 dataset={dataset}
                 isActive={activeAnnotatedDataset === dataset}
-                isRunning={isRunning}
+                annotationState={annotationState}
                 onSelect={() => {
                   identifyActiveProfilePoints(dataset.profileId);
                   setActiveAnnotatedDataset(dataset);
