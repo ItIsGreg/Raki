@@ -98,15 +98,11 @@ export const reannotateFaultyText = async (
     );
 
     await updateAnnotatedText({ ...annotatedFaultyText, aiFaulty: aiFaulty });
+
+    return { success: true, aiFaulty };
   } catch (error) {
     console.error("Error in reannotateFaultyText:", error);
-    if (error instanceof Error) {
-      throw new Error(`Failed to reannotate faulty text: ${error.message}`);
-    } else {
-      throw new Error(
-        "An unknown error occurred while reannotating faulty text"
-      );
-    }
+    return { success: false, error };
   }
 };
 

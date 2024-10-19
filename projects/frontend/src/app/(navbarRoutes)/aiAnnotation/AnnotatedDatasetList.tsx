@@ -36,6 +36,7 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
     setActiveAnnotatedDataset,
     setActiveProfilePoints,
     batchSize,
+    autoRerunFaulty,
   });
 
   const [editingDataset, setEditingDataset] = useState<
