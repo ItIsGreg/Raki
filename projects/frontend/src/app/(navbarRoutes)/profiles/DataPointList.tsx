@@ -1,22 +1,13 @@
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MdDownload, MdUpload } from "react-icons/md";
 import { DataPointListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
-import {
-  createProfile,
-  createProfilePoint,
-  readProfilePointsByProfile,
-} from "@/lib/db/crud";
+import { createProfilePoint, readProfilePointsByProfile } from "@/lib/db/crud";
 import DataPointCard from "./DataPointCard";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import ProfileChatButton from "./ProfileChatButton";
+import ProfileChatView from "./ProfileChatView";
 
 const DataPointList = (props: DataPointListProps) => {
   const {
@@ -27,6 +18,7 @@ const DataPointList = (props: DataPointListProps) => {
   } = props;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const dataPoints = useLiveQuery(
     () => readProfilePointsByProfile(activeProfile?.id),
@@ -109,6 +101,7 @@ const DataPointList = (props: DataPointListProps) => {
                 className="hover:text-blue-500 cursor-pointer"
                 onClick={handleDownloadDatapoints}
               />
+              <ProfileChatButton onClick={() => setIsChatOpen(true)} />
               <Button
                 onClick={() => {
                   setActiveDataPoint(undefined);
@@ -136,6 +129,7 @@ const DataPointList = (props: DataPointListProps) => {
           </CardContent>
         )}
       </Card>
+      <ProfileChatView isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
     </div>
   );
 };
