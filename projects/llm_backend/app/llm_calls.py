@@ -141,12 +141,40 @@ async def call_llama3(
         return None
 
 
+async def call_self_hosted_model_stream(
+    prompt: BasePromptTemplate,
+    prompt_parameters: dict[str, Any],
+    model: str,
+    api_base: str,
+    api_key: str,
+):
+    # logger.debug("Using self-hosted model with streaming")
+
+    llm_model = ChatOpenAI(
+        temperature=0,
+        model=model,
+        api_key=api_key,
+        base_url=api_base,
+        streaming=True,
+    )
+
+    output_parser = StrOutputParser()
+    chain = prompt | llm_model | output_parser
+
+    async def async_generator():
+        async for chunk in chain.astream(prompt_parameters):
+            yield chunk
+
+    return async_generator()
+
+
 async def call_llm(
     prompt: BasePromptTemplate,
     prompt_parameters: dict[str, Any],
     llm_provider: str,
     model: str,
     api_key: str,
+    stream: bool = False,
 ):
     # logger.debug(f"Calling LLM with parameters: {prompt_parameters}")
 
@@ -159,13 +187,22 @@ async def call_llm(
             prompt, prompt_parameters, model=model, api_key=api_key
         )
     elif llm_provider == "kiss_ki":
-        return await call_self_hosted_model(
-            prompt,
-            prompt_parameters,
-            model=model,
-            api_base=kiss_ki_url,
-            api_key=kiss_ki_api_key,
-        )
+        if stream:
+            return await call_self_hosted_model_stream(
+                prompt,
+                prompt_parameters,
+                model=model,
+                api_base=kiss_ki_url,
+                api_key=kiss_ki_api_key,
+            )
+        else:
+            return await call_self_hosted_model(
+                prompt,
+                prompt_parameters,
+                model=model,
+                api_base=kiss_ki_url,
+                api_key=kiss_ki_api_key,
+            )
     else:
         logger.error("Unknown LLM provider")
         raise Exception("Unknown LLM provider")

@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from starlette.middleware.cors import CORSMiddleware
 
-from app.routers import substrings, values, pipeline
+from app.routers import substrings, values, pipeline, profile_chat
 
 app = FastAPI()
 
@@ -37,6 +37,11 @@ router.include_router(
     pipeline.router,
     tags=["pipeline"],
     prefix="/pipeline",
+)
+router.include_router(
+    profile_chat.router,
+    tags=["profile_chat"],
+    prefix="/profile-chat",
 )
 
 app.add_middleware(
