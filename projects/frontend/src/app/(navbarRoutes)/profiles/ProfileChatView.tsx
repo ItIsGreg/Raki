@@ -89,13 +89,21 @@ const ProfileChatView = ({ isOpen, setIsOpen }: ProfileChatViewProps) => {
     }
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+    setInput("");
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[700px] sm:h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>AI Chat</DialogTitle>
+          <Button onClick={handleNewChat} className="ml-auto">
+            New Chat
+          </Button>
         </DialogHeader>
-        <div className="flex flex-col h-[400px]">
+        <div className="flex flex-col flex-grow overflow-hidden">
           <div className="flex-grow overflow-y-auto mb-4">
             {messages.map((message, index) => (
               <div

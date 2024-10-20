@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List, Optional
 from pydantic import BaseModel
 
 
@@ -56,3 +56,11 @@ class PipelineResDatapoint(BaseModel):
 class SelectSubstringReq(BaseRequest):
     datapoint: BaseDataPoint | None
     substrings: list[str]
+
+
+class ProfileChatRequest(BaseModel):
+    messages: List[dict]
+    stream: Optional[bool] = False
+    llm_provider: Optional[str] = "kiss_ki"
+    model: Optional[str] = None
+    api_key: Optional[str] = None
