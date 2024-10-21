@@ -8,6 +8,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { backendURL } from "../../constants";
+import ChatMessage from "./ChatMessage";
 
 interface ProfileChatViewProps {
   isOpen: boolean;
@@ -96,7 +97,7 @@ const ProfileChatView = ({ isOpen, setIsOpen }: ProfileChatViewProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[700px] sm:h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-[80%] w-full sm:h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>AI Chat</DialogTitle>
           <Button onClick={handleNewChat} className="ml-auto">
@@ -106,22 +107,7 @@ const ProfileChatView = ({ isOpen, setIsOpen }: ProfileChatViewProps) => {
         <div className="flex flex-col flex-grow overflow-hidden">
           <div className="flex-grow overflow-y-auto mb-4">
             {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`mb-2 ${
-                  message.role === "user" ? "text-right" : "text-left"
-                }`}
-              >
-                <span
-                  className={`inline-block p-2 rounded-lg whitespace-pre-wrap ${
-                    message.role === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200"
-                  }`}
-                >
-                  {message.content}
-                </span>
-              </div>
+              <ChatMessage key={index} message={message} />
             ))}
             <div ref={messagesEndRef} />
           </div>

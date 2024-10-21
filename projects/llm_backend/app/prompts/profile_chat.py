@@ -17,6 +17,11 @@ class ProfileChatTemplateList:
       "unit": string | undefined,
     }}
 
+    json content should be surrounded by 
+    ```json
+    {{json: content}}
+    ```
+
     Guidelines for creating profile points:
     1. The "name" should be concise and descriptive.
     2. Provide a clear "explanation" of what the profile point represents.
