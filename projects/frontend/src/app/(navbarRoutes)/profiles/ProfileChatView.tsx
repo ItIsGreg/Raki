@@ -110,29 +110,28 @@ const ProfileChatView = ({
             New Chat
           </Button>
         </DialogHeader>
-        <div className="flex flex-col flex-grow overflow-hidden">
-          <div className="flex-grow overflow-y-auto mb-4">
-            {messages.map((message, index) => (
-              <ChatMessage
-                key={index}
-                message={message}
-                activeProfile={activeProfile}
-              />
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-          <div className="flex">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Type your message..."
-              disabled={isLoading}
+        <div className="flex-grow overflow-y-auto mb-4">
+          {messages.map((message, index) => (
+            <ChatMessage
+              key={index}
+              message={message}
+              activeProfile={activeProfile}
+              setIsOpen={setIsOpen}
             />
-            <Button onClick={handleSend} disabled={isLoading} className="ml-2">
-              Send
-            </Button>
-          </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+        <div className="flex">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Type your message..."
+            disabled={isLoading}
+          />
+          <Button onClick={handleSend} disabled={isLoading} className="ml-2">
+            Send
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
