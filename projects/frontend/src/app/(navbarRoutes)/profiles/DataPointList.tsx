@@ -129,7 +129,11 @@ const DataPointList = (props: DataPointListProps) => {
           </CardContent>
         )}
       </Card>
-      <ProfileChatView isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
+      <ProfileChatView
+        isOpen={isChatOpen}
+        setIsOpen={setIsChatOpen}
+        activeProfile={activeProfile}
+      />
     </div>
   );
 };

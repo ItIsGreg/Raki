@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { backendURL } from "../../constants";
 import ChatMessage from "./ChatMessage";
+import { Profile } from "@/lib/db/db";
 
 interface ProfileChatViewProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  activeProfile: Profile | undefined;
 }
 
 interface Message {
@@ -20,7 +22,11 @@ interface Message {
   content: string;
 }
 
-const ProfileChatView = ({ isOpen, setIsOpen }: ProfileChatViewProps) => {
+const ProfileChatView = ({
+  isOpen,
+  setIsOpen,
+  activeProfile,
+}: ProfileChatViewProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -107,7 +113,11 @@ const ProfileChatView = ({ isOpen, setIsOpen }: ProfileChatViewProps) => {
         <div className="flex flex-col flex-grow overflow-hidden">
           <div className="flex-grow overflow-y-auto mb-4">
             {messages.map((message, index) => (
-              <ChatMessage key={index} message={message} />
+              <ChatMessage
+                key={index}
+                message={message}
+                activeProfile={activeProfile}
+              />
             ))}
             <div ref={messagesEndRef} />
           </div>
