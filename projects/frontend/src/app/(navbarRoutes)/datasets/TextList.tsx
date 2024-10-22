@@ -89,6 +89,11 @@ const TextList = (props: TextListProps) => {
     setIsTableViewOpen(true);
   };
 
+  // Add this sorting function
+  const sortedTexts = dbTexts?.sort((a, b) =>
+    a.filename.localeCompare(b.filename, undefined, { sensitivity: "base" })
+  );
+
   return (
     <div className="overflow-y-scroll">
       <Card>
@@ -134,7 +139,7 @@ const TextList = (props: TextListProps) => {
           />
         </CardHeader>
         <CardContent>
-          {dbTexts?.map((text) => {
+          {sortedTexts?.map((text) => {
             return (
               <Card
                 key={text.id}

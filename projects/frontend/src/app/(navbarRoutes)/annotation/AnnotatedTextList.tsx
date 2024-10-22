@@ -5,7 +5,6 @@ import {
   readTextsByIds,
 } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Button } from "@/components/ui/button";
 
 const AnnotatedTextList = (props: AnnotatedTextListProps) => {
   const {
@@ -23,6 +22,17 @@ const AnnotatedTextList = (props: AnnotatedTextListProps) => {
     [annotatedTexts]
   );
 
+  // Sort the annotated texts alphabetically by filename
+  const sortedAnnotatedTexts = annotatedTexts
+    ?.map((annotatedText) => ({
+      ...annotatedText,
+      filename:
+        texts?.find((text) => text.id === annotatedText.textId)?.filename || "",
+    }))
+    .sort((a, b) =>
+      a.filename.localeCompare(b.filename, undefined, { sensitivity: "base" })
+    );
+
   return (
     <div className="overflow-y-scroll">
       <Card>
@@ -30,7 +40,7 @@ const AnnotatedTextList = (props: AnnotatedTextListProps) => {
           <CardTitle>Annotated Texts</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-1">
-          {annotatedTexts?.map((annotatedText) => {
+          {sortedAnnotatedTexts?.map((annotatedText) => {
             return (
               <Card
                 key={annotatedText.id}
@@ -48,12 +58,7 @@ const AnnotatedTextList = (props: AnnotatedTextListProps) => {
                 }`}
               >
                 <CardHeader>
-                  <CardTitle>
-                    {
-                      texts?.find((text) => text.id === annotatedText.textId)
-                        ?.filename
-                    }
-                  </CardTitle>
+                  <CardTitle>{annotatedText.filename}</CardTitle>
                 </CardHeader>
               </Card>
             );

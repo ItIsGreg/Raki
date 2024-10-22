@@ -22,6 +22,8 @@ const AnnotatedTextsList = ({
     activeProfilePoints,
     setActiveAnnotatedDataset,
     setActiveProfilePoints,
+    batchSize: 10,
+    autoRerunFaulty: true,
   });
 
   const [rerunningTexts, setRerunningTexts] = useState<string[]>([]);
@@ -41,6 +43,22 @@ const AnnotatedTextsList = ({
     }
   };
 
+  // Add this sorting function
+  const sortedAnnotatedTexts = dbAnnotatedTexts
+    ?.filter(
+      (annotatedText) =>
+        annotatedText.annotatedDatasetId === activeAnnotatedDataset?.id
+    )
+    .sort((a, b) => {
+      const filenameA =
+        dbTexts?.find((text) => text.id === a.textId)?.filename || "";
+      const filenameB =
+        dbTexts?.find((text) => text.id === b.textId)?.filename || "";
+      return filenameA.localeCompare(filenameB, undefined, {
+        sensitivity: "base",
+      });
+    });
+
   return (
     <div className="overflow-y-scroll">
       <Card>
@@ -54,41 +72,35 @@ const AnnotatedTextsList = ({
           </Button> */}
         </CardHeader>
         <CardContent>
-          {dbAnnotatedTexts
-            ?.filter(
-              (annotatedText) =>
-                annotatedText.annotatedDatasetId === activeAnnotatedDataset?.id
-            )
-            .map((annotatedText) => {
-              return (
-                <Card key={annotatedText.id}>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle
-                      className={annotatedText.aiFaulty ? "text-red-500" : ""}
-                    >
-                      {
-                        dbTexts?.find(
-                          (text) => text.id === annotatedText.textId
-                        )?.filename
-                      }
-                    </CardTitle>
-                    {annotatedText.aiFaulty &&
-                      (rerunningTexts.includes(annotatedText.id) ? (
-                        <Button disabled>
-                          <span className="animate-spin mr-2">&#9696;</span>
-                          Rerunning...
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => handleRerunFaultyText(annotatedText)}
-                        >
-                          Rerun
-                        </Button>
-                      ))}
-                  </CardHeader>
-                </Card>
-              );
-            })}
+          {sortedAnnotatedTexts?.map((annotatedText) => {
+            return (
+              <Card key={annotatedText.id}>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle
+                    className={annotatedText.aiFaulty ? "text-red-500" : ""}
+                  >
+                    {
+                      dbTexts?.find((text) => text.id === annotatedText.textId)
+                        ?.filename
+                    }
+                  </CardTitle>
+                  {annotatedText.aiFaulty &&
+                    (rerunningTexts.includes(annotatedText.id) ? (
+                      <Button disabled>
+                        <span className="animate-spin mr-2">&#9696;</span>
+                        Rerunning...
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleRerunFaultyText(annotatedText)}
+                      >
+                        Rerun
+                      </Button>
+                    ))}
+                </CardHeader>
+              </Card>
+            );
+          })}
         </CardContent>
       </Card>
     </div>
