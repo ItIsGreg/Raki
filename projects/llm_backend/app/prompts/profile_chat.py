@@ -22,6 +22,8 @@ class ProfileChatTemplateList:
     {{json: content}}
     ```
 
+    Each profile point should be enclosed in a ```json``` block separately.
+
     Guidelines for creating profile points:
     1. The "name" should be concise and descriptive.
     2. Provide a clear "explanation" of what the profile point represents.

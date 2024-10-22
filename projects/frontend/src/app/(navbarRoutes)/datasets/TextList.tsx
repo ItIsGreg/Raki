@@ -5,10 +5,11 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { TextListProps } from "../../types";
 import { TiDeleteOutline } from "react-icons/ti";
 import { useRef, useState } from "react";
-import { FaTable, FaFolderOpen } from "react-icons/fa";
+import { FaTable, FaFolderOpen, FaDownload } from "react-icons/fa";
 import TableView from "./TableView";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import JSZip from "jszip";
 
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
@@ -94,6 +95,23 @@ const TextList = (props: TextListProps) => {
     a.filename.localeCompare(b.filename, undefined, { sensitivity: "base" })
   );
 
+  const handleDownloadTexts = async () => {
+    if (!sortedTexts || sortedTexts.length === 0) return;
+
+    const zip = new JSZip();
+
+    sortedTexts.forEach((text) => {
+      zip.file(`${text.filename}.txt`, text.text);
+    });
+
+    const content = await zip.generateAsync({ type: "blob" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(content);
+    link.download = `${activeDataset?.name || "dataset"}_texts.zip`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
   return (
     <div className="overflow-y-scroll">
       <Card>
@@ -115,10 +133,17 @@ const TextList = (props: TextListProps) => {
               </Button>
               <Button
                 onClick={handleOpenTableClick}
-                className="flex items-center"
+                className="flex items-center mr-2"
               >
                 <FaFolderOpen className="mr-2" />
                 Open Table
+              </Button>
+              <Button
+                onClick={handleDownloadTexts}
+                className="flex items-center justify-center w-10 h-10 p-0"
+                title="Download Texts"
+              >
+                <FaDownload />
               </Button>
             </>
           )}

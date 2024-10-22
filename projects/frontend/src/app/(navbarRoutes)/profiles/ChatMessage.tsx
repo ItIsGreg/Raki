@@ -69,12 +69,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
     try {
       const results = await Promise.all(
-        validProfilePoints.map((point) =>
-          createProfilePoint({
-            ...point,
+        validProfilePoints.map((point) => {
+          const completeProfilePoint: ProfilePointCreate = {
+            name: point.name || "",
+            explanation: point.explanation || "",
+            synonyms: point.synonyms || [],
+            datatype: point.datatype || "",
+            valueset: point.valueset || [],
+            unit: point.unit || "",
             profileId: activeProfile.id,
-          })
-        )
+          };
+          return createProfilePoint(completeProfilePoint);
+        })
       );
       console.log("Adopted all profile points:", results);
       setIsOpen(false); // Close the dialog after adopting all

@@ -27,17 +27,24 @@ const JsonContent: React.FC<JsonContentProps> = ({
     );
   };
 
-  const handleAdopt = async (profilePoint: ProfilePointCreate) => {
+  const handleAdopt = async (profilePoint: Partial<ProfilePointCreate>) => {
     if (!activeProfile) {
       console.error("No active profile");
       return;
     }
 
     try {
-      const newProfilePoint = await createProfilePoint({
-        ...profilePoint,
+      const completeProfilePoint: ProfilePointCreate = {
+        name: profilePoint.name || "",
+        explanation: profilePoint.explanation || "",
+        synonyms: profilePoint.synonyms || [],
+        datatype: profilePoint.datatype || "",
+        valueset: profilePoint.valueset || [],
+        unit: profilePoint.unit || "",
         profileId: activeProfile.id,
-      });
+      };
+
+      const newProfilePoint = await createProfilePoint(completeProfilePoint);
       console.log("Adopted profile point:", newProfilePoint);
       // Don't close the dialog here
     } catch (error) {
