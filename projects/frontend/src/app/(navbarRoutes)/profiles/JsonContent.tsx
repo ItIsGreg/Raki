@@ -81,6 +81,8 @@ const JsonContent: React.FC<JsonContentProps> = ({
     }
   } catch (error) {
     // If parsing fails, treat it as regular text
+    console.error("Failed JSON parsing:", error);
+    console.log("Content:", content);
   }
 
   // Regular text content or failed JSON parsing

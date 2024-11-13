@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { backendURL } from "../../constants";
 import ChatMessage from "./ChatMessage";
@@ -122,12 +121,23 @@ const ProfileChatView = ({
           <div ref={messagesEndRef} />
         </div>
         <div className="flex">
-          <Input
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                if (e.ctrlKey) {
+                  setInput((prev) => prev + "\n");
+                } else if (!e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }
+            }}
             placeholder="Type your message..."
             disabled={isLoading}
+            className="flex-1 min-h-[40px] px-3 py-2 rounded-md border border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+            rows={1}
           />
           <Button onClick={handleSend} disabled={isLoading} className="ml-2">
             Send

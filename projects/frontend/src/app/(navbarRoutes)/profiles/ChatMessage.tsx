@@ -24,26 +24,41 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     ProfilePointCreate[]
   >([]);
 
+  // Common regex pattern
+  const JSON_REGEX = /(```json\n([\s\S]*?)```)|(\{[\s\S]*?\})/g;
+
   useEffect(() => {
     const extractedPoints = extractProfilePoints(message.content);
     setValidProfilePoints(extractedPoints);
   }, [message.content]);
 
   const extractProfilePoints = (content: string): ProfilePointCreate[] => {
-    const jsonRegex = /```json\n([\s\S]*?)```/g;
     const points: ProfilePointCreate[] = [];
+    const parts = content.split(JSON_REGEX);
 
-    let match;
-    while ((match = jsonRegex.exec(content)) !== null) {
-      try {
-        const parsedJson = JSON.parse(match[1].trim());
-        if (isProfilePointCreate(parsedJson)) {
-          points.push(parsedJson);
+    parts.forEach((part, index) => {
+      if (index % 4 !== 0 && part) {
+        try {
+          const jsonString = (
+            part.startsWith("```json") ? parts[index + 1] : part
+          )
+            .trim()
+            .replace(/:\s*undefined\s*/g, ": null")
+            .replace(/:\s*"undefined"\s*/g, ": null");
+
+          const parsedJson = JSON.parse(jsonString);
+          const cleanedJson = Object.fromEntries(
+            Object.entries(parsedJson).filter(([_, value]) => value !== null)
+          );
+
+          if (isProfilePointCreate(cleanedJson)) {
+            points.push(cleanedJson);
+          }
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
       }
-    }
+    });
 
     return points;
   };
@@ -90,22 +105,49 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   };
 
   const renderContent = () => {
-    const jsonRegex = /```json\n([\s\S]*?)```/g;
-    const parts = message.content.split(jsonRegex);
+    const parts = message.content.split(JSON_REGEX);
 
-    return parts.map((part, index) => {
-      if (index % 2 === 0) {
-        return <span key={index}>{part}</span>;
-      } else {
-        return (
-          <JsonContent
-            key={index}
-            content={part.trim()}
-            activeProfile={activeProfile}
-          />
-        );
-      }
-    });
+    return parts
+      .map((part, index) => {
+        if (index % 4 === 0) {
+          // Replace newlines with <br /> elements in text content
+          const textWithBreaks = part.split("\n").map((line, i) => (
+            <React.Fragment key={i}>
+              {line}
+              {i < part.split("\n").length - 1 && <br />}
+            </React.Fragment>
+          ));
+          return <span key={index}>{textWithBreaks}</span>;
+        } else if (part) {
+          try {
+            const jsonString = (
+              part.startsWith("```json") ? parts[index + 1] : part
+            )
+              .trim()
+              .replace(/:\s*undefined\s*/g, ": null")
+              .replace(/:\s*"undefined"\s*/g, ": null");
+
+            // Parse and clean the JSON
+            const parsedJson = JSON.parse(jsonString);
+            const cleanedJson = Object.fromEntries(
+              Object.entries(parsedJson).filter(([_, value]) => value !== null)
+            );
+
+            return (
+              <JsonContent
+                key={index}
+                content={JSON.stringify(cleanedJson, null, 2)}
+                activeProfile={activeProfile}
+              />
+            );
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+            return null;
+          }
+        }
+        return null;
+      })
+      .filter(Boolean);
   };
 
   return (
