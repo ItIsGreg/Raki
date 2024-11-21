@@ -1,8 +1,9 @@
+import multiprocessing
 from fastapi import APIRouter, FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-
+import uvicorn
 from starlette.middleware.cors import CORSMiddleware
 
 from app.routers import substrings, values, pipeline, profile_chat
@@ -53,3 +54,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+
+if __name__ == "__main__":
+    multiprocessing.freeze_support()  # For Windows support
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False, workers=1)
