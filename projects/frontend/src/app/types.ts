@@ -107,9 +107,9 @@ export interface AnnotationDataPointListProps {
 }
 
 export interface AnnotationDatasetListProps {
-  activeAnnotatedDataset: AnnotatedDataset | null;
+  activeAnnotatedDataset: AnnotatedDataset | undefined;
   setActiveAnnotatedDataset: (
-    annotatedDataset: AnnotatedDataset | null
+    annotatedDataset: AnnotatedDataset | undefined
   ) => void;
 }
 
