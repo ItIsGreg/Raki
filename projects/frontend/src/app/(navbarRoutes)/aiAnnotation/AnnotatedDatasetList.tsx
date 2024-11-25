@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddDatasetForm } from "./AddDatasetForm";
 import { AnnotatedDatasetCard } from "./AnnotatedDatasetCard";
 import { useAnnotationState } from "./hooks/useAnnotationState";
-import { AnnotatedDatasetListProps } from "@/app/types";
+import { AnnotatedDatasetListProps, LLMProvider } from "@/app/types";
 import EntityForm from "@/components/EntityForm";
 import { AnnotatedDataset } from "@/lib/db/db";
 import { updateAnnotatedDataset } from "@/lib/db/crud";
 import { UploadDatasetButton } from "./UploadDatasetButton";
 import { AddButton } from "@/components/AddButton";
-import SettingsMenu from "./SettingsMenu";
-import SettingsButton from "./SettingsButton";
+import SettingsMenu from "./llmSettings/SettingsMenu";
+import SettingsButton from "./llmSettings/SettingsButton";
 
 const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   const {
@@ -21,7 +21,7 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   } = props;
   const [batchSize, setBatchSize] = useState<number>(10);
   const [autoRerunFaulty, setAutoRerunFaulty] = useState<boolean>(true);
-
+  const [provider, setProvider] = useState<LLMProvider>("openai");
   const {
     addingDataset,
     setAddingDataset,
@@ -114,6 +114,8 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
         setBatchSize={setBatchSize}
         autoRerunFaulty={autoRerunFaulty}
         setAutoRerunFaulty={setAutoRerunFaulty}
+        provider={provider}
+        setProvider={setProvider}
       />
     </div>
   );

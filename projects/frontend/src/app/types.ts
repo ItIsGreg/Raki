@@ -141,3 +141,10 @@ export interface DataPointSliceProps {
   activeDataPointValue: string;
   setActiveDataPointValue: (value: string) => void;
 }
+
+export interface LLMProviderSelectProps {
+  provider: LLMProvider;
+  setProvider: (provider: LLMProvider) => void;
+}
+
+export type LLMProvider = "openai" | "azure" | "custom";
