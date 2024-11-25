@@ -11,8 +11,8 @@ import { Separator } from "@/components/ui/separator";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { BatchSizeInput } from "./BatchSizeInput";
 import { RerunCheckbox } from "./RerunCheckbox";
-import { LLMProvider } from "@/app/types";
 import { LLMProviderSelect } from "./LLMProviderSelect";
+import { ModelInput } from "./ModelInput";
 
 interface SettingsMenuProps {
   isOpen: boolean;
@@ -21,8 +21,6 @@ interface SettingsMenuProps {
   setBatchSize: React.Dispatch<React.SetStateAction<number>>;
   autoRerunFaulty: boolean;
   setAutoRerunFaulty: React.Dispatch<React.SetStateAction<boolean>>;
-  provider: LLMProvider;
-  setProvider: (provider: LLMProvider) => void;
 }
 
 const SettingsMenu: React.FC<SettingsMenuProps> = ({
@@ -32,8 +30,6 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
   setBatchSize,
   autoRerunFaulty,
   setAutoRerunFaulty,
-  provider,
-  setProvider,
 }) => {
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -44,7 +40,9 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
         <div className="flex flex-col gap-4 py-4">
           <ApiKeyInput />
           <Separator className="my-2" />
-          <LLMProviderSelect provider={provider} setProvider={setProvider} />
+          <ModelInput />
+          <Separator className="my-2" />
+          <LLMProviderSelect />
           <Separator className="my-2" />
           <BatchSizeInput batchSize={batchSize} setBatchSize={setBatchSize} />
           <Separator className="my-2" />

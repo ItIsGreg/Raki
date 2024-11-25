@@ -82,6 +82,16 @@ export interface ApiKey {
   key: string;
 }
 
+export interface Model {
+  id: string;
+  name: string;
+}
+
+export interface LLMProvider {
+  id: string;
+  provider: string;
+}
+
 export class MySubClassedDexie extends Dexie {
   // 'friends' is added by dexie when declaring the stores()
   // We just tell the typing system this is the case
@@ -93,10 +103,12 @@ export class MySubClassedDexie extends Dexie {
   Texts!: Table<Text>;
   DataPoints!: Table<DataPoint>;
   ApiKeys!: Table<ApiKey>;
+  models!: Table<Model>;
+  llmProviders!: Table<LLMProvider>;
 
   constructor() {
     super("myDatabase");
-    this.version(2).stores({
+    this.version(4).stores({
       // friends: "++id, name, age", // Primary key and indexed props
       profilePoints: "++id, name, profileId",
       Profiles: "++id, name",
@@ -106,6 +118,8 @@ export class MySubClassedDexie extends Dexie {
       Texts: "++id, datasetId, filename",
       DataPoints: "++id, annotatedTextId, name",
       ApiKeys: "++id, key",
+      models: "++id, name",
+      llmProviders: "++id, provider",
     });
   }
 }

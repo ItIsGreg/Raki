@@ -21,7 +21,6 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   } = props;
   const [batchSize, setBatchSize] = useState<number>(10);
   const [autoRerunFaulty, setAutoRerunFaulty] = useState<boolean>(true);
-  const [provider, setProvider] = useState<LLMProvider>("openai");
   const {
     addingDataset,
     setAddingDataset,
@@ -114,8 +113,6 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
         setBatchSize={setBatchSize}
         autoRerunFaulty={autoRerunFaulty}
         setAutoRerunFaulty={setAutoRerunFaulty}
-        provider={provider}
-        setProvider={setProvider}
       />
     </div>
   );

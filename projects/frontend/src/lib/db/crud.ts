@@ -317,3 +317,29 @@ export const updateApiKey = async (id: string, key: string) => {
 export const deleteApiKey = async (id: string) => {
   return db.ApiKeys.delete(id);
 };
+
+export const createModel = async (name: string) => {
+  const id = v4();
+  return await db.models.add({ id, name });
+};
+
+export const readAllModels = async () => {
+  return await db.models.toArray();
+};
+
+export const deleteModel = async (id: string) => {
+  return await db.models.delete(id);
+};
+
+export const createLLMProvider = async (provider: string) => {
+  const id = v4();
+  return await db.llmProviders.add({ id, provider });
+};
+
+export const readAllLLMProviders = async () => {
+  return await db.llmProviders.toArray();
+};
+
+export const deleteLLMProvider = async (id: string) => {
+  return await db.llmProviders.delete(id);
+};
