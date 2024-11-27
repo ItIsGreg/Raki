@@ -1,4 +1,5 @@
 import React from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,16 +9,16 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-interface BatchSizeInputProps {
-  batchSize: number;
-  setBatchSize: React.Dispatch<React.SetStateAction<number>>;
-}
+// First, you'll need to add these functions to your db/crud.ts file
+import {
+  createBatchSize,
+  deleteAllBatchSizes,
+  readAllBatchSizes,
+} from "@/lib/db/crud";
 
-export const BatchSizeInput: React.FC<BatchSizeInputProps> = ({
-  batchSize,
-  setBatchSize,
-}) => {
-  const [inputValue, setInputValue] = React.useState(batchSize.toString());
+export const BatchSizeInput: React.FC = () => {
+  const [inputValue, setInputValue] = React.useState("");
+  const dbBatchSizes = useLiveQuery(() => readAllBatchSizes());
 
   const handleSetBatchSize = () => {
     const newBatchSize = parseInt(inputValue, 10);
@@ -25,7 +26,22 @@ export const BatchSizeInput: React.FC<BatchSizeInputProps> = ({
       alert("Please enter a valid positive number for batch size.");
       return;
     }
-    setBatchSize(newBatchSize);
+
+    // Remove old batch sizes
+    if (dbBatchSizes && dbBatchSizes.length > 0) {
+      dbBatchSizes.forEach((entry) => {
+        deleteAllBatchSizes(entry.id);
+      });
+    }
+    createBatchSize(newBatchSize);
+    setInputValue("");
+  };
+
+  const getPlaceholder = () => {
+    if (dbBatchSizes && dbBatchSizes.length > 0) {
+      return dbBatchSizes[0].value.toString();
+    }
+    return "Set Batch Size";
   };
 
   return (
@@ -45,7 +61,7 @@ export const BatchSizeInput: React.FC<BatchSizeInputProps> = ({
       <div className="flex flex-row gap-2">
         <Input
           type="number"
-          placeholder="Set Batch Size"
+          placeholder={getPlaceholder()}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
         />

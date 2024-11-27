@@ -9,6 +9,7 @@ import {
   readAllLLMProviders,
   readAllLLMUrls,
   readAllModels,
+  readAllBatchSizes,
 } from "@/lib/db/crud";
 import {
   AnnotatedDataset,
@@ -23,7 +24,6 @@ interface UseAnnotationStateProps {
   setActiveAnnotatedDataset: (dataset: AnnotatedDataset | null) => void;
   activeProfilePoints: ProfilePoint[];
   setActiveProfilePoints: (points: ProfilePoint[]) => void;
-  batchSize: number;
   autoRerunFaulty: boolean;
 }
 
@@ -32,7 +32,6 @@ export const useAnnotationState = ({
   setActiveAnnotatedDataset,
   activeProfilePoints,
   setActiveProfilePoints,
-  batchSize,
   autoRerunFaulty,
 }: UseAnnotationStateProps) => {
   // state definitions
@@ -58,10 +57,13 @@ export const useAnnotationState = ({
   const dbLlmProvider = useLiveQuery(() => readAllLLMProviders());
   const dbLlmModel = useLiveQuery(() => readAllModels());
   const dbLlmUrl = useLiveQuery(() => readAllLLMUrls());
+  const dbBatchSize = useLiveQuery(() => readAllBatchSizes());
 
   const prepareFaultyBatches = useCallback(() => {
-    if (!activeAnnotatedDataset || !dbAnnotatedTexts) return;
+    if (!activeAnnotatedDataset || !dbAnnotatedTexts || !dbBatchSize?.[0])
+      return;
 
+    const batchSize = dbBatchSize[0].value;
     const faultyTexts = dbAnnotatedTexts.filter(
       (at) => at.annotatedDatasetId === activeAnnotatedDataset.id && at.aiFaulty
     );
@@ -73,11 +75,18 @@ export const useAnnotationState = ({
 
     setFaultyBatches(faultyBatches);
     setFaultyBatchIndex(0);
-  }, [activeAnnotatedDataset, dbAnnotatedTexts, batchSize]);
+  }, [activeAnnotatedDataset, dbAnnotatedTexts, dbBatchSize]);
 
   const prepareTextBatches = useCallback(() => {
-    if (!activeAnnotatedDataset || !dbTexts || !dbAnnotatedTexts) return;
+    if (
+      !activeAnnotatedDataset ||
+      !dbTexts ||
+      !dbAnnotatedTexts ||
+      !dbBatchSize?.[0]
+    )
+      return;
 
+    const batchSize = dbBatchSize[0].value;
     const annotatedTextIds = new Set(
       dbAnnotatedTexts
         .filter((at) => at.annotatedDatasetId === activeAnnotatedDataset.id)
@@ -99,7 +108,7 @@ export const useAnnotationState = ({
 
     setTextBatches(batches);
     setBatchIndex(0);
-  }, [activeAnnotatedDataset, dbTexts, dbAnnotatedTexts, batchSize]);
+  }, [activeAnnotatedDataset, dbTexts, dbAnnotatedTexts, dbBatchSize]);
 
   useEffect(() => {
     const runAnnotation = async () => {

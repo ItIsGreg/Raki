@@ -18,8 +18,6 @@ import { LLMUrlInput } from "./LLMUrlInput";
 interface SettingsMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  batchSize: number;
-  setBatchSize: React.Dispatch<React.SetStateAction<number>>;
   autoRerunFaulty: boolean;
   setAutoRerunFaulty: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -27,8 +25,6 @@ interface SettingsMenuProps {
 const SettingsMenu: React.FC<SettingsMenuProps> = ({
   isOpen,
   onClose,
-  batchSize,
-  setBatchSize,
   autoRerunFaulty,
   setAutoRerunFaulty,
 }) => {
@@ -47,7 +43,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
           <Separator className="my-2" />
           <ApiKeyInput />
           <Separator className="my-2" />
-          <BatchSizeInput batchSize={batchSize} setBatchSize={setBatchSize} />
+          <BatchSizeInput />
           <Separator className="my-2" />
           <RerunCheckbox
             autoRerunFaulty={autoRerunFaulty}

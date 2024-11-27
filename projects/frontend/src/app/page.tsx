@@ -1,34 +1,71 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Brain, Database, Rocket, ScanText, Settings } from "lucide-react";
+import SettingsMenu from "@/components/llmSettings/SettingsMenu";
 
 export default function Home() {
-  const Links = {
-    Profiles: "/profiles",
-    Datasets: "/datasets",
-    "AI-Annotation": "/aiAnnotation",
-    "Manual Annotation": "/annotation",
-  };
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
-    <div className="grid grid-cols-3">
-      <div></div>
-      <div className="flex flex-col">
-        {/* <div className="flex-grow"></div> */}
-        {Object.entries(Links).map(([key, value]) => {
-          return (
-            <Link key={key} href={value} className="m-10">
-              <Card className=" hover:bg-gray-100 transform hover:shadow-md">
-                <CardHeader>
-                  <CardTitle className="text-center">{key}</CardTitle>
-                </CardHeader>
-              </Card>
-            </Link>
-          );
-        })}
+    <div className="flex justify-center w-full">
+      <div className="flex flex-col w-full max-w-md">
+        <Link href="/profiles" className="m-10">
+          <Card className="hover:bg-gray-100 transform hover:shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-center">Profiles</CardTitle>
+              <Rocket className="h-8 w-8" />
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/datasets" className="m-10">
+          <Card className="hover:bg-gray-100 transform hover:shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-center">Datasets</CardTitle>
+              <Database className="h-8 w-8" />
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/aiAnnotation" className="m-10">
+          <Card className="hover:bg-gray-100 transform hover:shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-center">AI-Annotation</CardTitle>
+              <Brain className="h-8 w-8" />
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/annotation" className="m-10">
+          <Card className="hover:bg-gray-100 transform hover:shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-center">Manual Annotation</CardTitle>
+              <ScanText className="h-8 w-8" />
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <div className="m-10">
+          <Card
+            className="hover:bg-gray-100 transform hover:shadow-md cursor-pointer"
+            onClick={() => setIsSettingsOpen(true)}
+          >
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-center">Setup</CardTitle>
+              <Settings className="h-8 w-8" />
+            </CardHeader>
+          </Card>
+        </div>
       </div>
-      <div></div>
+      <SettingsMenu
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        autoRerunFaulty={true}
+        setAutoRerunFaulty={() => {}}
+      />
     </div>
   );
 }

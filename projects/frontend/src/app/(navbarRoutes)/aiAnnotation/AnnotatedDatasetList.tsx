@@ -9,8 +9,8 @@ import { AnnotatedDataset } from "@/lib/db/db";
 import { updateAnnotatedDataset } from "@/lib/db/crud";
 import { UploadDatasetButton } from "./UploadDatasetButton";
 import { AddButton } from "@/components/AddButton";
-import SettingsMenu from "./llmSettings/SettingsMenu";
-import SettingsButton from "./llmSettings/SettingsButton";
+import SettingsMenu from "../../../components/llmSettings/SettingsMenu";
+import SettingsButton from "../../../components/llmSettings/SettingsButton";
 
 const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   const {
@@ -19,7 +19,6 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
     setActiveAnnotatedDataset,
     setActiveProfilePoints,
   } = props;
-  const [batchSize, setBatchSize] = useState<number>(10);
   const [autoRerunFaulty, setAutoRerunFaulty] = useState<boolean>(true);
   const {
     addingDataset,
@@ -34,7 +33,6 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
     activeProfilePoints,
     setActiveAnnotatedDataset,
     setActiveProfilePoints,
-    batchSize,
     autoRerunFaulty,
   });
 
@@ -109,8 +107,6 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
       <SettingsMenu
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        batchSize={batchSize}
-        setBatchSize={setBatchSize}
         autoRerunFaulty={autoRerunFaulty}
         setAutoRerunFaulty={setAutoRerunFaulty}
       />

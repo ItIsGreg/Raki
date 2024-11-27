@@ -1,5 +1,6 @@
 // db.ts
 import Dexie, { Table } from "dexie";
+import { v4 } from "uuid";
 
 export interface ProfilePointCreate {
   name: string;
@@ -97,6 +98,11 @@ export interface LLMUrl {
   url: string;
 }
 
+export interface BatchSize {
+  id: string;
+  value: number;
+}
+
 export class MySubClassedDexie extends Dexie {
   // 'friends' is added by dexie when declaring the stores()
   // We just tell the typing system this is the case
@@ -111,10 +117,11 @@ export class MySubClassedDexie extends Dexie {
   models!: Table<Model>;
   llmProviders!: Table<LLMProvider>;
   llmUrls!: Table<LLMUrl>;
+  batchSizes!: Table<BatchSize>;
 
   constructor() {
     super("myDatabase");
-    this.version(5).stores({
+    this.version(7).stores({
       // friends: "++id, name, age", // Primary key and indexed props
       profilePoints: "++id, name, profileId",
       Profiles: "++id, name",
@@ -127,6 +134,15 @@ export class MySubClassedDexie extends Dexie {
       models: "++id, name",
       llmProviders: "++id, provider",
       llmUrls: "++id, url",
+      batchSizes: "++id, value",
+    });
+
+    // Add hook to populate default batch size
+    this.on("populate", async () => {
+      await this.batchSizes.add({
+        id: v4(),
+        value: 10, // Set your desired default value here
+      });
     });
   }
 }

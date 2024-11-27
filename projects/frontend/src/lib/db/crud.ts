@@ -365,3 +365,22 @@ export const updateLLMUrl = async (id: string, url: string) => {
 export const deleteLLMUrl = async (id: string) => {
   return await db.llmUrls.delete(id);
 };
+
+export interface BatchSize {
+  id?: number;
+  value: number;
+}
+
+// CRUD operations
+export const createBatchSize = async (value: number) => {
+  const id = v4();
+  return await db.batchSizes.add({ id, value });
+};
+
+export const readAllBatchSizes = async () => {
+  return await db.batchSizes.toArray();
+};
+
+export const deleteAllBatchSizes = async (id: string) => {
+  return await db.batchSizes.delete(id);
+};
