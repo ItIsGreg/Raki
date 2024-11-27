@@ -6,6 +6,9 @@ import {
   readAllTexts,
   readAllAnnotatedTexts,
   readAllProfilePoints,
+  readAllLLMProviders,
+  readAllLLMUrls,
+  readAllModels,
 } from "@/lib/db/crud";
 import {
   AnnotatedDataset,
@@ -52,6 +55,9 @@ export const useAnnotationState = ({
   const dbTexts = useLiveQuery(() => readAllTexts());
   const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
   const dbProfilePoints = useLiveQuery(() => readAllProfilePoints());
+  const dbLlmProvider = useLiveQuery(() => readAllLLMProviders());
+  const dbLlmModel = useLiveQuery(() => readAllModels());
+  const dbLlmUrl = useLiveQuery(() => readAllLLMUrls());
 
   const prepareFaultyBatches = useCallback(() => {
     if (!activeAnnotatedDataset || !dbAnnotatedTexts) return;
@@ -97,7 +103,14 @@ export const useAnnotationState = ({
 
   useEffect(() => {
     const runAnnotation = async () => {
-      if (!activeAnnotatedDataset || !dbApiKeys) return;
+      if (
+        !activeAnnotatedDataset ||
+        !dbApiKeys ||
+        !dbLlmProvider ||
+        !dbLlmModel ||
+        !dbLlmUrl
+      )
+        return;
 
       if (annotationState === "regular") {
         if (textBatches.length > 0 && batchIndex < textBatches.length) {
@@ -105,6 +118,9 @@ export const useAnnotationState = ({
             textBatches[batchIndex],
             activeAnnotatedDataset,
             activeProfilePoints,
+            dbLlmProvider[0].provider,
+            dbLlmModel[0].name,
+            dbLlmUrl[0].url,
             dbApiKeys[0].key
           );
           setBatchIndex((prevIndex) => prevIndex + 1);
@@ -125,7 +141,10 @@ export const useAnnotationState = ({
               reannotateFaultyText(
                 annotatedText,
                 activeProfilePoints,
-                dbApiKeys
+                dbLlmProvider[0].provider,
+                dbLlmModel[0].name,
+                dbLlmUrl[0].url,
+                dbApiKeys[0].key
               )
             )
           );
@@ -148,6 +167,9 @@ export const useAnnotationState = ({
     activeAnnotatedDataset,
     activeProfilePoints,
     dbApiKeys,
+    dbLlmProvider,
+    dbLlmModel,
+    dbLlmUrl,
     autoRerunFaulty,
   ]);
 

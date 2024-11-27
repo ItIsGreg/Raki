@@ -1,4 +1,4 @@
-import { backendURL, llmModel, llmProvider } from "../../constants";
+import { backendURL } from "../../constants";
 import {
   ProfilePoint,
   Text,
@@ -72,13 +72,12 @@ const updateExistingAndCreateNewDataPoints = async (
 export const reannotateFaultyText = async (
   annotatedFaultyText: AnnotatedText,
   activeProfilePoints: ProfilePoint[],
-  dbApiKeys: { key: string }[] | undefined
+  llmProvider: string,
+  llmModel: string,
+  llmUrl: string,
+  apiKey: string
 ) => {
   try {
-    if (!dbApiKeys || dbApiKeys.length === 0) {
-      throw new Error("No API key found");
-    }
-
     const text = await db.Texts.get(annotatedFaultyText.textId);
     if (!text) {
       throw new Error("Text not found");
@@ -87,7 +86,10 @@ export const reannotateFaultyText = async (
     const { data, aiFaulty } = await callAnnotationAPI(
       text,
       activeProfilePoints,
-      dbApiKeys[0].key
+      llmProvider,
+      llmModel,
+      llmUrl,
+      apiKey
     );
 
     await updateExistingAndCreateNewDataPoints(
@@ -110,16 +112,18 @@ export const annotateText = async (
   text: Text,
   activeAnnotatedDataset: { id: string },
   activeProfilePoints: ProfilePoint[],
-  dbApiKeys: { key: string }[] | undefined
+  llmProvider: string,
+  llmModel: string,
+  llmUrl: string,
+  apiKey: string
 ) => {
-  if (!dbApiKeys || dbApiKeys.length === 0) {
-    throw new Error("No API key found");
-  }
-
   const { data, aiFaulty } = await callAnnotationAPI(
     text,
     activeProfilePoints,
-    dbApiKeys[0].key
+    llmProvider,
+    llmModel,
+    llmUrl,
+    apiKey
   );
 
   try {
@@ -145,12 +149,16 @@ export const annotateText = async (
 async function callAnnotationAPI(
   text: Text,
   activeProfilePoints: ProfilePoint[],
+  llmProvider: string,
+  llmModel: string,
+  llmUrl: string,
   apiKey: string
 ) {
   try {
     const body = {
       llm_provider: llmProvider,
       model: llmModel,
+      llm_url: llmUrl,
       api_key: apiKey,
       text: text.text,
       datapoints: getReqProfilePoints(activeProfilePoints),
@@ -398,6 +406,9 @@ export const annotateTextBatch = async (
   texts: Text[],
   activeAnnotatedDataset: AnnotatedDataset,
   activeProfilePoints: ProfilePoint[],
+  llmProvider: string,
+  llmModel: string,
+  llmUrl: string,
   apiKey: string
 ) => {
   const annotationPromises = texts.map(async (text) => {
@@ -405,6 +416,9 @@ export const annotateTextBatch = async (
       const { data, aiFaulty } = await callAnnotationAPI(
         text,
         activeProfilePoints,
+        llmProvider,
+        llmModel,
+        llmUrl,
         apiKey
       );
 

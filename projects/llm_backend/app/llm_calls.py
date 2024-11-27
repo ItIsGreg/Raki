@@ -1,8 +1,6 @@
 import json
-from math import log
 from typing import Any
 import re
-
 
 from langchain_core.prompts.base import BasePromptTemplate
 
@@ -16,21 +14,12 @@ from langchain_community.chat_models.azureml_endpoint import (
 
 from app.utils.utils import handle_json_prefix
 
-from app.config.environment import (
-    llama3_api_key,
-    llama3_url,
-    kiss_ki_url,
-    kiss_ki_api_key,
-    kiss_ki_model,
-)
-
 import logging
-import openai
 
-openai.api_key = ***REMOVED***
-openai.base_url = (
-    ***REMOVED***  # Replace with your local server's address
-)
+# openai.api_key = ***REMOVED***
+# openai.base_url = (
+#     ***REMOVED***  # Replace with your local server's address
+# )
 
 logging.basicConfig(level=logging.ERROR)  # Changed to ERROR level
 logger = logging.getLogger(__name__)
@@ -42,7 +31,6 @@ async def call_openai(
     model: str,
     api_key: str,
 ):
-    # logger.debug("Using OpenAI")
 
     llm_model = ChatOpenAI(temperature=0, model=model, api_key=api_key)
     output_parser = StrOutputParser()
@@ -50,36 +38,43 @@ async def call_openai(
     chain = prompt | llm_model | output_parser
     try:
         result_structured = await chain.ainvoke(prompt_parameters)
-        # logger.debug(f"OpenAI response: {result_structured}")
         result_structured = handle_json_prefix(result_structured)
         result_structured_list = json.loads(result_structured)
         return result_structured_list
     except Exception as e:
         logger.error(f"Error in call_openai: {e}")
-        # logger.debug(f"Prompt: {prompt}")
-        # logger.debug(f"Result structured: {result_structured}")
         return None
+
+
+async def call_openai_stream(
+    prompt: BasePromptTemplate,
+    prompt_parameters: dict[str, Any],
+    model: str,
+    api_key: str,
+):
+    llm_model = ChatOpenAI(temperature=0, model=model, api_key=api_key, streaming=True)
+    output_parser = StrOutputParser()
+    chain = prompt | llm_model | output_parser
+
+    async def async_generator():
+        async for chunk in chain.astream(prompt_parameters):
+            yield chunk
+
+    return async_generator()
 
 
 async def call_self_hosted_model(
     prompt: BasePromptTemplate,
     prompt_parameters: dict[str, Any],
     model: str,
-    api_base: str,
+    llm_url: str,
     api_key: str,
 ):
-    # logger.debug("Using self-hosted model")
-    # logger.debug("Parameters:")
-    # logger.debug(f"Model: {model}")
-    # logger.debug(f"API base: {api_base}")
-    # logger.debug(f"API key: {api_key}")
-
-    # Configure OpenAI to use the self-hosted model
     llm_model = ChatOpenAI(
         temperature=0,
         model=model,
         api_key=api_key,
-        base_url=api_base,
+        base_url=llm_url,
     )
 
     output_parser = StrOutputParser()
@@ -87,38 +82,31 @@ async def call_self_hosted_model(
 
     try:
         result_structured = await chain.ainvoke(prompt_parameters)
-        # logger.debug(f"Self-hosted model response: {result_structured}")
 
         result_structured = handle_json_prefix(result_structured)
         result_structured = clean_llm_response(result_structured)
 
         result_structured_list = json.loads(result_structured)
+
         return result_structured_list
 
     except Exception as e:
         logger.error(f"Error in call_self_hosted_model: {e}")
-        # logger.debug(f"Prompt: {prompt}")
-        # logger.debug(f"Result structured: {result_structured}")
         return None
 
 
-async def call_llama3(
+async def call_azure(
     prompt: BasePromptTemplate,
     prompt_parameters: dict[str, Any],
     model: str,
     api_key: str,
+    llm_url: str,
 ):
-    # logger.debug("Using Llama3")
-    # logger.debug("Parameters:")
-    # logger.debug(f"Model: {model}")
-    # logger.debug(f"API key: {api_key}")
-    # logger.debug(f"Prompt: {prompt}")
-    # logger.debug(f"Prompt parameters: {prompt_parameters}")
 
     llm_model = AzureMLChatOnlineEndpoint(
-        endpoint_url=llama3_url,
+        endpoint_url=llm_url,
         endpoint_api_type=AzureMLEndpointApiType.serverless,
-        endpoint_api_key=llama3_api_key,
+        endpoint_api_key=api_key,
         content_formatter=LlamaChatContentFormatter(),
     )
     output_parser = StrOutputParser()
@@ -126,7 +114,6 @@ async def call_llama3(
     chain = prompt | llm_model | output_parser
     try:
         result_structured = await chain.ainvoke(prompt_parameters)
-        # logger.debug(f"Llama3 response: {result_structured}")
 
         result_structured = handle_json_prefix(result_structured)
         result_structured = clean_llm_response(result_structured)
@@ -136,25 +123,47 @@ async def call_llama3(
 
     except Exception as e:
         logger.error(f"Error in call_llama3: {e}")
-        # logger.debug(f"Prompt: {prompt}")
-        # logger.debug(f"Result structured: {result_structured}")
         return None
+
+
+async def call_azure_stream(
+    prompt: BasePromptTemplate,
+    prompt_parameters: dict[str, Any],
+    model: str,
+    api_key: str,
+    llm_url: str,
+):
+
+    llm_model = AzureMLChatOnlineEndpoint(
+        endpoint_url=llm_url,
+        endpoint_api_type=AzureMLEndpointApiType.serverless,
+        endpoint_api_key=api_key,
+        content_formatter=LlamaChatContentFormatter(),
+    )
+    output_parser = StrOutputParser()
+
+    chain = prompt | llm_model | output_parser
+
+    async def async_generator():
+        async for chunk in chain.astream(prompt_parameters):
+            yield chunk
+
+    return async_generator()
 
 
 async def call_self_hosted_model_stream(
     prompt: BasePromptTemplate,
     prompt_parameters: dict[str, Any],
     model: str,
-    api_base: str,
+    llm_url: str,
     api_key: str,
 ):
-    # logger.debug("Using self-hosted model with streaming")
 
     llm_model = ChatOpenAI(
         temperature=0,
         model=model,
         api_key=api_key,
-        base_url=api_base,
+        base_url=llm_url,
         streaming=True,
     )
 
@@ -174,34 +183,48 @@ async def call_llm(
     llm_provider: str,
     model: str,
     api_key: str,
+    llm_url: str,
     stream: bool = False,
 ):
-    # logger.debug(f"Calling LLM with parameters: {prompt_parameters}")
 
     if llm_provider == "openai":
-        return await call_openai(
-            prompt, prompt_parameters, model=model, api_key=api_key
-        )
-    elif llm_provider == "llama3":
-        return await call_llama3(
-            prompt, prompt_parameters, model=model, api_key=api_key
-        )
-    elif llm_provider == "kiss_ki":
+        if stream:
+            return await call_openai_stream(
+                prompt, prompt_parameters, model=model, api_key=api_key
+            )
+        else:
+            return await call_openai(
+                prompt, prompt_parameters, model=model, api_key=api_key
+            )
+    elif llm_provider == "azure":
+        if stream:
+            return await call_azure_stream(
+                prompt, prompt_parameters, model=model, api_key=api_key, llm_url=llm_url
+            )
+        else:
+            return await call_azure(
+                prompt,
+                prompt_parameters,
+                model=model,
+                api_key=api_key,
+                llm_url=llm_url,
+            )
+    elif llm_provider == "custom":
         if stream:
             return await call_self_hosted_model_stream(
                 prompt,
                 prompt_parameters,
                 model=model,
-                api_base=kiss_ki_url,
-                api_key=kiss_ki_api_key,
+                llm_url=llm_url,
+                api_key=api_key,
             )
         else:
             return await call_self_hosted_model(
                 prompt,
                 prompt_parameters,
                 model=model,
-                api_base=kiss_ki_url,
-                api_key=kiss_ki_api_key,
+                llm_url=llm_url,
+                api_key=api_key,
             )
     else:
         logger.error("Unknown LLM provider")

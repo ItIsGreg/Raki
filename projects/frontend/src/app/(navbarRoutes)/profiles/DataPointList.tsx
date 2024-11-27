@@ -6,8 +6,8 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { createProfilePoint, readProfilePointsByProfile } from "@/lib/db/crud";
 import DataPointCard from "./DataPointCard";
 import { useRef, useState } from "react";
-import ProfileChatButton from "./ProfileChatButton";
-import ProfileChatView from "./ProfileChatView";
+import ProfileChatButton from "./profileChat/ProfileChatButton";
+import ProfileChatView from "./profileChat/ProfileChatView";
 
 const DataPointList = (props: DataPointListProps) => {
   const {

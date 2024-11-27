@@ -13,6 +13,7 @@ import { BatchSizeInput } from "./BatchSizeInput";
 import { RerunCheckbox } from "./RerunCheckbox";
 import { LLMProviderSelect } from "./LLMProviderSelect";
 import { ModelInput } from "./ModelInput";
+import { LLMUrlInput } from "./LLMUrlInput";
 
 interface SettingsMenuProps {
   isOpen: boolean;
@@ -38,11 +39,13 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
           <SheetTitle>Settings</SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-4 py-4">
-          <ApiKeyInput />
+          <LLMProviderSelect />
           <Separator className="my-2" />
           <ModelInput />
           <Separator className="my-2" />
-          <LLMProviderSelect />
+          <LLMUrlInput />
+          <Separator className="my-2" />
+          <ApiKeyInput />
           <Separator className="my-2" />
           <BatchSizeInput batchSize={batchSize} setBatchSize={setBatchSize} />
           <Separator className="my-2" />

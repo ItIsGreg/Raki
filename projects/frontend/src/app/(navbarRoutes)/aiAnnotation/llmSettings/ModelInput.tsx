@@ -28,7 +28,7 @@ export const ModelInput = () => {
 
   return (
     <div className="flex flex-col items-start">
-      <h4 className="text-sm font-semibold mb-1">Model</h4>
+      <h4 className="text-sm font-semibold mb-1">Model Name</h4>
       <div className="flex flex-row gap-2">
         <Input
           placeholder={getPlaceholder()}

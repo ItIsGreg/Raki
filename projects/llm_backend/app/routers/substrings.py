@@ -1,7 +1,5 @@
-from typing import Callable
 from fastapi import APIRouter
 
-from app.llm_calls import call_llm
 from app.models.models import ExtractDatapointSubstringsReq, SelectSubstringReq
 from app.services.substrings import (
     extract_datapoint_substrings_and_match_service,

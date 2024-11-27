@@ -87,7 +87,7 @@ class Extract_Datapoint_Substrings_Template_List:
     Try to extract a substring that contains the main point of the datapoint. The substring ideally should be 2 words long.
     If the substring is representing a medication, only extract the name of the medication, not the dosage or frequency.
     If the datapoint is not present in the text, you should leave out the datapoint in the response.
-    Do not provide any explanations or additional information in the response.
+    Do not provide any explanations or additional information in the response. Do not attempt to write code to solve the problem.
 
     %DATAPOINTS:
     {datapoints}
@@ -222,7 +222,8 @@ class Extract_Datapoint_Substrings_Template_List:
         "index": 0
     }}
 
-    Do not add any additional information to the output, like an explanation of the datapoints or the text.
+    Do not add any additional information to the output, like an explanation of your decision. Do not attempt to write code to solve the problem.
+    Only provide the index of the selected substring. Nothing more, nothing less.
 
     JSON_OUTPUT:
 """

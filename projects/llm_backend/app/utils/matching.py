@@ -1,7 +1,6 @@
 import re
 import logging
 from fuzzywuzzy import process, fuzz
-from rich import print
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -61,21 +60,10 @@ def get_matches(text: str, substring: str):
             if start_index != -1:
                 matches.append([start_index, start_index + len(best_match)])
 
-    # log if more than one match is found
-    if len(matches) > 1:
-        logger.debug(f"More than one match found for substring: {substring}")
-        logger.debug(f"Pattern: {pattern}")
-        logger.debug(f"Re matches: {re_matches}")
-        logger.debug(f"Matches: {matches}")
-
     return matches
 
 
 def create_select_substring_text_excerpt(match, text, window_size=50):
-    # # some logging
-    # logger.debug(f"Match: {match}")
-    # logger.debug(f"Text: {text}")
-    # logger.debug(f"Window size: {window_size}")
     start = max(0, match[0] - window_size)
     end = min(len(text), match[1] + window_size)
     # mark the match with @@

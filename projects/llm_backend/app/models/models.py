@@ -6,6 +6,7 @@ class BaseRequest(BaseModel):
     api_key: str
     llm_provider: str
     model: str
+    llm_url: str
 
 
 class BaseDataPoint(BaseModel):
@@ -58,9 +59,6 @@ class SelectSubstringReq(BaseRequest):
     substrings: list[str]
 
 
-class ProfileChatRequest(BaseModel):
+class ProfileChatRequest(BaseRequest):
     messages: List[dict]
     stream: Optional[bool] = False
-    llm_provider: Optional[str] = "kiss_ki"
-    model: Optional[str] = None
-    api_key: Optional[str] = None

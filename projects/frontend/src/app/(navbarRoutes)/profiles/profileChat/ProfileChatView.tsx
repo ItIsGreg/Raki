@@ -6,9 +6,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { backendURL } from "../../constants";
+import { backendURL } from "../../../constants";
 import ChatMessage from "./ChatMessage";
 import { Profile } from "@/lib/db/db";
+import { useLiveQuery } from "dexie-react-hooks";
+import {
+  readAllApiKeys,
+  readAllLLMProviders,
+  readAllLLMUrls,
+  readAllModels,
+} from "@/lib/db/crud";
 
 interface ProfileChatViewProps {
   isOpen: boolean;
@@ -31,11 +38,18 @@ const ProfileChatView = ({
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const dbLlmProvider = useLiveQuery(() => readAllLLMProviders());
+  const dbLlmModel = useLiveQuery(() => readAllModels());
+  const dbLlmUrl = useLiveQuery(() => readAllLLMUrls());
+  const dbApiKeys = useLiveQuery(() => readAllApiKeys());
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const callProfileChatAPI = async (messages: Message[]) => {
+    if (!dbLlmProvider || !dbLlmModel || !dbLlmUrl || !dbApiKeys) return;
+
     try {
       const response = await fetch(`${backendURL}/profile-chat/profile-chat`, {
         method: "POST",
@@ -45,6 +59,10 @@ const ProfileChatView = ({
         body: JSON.stringify({
           messages: messages,
           stream: true,
+          llm_provider: dbLlmProvider[0].provider,
+          model: dbLlmModel[0].name,
+          llm_url: dbLlmUrl[0].url,
+          api_key: dbApiKeys[0].key,
         }),
       });
 
@@ -69,6 +87,7 @@ const ProfileChatView = ({
 
     try {
       const response = await callProfileChatAPI([...messages, userMessage]);
+      if (!response) return;
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
 

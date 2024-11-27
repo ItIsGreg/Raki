@@ -343,3 +343,25 @@ export const readAllLLMProviders = async () => {
 export const deleteLLMProvider = async (id: string) => {
   return await db.llmProviders.delete(id);
 };
+
+// LLM URL CRUD operations
+export const createLLMUrl = async (url: string) => {
+  const id = v4();
+  return await db.llmUrls.add({ id, url });
+};
+
+export const readLLMUrl = async (id: string) => {
+  return await db.llmUrls.get(id);
+};
+
+export const readAllLLMUrls = async () => {
+  return await db.llmUrls.toArray();
+};
+
+export const updateLLMUrl = async (id: string, url: string) => {
+  return await db.llmUrls.put({ id, url });
+};
+
+export const deleteLLMUrl = async (id: string) => {
+  return await db.llmUrls.delete(id);
+};

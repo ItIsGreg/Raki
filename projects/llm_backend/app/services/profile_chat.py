@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from app.llm_calls import call_llm
 from app.models.models import ProfileChatRequest
 from app.prompts.profile_chat import ProfileChatPrompt
-from app.config.environment import kiss_ki_model, kiss_ki_api_key, prompt_language
+from app.config.environment import prompt_language
 
 prompt = ProfileChatPrompt()
 
@@ -21,9 +21,10 @@ async def profile_chat_service(
     stream = await call_llm_function(
         prompt.profile_chat,
         prompt_parameters,
-        llm_provider="kiss_ki",
-        model=kiss_ki_model,
-        api_key=kiss_ki_api_key,
+        llm_provider=req.llm_provider,
+        model=req.model,
+        api_key=req.api_key,
+        llm_url=req.llm_url,
         stream=True,
     )
 

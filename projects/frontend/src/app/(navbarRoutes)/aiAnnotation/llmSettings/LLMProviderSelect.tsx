@@ -14,7 +14,6 @@ import {
 } from "@/lib/db/crud";
 
 export const LLMProviderSelect = () => {
-  console.log("LLMProviderSelect rendering");
   const dbProvider = useLiveQuery(() => readAllLLMProviders());
 
   const getCurrentProvider = useMemo(() => {

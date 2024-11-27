@@ -36,6 +36,7 @@ async def extract_datapoint_substrings_service(
         },
         llm_provider=req.llm_provider,
         model=req.model,
+        llm_url=req.llm_url,
         api_key=req.api_key,
     )
 
@@ -91,6 +92,7 @@ async def extract_datapoint_substrings_and_match_service(
                     api_key=req.api_key,
                     llm_provider=req.llm_provider,
                     model=req.model,
+                    llm_url=req.llm_url,
                     datapoint=base_datapoint,
                     substrings=text_excerpts,
                 )
@@ -140,6 +142,7 @@ async def select_substring_service(
             "substrings": req.substrings,
         },
         llm_provider=req.llm_provider,
+        llm_url=req.llm_url,
         model=req.model,
         api_key=req.api_key,
     )

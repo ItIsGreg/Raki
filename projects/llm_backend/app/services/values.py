@@ -1,5 +1,4 @@
 from typing import Callable
-from pydantic import BaseModel
 from app.llm_calls import call_llm
 from app.models.models import ExtractValuesReq
 from app.prompts.values import Extract_Values_Prompt_List
@@ -27,6 +26,7 @@ async def extract_values_service(
         llm_provider=req.llm_provider,
         api_key=req.api_key,
         model=req.model,
+        llm_url=req.llm_url,
     )
 
     return result

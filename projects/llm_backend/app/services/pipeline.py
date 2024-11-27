@@ -34,6 +34,7 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             api_key=req.api_key,
             llm_provider=req.llm_provider,
             model=req.model,
+            llm_url=req.llm_url,
             datapoints=substring_req_datapoints,
             text=req.text,
         )
@@ -65,6 +66,7 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             api_key=req.api_key,
             llm_provider=req.llm_provider,
             model=req.model,
+            llm_url=req.llm_url,
             datapoints=extract_values_datapoints,
         )
     )
