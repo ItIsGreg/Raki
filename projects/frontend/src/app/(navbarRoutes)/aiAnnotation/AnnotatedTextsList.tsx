@@ -17,12 +17,19 @@ const AnnotatedTextsList = ({
   setActiveAnnotatedDataset,
   setActiveProfilePoints,
 }: AnnotatedTextsListProps) => {
-  const { dbApiKeys, dbAnnotatedTexts, dbTexts } = useAnnotationState({
+  const {
+    dbApiKeys,
+    dbAnnotatedTexts,
+    dbTexts,
+    dbBatchSize,
+    dbLlmProvider,
+    dbLlmModel,
+    dbLlmUrl,
+  } = useAnnotationState({
     activeAnnotatedDataset,
     activeProfilePoints,
     setActiveAnnotatedDataset,
     setActiveProfilePoints,
-    batchSize: 10,
     autoRerunFaulty: true,
   });
 
@@ -31,10 +38,24 @@ const AnnotatedTextsList = ({
   const handleRerunFaultyText = async (annotatedText: any) => {
     setRerunningTexts([...rerunningTexts, annotatedText.id]);
     try {
-      if (!activeAnnotatedDataset || !activeProfilePoints || !dbApiKeys) {
+      if (
+        !activeAnnotatedDataset ||
+        !activeProfilePoints ||
+        !dbApiKeys ||
+        !dbLlmProvider ||
+        !dbLlmModel ||
+        !dbLlmUrl
+      ) {
         throw new Error("Missing required parameters");
       }
-      await reannotateFaultyText(annotatedText, activeProfilePoints, dbApiKeys);
+      await reannotateFaultyText(
+        annotatedText,
+        activeProfilePoints,
+        dbLlmProvider[0].provider,
+        dbLlmModel[0].name,
+        dbLlmUrl[0].url,
+        dbApiKeys[0].key
+      );
     } catch (error) {
       console.error("Error rerunning faulty text:", error);
       // You might want to show an error message to the user here
