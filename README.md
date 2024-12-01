@@ -16,14 +16,13 @@ cd projects/frontend
 
 ```bash
 yarn
-
-
 ```
 
 3. Install Rust
+
 Make sure you have Rust installed on your system. You can install it from [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
 
-4. Run the app:
+1. Run the app:
 
 For web development mode:
 ```bash
