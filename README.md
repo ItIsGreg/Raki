@@ -9,7 +9,7 @@ Raki is a platform to extract structured information from medical reports of int
 
 ```bash
 cd projects/frontend
-
+```
 
 2. Install dependencies:
 
