@@ -3,26 +3,39 @@ Raki is a platform to extract structured information from medical reports of int
 
 ## Development Setup
 
+### Backend Build (Required First)
+
+1. Navigate to the backend app directory:
+```bash
+cd projects/llm_backend/app
+```
+
+2. Create executable:
+```bash
+pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
+```
+
+3. Append OS-specific suffix to the executable in `dist/` directory:
+- Linux: `-x86_64-unknown-linux-gnu`
+- macOS: `-aarch64-apple-darwin`
+- Windows: `-x86_64-pc-windows-msvc`
+
 ### Frontend Setup
 
 1. Navigate to the frontend directory:
-
 ```bash
 cd projects/frontend
 ```
 
 2. Install dependencies:
-
-
 ```bash
 yarn
 ```
 
 3. Install Rust
-
 Make sure you have Rust installed on your system. You can install it from [https://www.rust-lang.org/tools/install](https://www.rust-lang.org/tools/install)
 
-1. Run the app:
+4. Run the app:
 
 For web development mode:
 ```bash
@@ -34,7 +47,7 @@ For desktop development mode:
 yarn tauri dev
 ```
 
-### Backend Setup
+### Backend Development Server (Optional)
 
 1. Navigate to the backend directory:
 ```bash
@@ -67,32 +80,16 @@ uvicorn app.main:app --reload --port 8000
 
 ## Building for Production
 
-### Backend Build
-
-1. Navigate to the backend app directory:
+1. First build the backend executable (if not already done):
 ```bash
 cd projects/llm_backend/app
-```
-
-2. Create executable:
-```bash
 pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
 ```
-
-3. Append OS-specific suffix to the executable in `dist/` directory:
-- Linux: `-x86_64-unknown-linux-gnu`
-- macOS: `-aarch64-apple-darwin`
-- Windows: `-x86_64-pc-windows-msvc`
-
-### Frontend Build
-
-1. Navigate to the frontend directory:
-```bash
-cd projects/frontend
-```
+Don't forget to append the OS-specific suffix to the executable in `dist/` directory.
 
 2. Build the desktop application:
 ```bash
+cd projects/frontend
 yarn tauri build
 ```
 
