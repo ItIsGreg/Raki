@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, Database, Rocket, ScanText, Settings } from "lucide-react";
-import SettingsMenu from "@/components/llmSettings/SettingsMenu";
+import { useSettings } from "@/contexts/SettingsContext";
 
 export default function Home() {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { setIsSettingsOpen } = useSettings();
 
   return (
     <div className="flex justify-center w-full">
@@ -50,7 +49,7 @@ export default function Home() {
 
         <div className="m-10">
           <Card
-            className="hover:bg-gray-100 transform hover:shadow-md cursor-pointer"
+            className="hover:bg-gray-100 transform hover:shadow-md"
             onClick={() => setIsSettingsOpen(true)}
           >
             <CardHeader className="flex flex-row items-center justify-between">
@@ -60,12 +59,6 @@ export default function Home() {
           </Card>
         </div>
       </div>
-      <SettingsMenu
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        autoRerunFaulty={true}
-        setAutoRerunFaulty={() => {}}
-      />
     </div>
   );
 }

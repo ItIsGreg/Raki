@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSettings } from "@/contexts/SettingsContext";
 
-const Navbar = () => {
+export default function Navbar() {
+  const { setIsSettingsOpen } = useSettings();
   const currentPathname = usePathname();
 
   const routes = [
@@ -26,11 +28,10 @@ const Navbar = () => {
               <Button disabled={currentPathname === path}>{label}</Button>
             </Link>
           ))}
+          <Button onClick={() => setIsSettingsOpen(true)}>Setup</Button>
           <div className="flex-grow"></div>
         </CardContent>
       </Card>
     </div>
   );
-};
-
-export default Navbar;
+}
