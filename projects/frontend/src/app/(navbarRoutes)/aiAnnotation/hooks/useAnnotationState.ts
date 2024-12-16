@@ -10,6 +10,7 @@ import {
   readAllLLMUrls,
   readAllModels,
   readAllBatchSizes,
+  readAllMaxTokens,
 } from "@/lib/db/crud";
 import {
   AnnotatedDataset,
@@ -58,6 +59,7 @@ export const useAnnotationState = ({
   const dbLlmModel = useLiveQuery(() => readAllModels());
   const dbLlmUrl = useLiveQuery(() => readAllLLMUrls());
   const dbBatchSize = useLiveQuery(() => readAllBatchSizes());
+  const dbMaxTokens = useLiveQuery(() => readAllMaxTokens());
 
   const prepareFaultyBatches = useCallback(() => {
     if (!activeAnnotatedDataset || !dbAnnotatedTexts || !dbBatchSize?.[0])
@@ -117,9 +119,12 @@ export const useAnnotationState = ({
         !dbApiKeys ||
         !dbLlmProvider ||
         !dbLlmModel ||
-        !dbLlmUrl
+        !dbLlmUrl ||
+        !dbMaxTokens
       )
         return;
+
+      const maxTokens = dbMaxTokens[0]?.value ?? 6000;
 
       if (annotationState === "regular") {
         if (textBatches.length > 0 && batchIndex < textBatches.length) {
@@ -130,11 +135,11 @@ export const useAnnotationState = ({
             dbLlmProvider[0].provider,
             dbLlmModel[0].name,
             dbLlmUrl[0].url,
-            dbApiKeys[0].key
+            dbApiKeys[0].key,
+            maxTokens
           );
           setBatchIndex((prevIndex) => prevIndex + 1);
         } else if (autoRerunFaulty) {
-          // Transition to faulty annotation
           prepareFaultyBatches();
           setAnnotationState("faulty");
         } else {
@@ -153,7 +158,8 @@ export const useAnnotationState = ({
                 dbLlmProvider[0].provider,
                 dbLlmModel[0].name,
                 dbLlmUrl[0].url,
-                dbApiKeys[0].key
+                dbApiKeys[0].key,
+                maxTokens
               )
             )
           );
@@ -179,6 +185,7 @@ export const useAnnotationState = ({
     dbLlmProvider,
     dbLlmModel,
     dbLlmUrl,
+    dbMaxTokens,
     autoRerunFaulty,
   ]);
 
@@ -218,6 +225,7 @@ export const useAnnotationState = ({
     dbLlmProvider,
     dbLlmModel,
     dbLlmUrl,
+    dbMaxTokens,
     handleStart,
     handleStop,
     identifyActiveProfilePoints,

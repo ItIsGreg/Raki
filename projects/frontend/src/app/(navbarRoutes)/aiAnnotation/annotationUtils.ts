@@ -75,7 +75,8 @@ export const reannotateFaultyText = async (
   llmProvider: string,
   llmModel: string,
   llmUrl: string,
-  apiKey: string
+  apiKey: string,
+  maxTokens: number
 ) => {
   try {
     const text = await db.Texts.get(annotatedFaultyText.textId);
@@ -89,7 +90,8 @@ export const reannotateFaultyText = async (
       llmProvider,
       llmModel,
       llmUrl,
-      apiKey
+      apiKey,
+      maxTokens
     );
 
     await updateExistingAndCreateNewDataPoints(
@@ -115,7 +117,8 @@ export const annotateText = async (
   llmProvider: string,
   llmModel: string,
   llmUrl: string,
-  apiKey: string
+  apiKey: string,
+  maxTokens: number
 ) => {
   const { data, aiFaulty } = await callAnnotationAPI(
     text,
@@ -123,7 +126,8 @@ export const annotateText = async (
     llmProvider,
     llmModel,
     llmUrl,
-    apiKey
+    apiKey,
+    maxTokens
   );
 
   try {
@@ -152,7 +156,8 @@ async function callAnnotationAPI(
   llmProvider: string,
   llmModel: string,
   llmUrl: string,
-  apiKey: string
+  apiKey: string,
+  maxTokens: number
 ) {
   try {
     const body = {
@@ -162,6 +167,7 @@ async function callAnnotationAPI(
       api_key: apiKey,
       text: text.text,
       datapoints: getReqProfilePoints(activeProfilePoints),
+      max_tokens: maxTokens,
     };
     const response = await fetch(`${backendURL}/pipeline/pipeline/`, {
       method: "POST",
@@ -409,7 +415,8 @@ export const annotateTextBatch = async (
   llmProvider: string,
   llmModel: string,
   llmUrl: string,
-  apiKey: string
+  apiKey: string,
+  maxTokens: number
 ) => {
   const annotationPromises = texts.map(async (text) => {
     try {
@@ -419,7 +426,8 @@ export const annotateTextBatch = async (
         llmProvider,
         llmModel,
         llmUrl,
-        apiKey
+        apiKey,
+        maxTokens
       );
 
       const annotatedText = await createAnnotatedText({

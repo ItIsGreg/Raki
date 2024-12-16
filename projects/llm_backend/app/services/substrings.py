@@ -38,6 +38,7 @@ async def extract_datapoint_substrings_service(
         model=req.model,
         llm_url=req.llm_url,
         api_key=req.api_key,
+        max_tokens=req.max_tokens,
     )
 
     def convert_result(result: dict) -> list[DataPointSubstring]:
@@ -95,6 +96,7 @@ async def extract_datapoint_substrings_and_match_service(
                     llm_url=req.llm_url,
                     datapoint=base_datapoint,
                     substrings=text_excerpts,
+                    max_tokens=req.max_tokens,
                 )
             )
             try:
@@ -145,6 +147,7 @@ async def select_substring_service(
         llm_url=req.llm_url,
         model=req.model,
         api_key=req.api_key,
+        max_tokens=req.max_tokens,
     )
 
     return result

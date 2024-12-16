@@ -7,6 +7,7 @@ class BaseRequest(BaseModel):
     llm_provider: str
     model: str
     llm_url: str
+    max_tokens: int
 
 
 class BaseDataPoint(BaseModel):

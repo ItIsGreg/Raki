@@ -30,9 +30,12 @@ async def call_openai(
     prompt_parameters: dict[str, Any],
     model: str,
     api_key: str,
+    max_tokens: int,
 ):
 
-    llm_model = ChatOpenAI(temperature=0, model=model, api_key=api_key)
+    llm_model = ChatOpenAI(
+        temperature=0, model=model, api_key=api_key, max_tokens=max_tokens
+    )
     output_parser = StrOutputParser()
 
     chain = prompt | llm_model | output_parser
@@ -51,8 +54,15 @@ async def call_openai_stream(
     prompt_parameters: dict[str, Any],
     model: str,
     api_key: str,
+    max_tokens: int,
 ):
-    llm_model = ChatOpenAI(temperature=0, model=model, api_key=api_key, streaming=True)
+    llm_model = ChatOpenAI(
+        temperature=0,
+        model=model,
+        api_key=api_key,
+        max_tokens=max_tokens,
+        streaming=True,
+    )
     output_parser = StrOutputParser()
     chain = prompt | llm_model | output_parser
 
@@ -69,12 +79,14 @@ async def call_self_hosted_model(
     model: str,
     llm_url: str,
     api_key: str,
+    max_tokens: int,
 ):
     llm_model = ChatOpenAI(
         temperature=0,
         model=model,
         api_key=api_key,
         base_url=llm_url,
+        max_tokens=max_tokens,
     )
 
     output_parser = StrOutputParser()
@@ -101,6 +113,7 @@ async def call_azure(
     model: str,
     api_key: str,
     llm_url: str,
+    max_tokens: int,
 ):
 
     llm_model = AzureMLChatOnlineEndpoint(
@@ -132,6 +145,7 @@ async def call_azure_stream(
     model: str,
     api_key: str,
     llm_url: str,
+    max_tokens: int,
 ):
 
     llm_model = AzureMLChatOnlineEndpoint(
@@ -157,6 +171,7 @@ async def call_self_hosted_model_stream(
     model: str,
     llm_url: str,
     api_key: str,
+    max_tokens: int,
 ):
 
     llm_model = ChatOpenAI(
@@ -164,6 +179,7 @@ async def call_self_hosted_model_stream(
         model=model,
         api_key=api_key,
         base_url=llm_url,
+        max_tokens=max_tokens,
         streaming=True,
     )
 
@@ -184,22 +200,36 @@ async def call_llm(
     model: str,
     api_key: str,
     llm_url: str,
+    max_tokens: int,
     stream: bool = False,
 ):
 
     if llm_provider == "openai":
         if stream:
             return await call_openai_stream(
-                prompt, prompt_parameters, model=model, api_key=api_key
+                prompt,
+                prompt_parameters,
+                model=model,
+                api_key=api_key,
+                max_tokens=max_tokens,
             )
         else:
             return await call_openai(
-                prompt, prompt_parameters, model=model, api_key=api_key
+                prompt,
+                prompt_parameters,
+                model=model,
+                api_key=api_key,
+                max_tokens=max_tokens,
             )
     elif llm_provider == "azure":
         if stream:
             return await call_azure_stream(
-                prompt, prompt_parameters, model=model, api_key=api_key, llm_url=llm_url
+                prompt,
+                prompt_parameters,
+                model=model,
+                api_key=api_key,
+                llm_url=llm_url,
+                max_tokens=max_tokens,
             )
         else:
             return await call_azure(
@@ -208,6 +238,7 @@ async def call_llm(
                 model=model,
                 api_key=api_key,
                 llm_url=llm_url,
+                max_tokens=max_tokens,
             )
     elif llm_provider == "custom":
         if stream:
@@ -217,6 +248,7 @@ async def call_llm(
                 model=model,
                 llm_url=llm_url,
                 api_key=api_key,
+                max_tokens=max_tokens,
             )
         else:
             return await call_self_hosted_model(
@@ -225,6 +257,7 @@ async def call_llm(
                 model=model,
                 llm_url=llm_url,
                 api_key=api_key,
+                max_tokens=max_tokens,
             )
     else:
         logger.error("Unknown LLM provider")

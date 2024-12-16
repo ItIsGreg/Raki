@@ -384,3 +384,25 @@ export const readAllBatchSizes = async () => {
 export const deleteAllBatchSizes = async (id: string) => {
   return await db.batchSizes.delete(id);
 };
+
+// Max Tokens CRUD operations
+export const createMaxTokens = async (value: number) => {
+  const id = v4();
+  return await db.maxTokens.add({ id, value });
+};
+
+export const readMaxTokens = async (id: string) => {
+  return await db.maxTokens.get(id);
+};
+
+export const readAllMaxTokens = async () => {
+  return await db.maxTokens.toArray();
+};
+
+export const updateMaxTokens = async (id: string, value: number) => {
+  return await db.maxTokens.put({ id, value });
+};
+
+export const deleteMaxTokens = async (id: string) => {
+  return await db.maxTokens.delete(id);
+};

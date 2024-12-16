@@ -15,6 +15,7 @@ import {
   readAllLLMProviders,
   readAllLLMUrls,
   readAllModels,
+  readAllMaxTokens,
 } from "@/lib/db/crud";
 
 interface ProfileChatViewProps {
@@ -42,13 +43,21 @@ const ProfileChatView = ({
   const dbLlmModel = useLiveQuery(() => readAllModels());
   const dbLlmUrl = useLiveQuery(() => readAllLLMUrls());
   const dbApiKeys = useLiveQuery(() => readAllApiKeys());
+  const dbMaxTokens = useLiveQuery(() => readAllMaxTokens());
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const callProfileChatAPI = async (messages: Message[]) => {
-    if (!dbLlmProvider || !dbLlmModel || !dbLlmUrl || !dbApiKeys) return;
+    if (
+      !dbLlmProvider ||
+      !dbLlmModel ||
+      !dbLlmUrl ||
+      !dbApiKeys ||
+      !dbMaxTokens
+    )
+      return;
 
     try {
       const response = await fetch(`${backendURL}/profile-chat/profile-chat`, {
@@ -63,6 +72,7 @@ const ProfileChatView = ({
           model: dbLlmModel[0].name,
           llm_url: dbLlmUrl[0].url,
           api_key: dbApiKeys[0].key,
+          max_tokens: dbMaxTokens[0].value,
         }),
       });
 

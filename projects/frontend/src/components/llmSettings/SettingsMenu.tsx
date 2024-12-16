@@ -14,6 +14,7 @@ import { RerunCheckbox } from "./RerunCheckbox";
 import { LLMProviderSelect } from "./LLMProviderSelect";
 import { ModelInput } from "./ModelInput";
 import { LLMUrlInput } from "./LLMUrlInput";
+import { MaxTokensInput } from "./MaxTokensInput";
 
 interface SettingsMenuProps {
   isOpen: boolean;
@@ -44,6 +45,8 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
           <ApiKeyInput />
           <Separator className="my-2" />
           <BatchSizeInput />
+          <Separator className="my-2" />
+          <MaxTokensInput />
           <Separator className="my-2" />
           <RerunCheckbox
             autoRerunFaulty={autoRerunFaulty}

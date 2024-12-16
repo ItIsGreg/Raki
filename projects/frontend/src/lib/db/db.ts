@@ -103,6 +103,11 @@ export interface BatchSize {
   value: number;
 }
 
+export interface MaxTokens {
+  id: string;
+  value: number;
+}
+
 export class MySubClassedDexie extends Dexie {
   // 'friends' is added by dexie when declaring the stores()
   // We just tell the typing system this is the case
@@ -118,10 +123,11 @@ export class MySubClassedDexie extends Dexie {
   llmProviders!: Table<LLMProvider>;
   llmUrls!: Table<LLMUrl>;
   batchSizes!: Table<BatchSize>;
+  maxTokens!: Table<MaxTokens>;
 
   constructor() {
     super("myDatabase");
-    this.version(7).stores({
+    this.version(8).stores({
       // friends: "++id, name, age", // Primary key and indexed props
       profilePoints: "++id, name, profileId",
       Profiles: "++id, name",
@@ -135,13 +141,33 @@ export class MySubClassedDexie extends Dexie {
       llmProviders: "++id, provider",
       llmUrls: "++id, url",
       batchSizes: "++id, value",
+      maxTokens: "++id, value",
     });
 
-    // Add hook to populate default batch size
+    // Add hooks to populate default values
     this.on("populate", async () => {
+      // Default batch size
       await this.batchSizes.add({
         id: v4(),
-        value: 10, // Set your desired default value here
+        value: 10,
+      });
+
+      // Default API Key
+      await this.ApiKeys.add({
+        id: v4(),
+        key: "default-key",
+      });
+
+      // Default LLM URL
+      await this.llmUrls.add({
+        id: v4(),
+        url: "https://default.com",
+      });
+
+      // Default max tokens
+      await this.maxTokens.add({
+        id: v4(),
+        value: 6000,
       });
     });
   }

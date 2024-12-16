@@ -27,6 +27,7 @@ async def extract_values_service(
         api_key=req.api_key,
         model=req.model,
         llm_url=req.llm_url,
+        max_tokens=req.max_tokens,
     )
 
     return result

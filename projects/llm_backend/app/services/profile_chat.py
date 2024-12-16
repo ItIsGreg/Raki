@@ -26,6 +26,7 @@ async def profile_chat_service(
         api_key=req.api_key,
         llm_url=req.llm_url,
         stream=True,
+        max_tokens=req.max_tokens,
     )
 
     return StreamingResponse(stream, media_type="text/event-stream")
