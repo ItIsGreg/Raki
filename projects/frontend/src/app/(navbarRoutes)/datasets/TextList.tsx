@@ -10,6 +10,7 @@ import TableView from "./TableView";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
+import SingleTextInput from "./SingleTextInput";
 
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
@@ -24,6 +25,7 @@ const TextList = (props: TextListProps) => {
 
   const [isTableViewOpen, setIsTableViewOpen] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
+  const [isSingleTextOpen, setIsSingleTextOpen] = useState(false);
 
   const handleUploadButtonClick = () => {
     if (!fileInputRef.current) return;
@@ -120,32 +122,34 @@ const TextList = (props: TextListProps) => {
           <div className="flex-grow"></div>
 
           {activeDataset && (
-            <>
-              <Button onClick={handleUploadButtonClick} className="mr-2">
-                Upload Texts
+            <div className="grid grid-cols-2 gap-2">
+              <Button onClick={handleUploadButtonClick}>Upload Texts</Button>
+              <Button onClick={() => setIsSingleTextOpen(true)}>
+                Single Text
               </Button>
               <Button
                 onClick={handleUploadTableClick}
-                className="flex items-center mr-2"
+                className="flex items-center"
               >
                 <FaTable className="mr-2" />
                 Upload Table
               </Button>
               <Button
                 onClick={handleOpenTableClick}
-                className="flex items-center mr-2"
+                className="flex items-center"
               >
                 <FaFolderOpen className="mr-2" />
                 Open Table
               </Button>
               <Button
                 onClick={handleDownloadTexts}
-                className="flex items-center justify-center w-10 h-10 p-0"
+                className="col-span-2 flex items-center justify-center"
                 title="Download Texts"
               >
-                <FaDownload />
+                <FaDownload className="mr-2" />
+                Download All
               </Button>
-            </>
+            </div>
           )}
           <input
             type="file"
@@ -196,6 +200,11 @@ const TextList = (props: TextListProps) => {
         isOpen={isTableViewOpen}
         onClose={() => setIsTableViewOpen(false)}
         data={tableData}
+        activeDataset={activeDataset}
+      />
+      <SingleTextInput
+        isOpen={isSingleTextOpen}
+        onClose={() => setIsSingleTextOpen(false)}
         activeDataset={activeDataset}
       />
     </div>
