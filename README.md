@@ -5,17 +5,30 @@ Raki is a platform to extract structured information from medical reports of int
 
 ### Backend Build (Required First)
 
-1. Navigate to the backend app directory:
+Make sure you have Python 3.12+ installed.
+
+1. Navigate to the backend directory:
+```bash
+cd projects/llm_backend/
+```
+
+Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+
+2. Navigate to the backend app directory:
 ```bash
 cd projects/llm_backend/app
 ```
 
-2. Create executable:
+3. Create executable:
 ```bash
 pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
 ```
 
-3. Append OS-specific suffix to the executable in `dist/` directory:
+4. Append OS-specific suffix to the executable in `dist/` directory:
 - Linux: `-x86_64-unknown-linux-gnu`
 - macOS: `-aarch64-apple-darwin`
 - Windows: `-x86_64-pc-windows-msvc`
