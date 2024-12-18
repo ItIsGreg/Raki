@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 2. Navigate to the backend app directory:
 ```bash
-cd projects/llm_backend/app
+cd app
 ```
 
 3. Create executable:
