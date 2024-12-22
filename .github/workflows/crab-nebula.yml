@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CN_APPLICATION: "Raki/Raki"
+  CN_APPLICATION: "raki/Raki"
 
 jobs:
   draft:
