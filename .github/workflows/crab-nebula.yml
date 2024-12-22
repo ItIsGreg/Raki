@@ -76,18 +76,22 @@ jobs:
           cd app
           pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
 
-          if: [ "${{ matrix.os }}" == "ubuntu-22.04" ]; then
-            mv dist/main dist/main-x86_64-unknown-linux-gnu
-
-          elif: [ "${{ matrix.os }}" == "windows-latest" ]; then
-            mv dist/main.exe dist/main-x86_64-pc-windows-msvc.exe
-          fi
+        if: matrix.os == "ubuntu-22.04"
+        run: |
+          mv dist/main dist/main-x86_64-unknown-linux-gnu
           cd ../../frontend
           yarn install --frozen-lockfile
           yarn tauri build
-        # env:
-        #   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+        if: matrix.os == "windows-latest"
+        run: |
+          mv dist/main.exe dist/main-x86_64-pc-windows-msvc.exe
+          cd ../../frontend
+          yarn install --frozen-lockfile
+          yarn tauri build
+      # env:
+      #   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Install x86_64-apple-darwin for mac and build backend and Tauri binaries
         if: matrix.os == 'macos-latest'
