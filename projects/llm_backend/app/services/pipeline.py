@@ -37,6 +37,7 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             llm_url=req.llm_url,
             datapoints=substring_req_datapoints,
             text=req.text,
+            max_tokens=req.max_tokens,
         )
     )
     # get text excerpts
@@ -68,6 +69,7 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             model=req.model,
             llm_url=req.llm_url,
             datapoints=extract_values_datapoints,
+            max_tokens=req.max_tokens,
         )
     )
 

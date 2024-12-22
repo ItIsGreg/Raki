@@ -25,6 +25,7 @@ const AnnotatedTextsList = ({
     dbLlmProvider,
     dbLlmModel,
     dbLlmUrl,
+    dbMaxTokens,
   } = useAnnotationState({
     activeAnnotatedDataset,
     activeProfilePoints,
@@ -44,7 +45,8 @@ const AnnotatedTextsList = ({
         !dbApiKeys ||
         !dbLlmProvider ||
         !dbLlmModel ||
-        !dbLlmUrl
+        !dbLlmUrl ||
+        !dbMaxTokens
       ) {
         throw new Error("Missing required parameters");
       }
@@ -54,7 +56,8 @@ const AnnotatedTextsList = ({
         dbLlmProvider[0].provider,
         dbLlmModel[0].name,
         dbLlmUrl[0].url,
-        dbApiKeys[0].key
+        dbApiKeys[0].key,
+        dbMaxTokens[0].value
       );
     } catch (error) {
       console.error("Error rerunning faulty text:", error);

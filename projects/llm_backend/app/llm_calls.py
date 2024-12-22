@@ -13,6 +13,7 @@ from langchain_community.chat_models.azureml_endpoint import (
 )
 
 from app.utils.utils import handle_json_prefix
+from rich import print
 
 import logging
 
@@ -81,6 +82,12 @@ async def call_self_hosted_model(
     api_key: str,
     max_tokens: int,
 ):
+    # print("[bold blue]Self-hosted Model Call[/bold blue]")
+    # print("[yellow]Prompt Template:[/yellow]")
+    # print(prompt)
+    # print("[yellow]Prompt Parameters:[/yellow]")
+    # print(prompt_parameters)
+
     llm_model = ChatOpenAI(
         temperature=0,
         model=model,
@@ -94,6 +101,8 @@ async def call_self_hosted_model(
 
     try:
         result_structured = await chain.ainvoke(prompt_parameters)
+        # print("[yellow]Raw LLM Response:[/yellow]")
+        # print(result_structured)
 
         result_structured = handle_json_prefix(result_structured)
         result_structured = clean_llm_response(result_structured)
