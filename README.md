@@ -20,18 +20,26 @@ This will start both the backend service (on port 8000) and the frontend service
 
 Make sure you have Python 3.12+ installed.
 
-1. Navigate to the backend directory:
+1. Install uv:
+```bash
+pip install uv
+```
+
+2. Navigate to the backend directory:
 ```bash
 cd projects/llm_backend/
 ```
 
-Install dependencies
+3. Create a virtual environment and install dependencies:
 ```bash
-pip install -r requirements.txt
+uv venv
+. .venv/bin/activate  # For Unix-like systems
+# or
+.\.venv\Scripts\activate  # For Windows
+uv sync
 ```
 
-
-2. Navigate to the backend app directory:
+4. Navigate to the backend app directory:
 ```bash
 cd app
 ```
@@ -80,26 +88,16 @@ yarn tauri dev
 cd projects/llm_backend
 ```
 
-2. Create a virtual environment:
-
-For Windows:
+2. Create a virtual environment and install dependencies:
 ```bash
-python -m venv venv
-.\venv\Scripts\activate
+uv venv
+. .venv/bin/activate  # For Unix-like systems
+# or
+.\.venv\Scripts\activate  # For Windows
+uv sync
 ```
 
-For macOS/Linux:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Run the development server:
+3. Run the development server:
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
