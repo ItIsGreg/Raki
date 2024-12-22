@@ -1,9 +1,22 @@
 # Raki
 Raki is a platform to extract structured information from medical reports of intervention and diagnostic procedures.
 
-## Development Setup
+## Setup
 
-### Backend Build (Required First)
+### Option 1: Using Docker (Recommended)
+
+1. Make sure you have Docker and Docker Compose installed on your system.
+
+2. Start the application:
+```bash
+docker-compose up
+```
+
+This will start both the backend service (on port 8000) and the frontend service (on port 3000).
+
+### Option 2: Manual Setup
+
+#### Backend Build (Required First)
 
 Make sure you have Python 3.12+ installed.
 
