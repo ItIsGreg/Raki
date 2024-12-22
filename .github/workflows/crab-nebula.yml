@@ -69,10 +69,11 @@ jobs:
       - name: build backend and Tauri app for Windows, Linux
         if: matrix.os != 'macos-latest'
         run: |
-          cd projects/llm_backend/app
+          cd projects/llm_backend/
           uv venv
           . .venv/bin/activate
           uv sync
+          cd app
           pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
           if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
             mv dist/main dist/main-x86_64-unknown-linux-gnu
@@ -89,10 +90,11 @@ jobs:
       - name: Install x86_64-apple-darwin for mac and build backend and Tauri binaries
         if: matrix.os == 'macos-latest'
         run: |
-          cd projects/llm_backend/app
+          cd projects/llm_backend/
           uv venv
           . .venv/bin/activate
           uv sync
+          cd app
           pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
           mv dist/main dist/main-aarch64-apple-darwin
           cd ../../frontend
