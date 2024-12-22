@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./projects/llm_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./projects/llm_backend/app:/app/app
+
+  frontend:
+    build: 
+      context: ./projects/frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./projects/frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend 

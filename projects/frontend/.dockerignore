@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Tauri
+src-tauri/target
+src-tauri/WixTools
+
+# Testing
+coverage
+
+# Production builds
+build
+dist
+dist-ssr
+*.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Local env files
+.env*.local
+.env
+
+# Cache and IDE files
+.DS_Store
+*.pem
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw? 
