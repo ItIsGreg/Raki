@@ -60,15 +60,11 @@ jobs:
       - name: Install uv
         run: pip install uv
 
-      - name: install Linux dependencies
+      - name: build python backend and Tauri app for Linux
         if: matrix.os == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y webkit2gtk-4.1
-
-      - name: build python backend and Tauri app for Linux
-        if: matrix.os != 'macos-latest'
-        run: |
           cd projects/llm_backend/
           uv venv
           . .venv/bin/activate
