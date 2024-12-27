@@ -66,7 +66,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y webkit2gtk-4.1
 
-      - name: build backend and Tauri app for Windows, Linux
+      - name: build python backend for Linux and Windows
         if: matrix.os != 'macos-latest'
         run: |
           cd projects/llm_backend/
@@ -76,6 +76,7 @@ jobs:
           cd app
           pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
 
+      - name: build Tauri app for Linux
         if: matrix.os == "ubuntu-22.04"
         run: |
           mv dist/main dist/main-x86_64-unknown-linux-gnu
@@ -83,6 +84,7 @@ jobs:
           yarn install --frozen-lockfile
           yarn tauri build
 
+      - name: build Tauri app for Windows
         if: matrix.os == "windows-latest"
         run: |
           mv dist/main.exe dist/main-x86_64-pc-windows-msvc.exe
@@ -92,8 +94,7 @@ jobs:
       # env:
       #   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-
-      - name: Install x86_64-apple-darwin for mac and build backend and Tauri binaries
+      - name: build backend and Tauri binaries for mac
         if: matrix.os == 'macos-latest'
         run: |
           cd projects/llm_backend/
