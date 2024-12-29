@@ -14,7 +14,7 @@ export default function Home() {
         <Link href="/profiles" className="m-10">
           <Card className="hover:bg-gray-100 transform hover:shadow-md">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-center">Maracuja</CardTitle>
+              <CardTitle className="text-center">Maracuja Schnaps</CardTitle>
               <Rocket className="h-8 w-8" />
             </CardHeader>
           </Card>
