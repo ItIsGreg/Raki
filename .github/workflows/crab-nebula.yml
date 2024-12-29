@@ -75,6 +75,9 @@ jobs:
           cd ../../frontend
           yarn install --frozen-lockfile
           yarn tauri build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: build python backend and Tauri app for Windows
         if: matrix.os == 'windows-latest'
@@ -89,9 +92,10 @@ jobs:
           cd ../../frontend
           yarn install --frozen-lockfile
           yarn tauri build
-      # env:
-      #   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
       - name: build backend and Tauri binaries for mac
         if: matrix.os == 'macos-latest'
         run: |
@@ -108,9 +112,9 @@ jobs:
           yarn install --frozen-lockfile
           yarn tauri build --target x86_64-apple-darwin
           yarn tauri build --target aarch64-apple-darwin
-        # env:
-        #   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-        #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: upload assets
         uses: crabnebula-dev/cloud-release@v0
