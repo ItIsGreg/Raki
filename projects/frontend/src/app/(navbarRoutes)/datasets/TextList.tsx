@@ -4,13 +4,14 @@ import { createText, deleteText, readTextsByDataset } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import { TextListProps } from "../../types";
 import { TiDeleteOutline } from "react-icons/ti";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { FaTable, FaFolderOpen, FaDownload } from "react-icons/fa";
 import TableView from "./TableView";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import SingleTextInput from "./SingleTextInput";
+import * as pdfjsLib from "pdfjs-dist";
 
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
@@ -27,28 +28,68 @@ const TextList = (props: TextListProps) => {
   const [tableData, setTableData] = useState<any[]>([]);
   const [isSingleTextOpen, setIsSingleTextOpen] = useState(false);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+        "pdfjs-dist/build/pdf.worker.min.mjs",
+        import.meta.url
+      ).toString();
+    }
+  }, []);
+
   const handleUploadButtonClick = () => {
     if (!fileInputRef.current) return;
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = "";
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map((item: any) => item.str).join(" ");
+      fullText += pageText + "\n";
+    }
+
+    return fullText;
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const text = e.target?.result as string;
-        if (!activeDataset) return;
-        createText({
-          datasetId: activeDataset.id,
-          filename: file.name,
-          text,
-        });
-      };
-      reader.readAsText(file);
+      const fileExtension = file.name.split(".").pop()?.toLowerCase();
+
+      if (fileExtension === "pdf") {
+        try {
+          const text = await extractTextFromPDF(file);
+          if (!activeDataset) return;
+          await createText({
+            datasetId: activeDataset.id,
+            filename: file.name,
+            text,
+          });
+        } catch (error) {
+          console.error("Error processing PDF:", error);
+        }
+      } else {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const text = e.target?.result as string;
+          if (!activeDataset) return;
+          await createText({
+            datasetId: activeDataset.id,
+            filename: file.name,
+            text,
+          });
+        };
+        reader.readAsText(file);
+      }
     }
   };
 
@@ -155,7 +196,7 @@ const TextList = (props: TextListProps) => {
             type="file"
             ref={fileInputRef}
             hidden
-            accept=".txt"
+            accept=".txt,.pdf"
             multiple
             onChange={handleFileChange}
           />
