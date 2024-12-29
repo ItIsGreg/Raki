@@ -30,10 +30,7 @@ const TextList = (props: TextListProps) => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-        "pdfjs-dist/build/pdf.worker.min.mjs",
-        import.meta.url
-      ).toString();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
     }
   }, []);
 
