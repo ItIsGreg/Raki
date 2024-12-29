@@ -27,7 +27,7 @@
     "createUpdaterArtifacts": true,
     "active": true,
     "targets": "all",
-    "icon": ["icons/RakiLogoTransparent.png"],
+    "icon": ["icons/RakiLogoTransparent.png", "icons/RakiLogoTransparent.ico"],
     "externalBin": ["../../llm_backend/app/dist/main"]
   },
   "plugins": {
