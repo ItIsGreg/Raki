@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SettingsMenu from "@/components/llmSettings/SettingsMenu";
 import { SettingsContext } from "@/contexts/SettingsContext";
+import { checkForAppUpdates } from "@/lib/updater";
 
 export default function ClientLayout({
   children,
@@ -10,6 +11,10 @@ export default function ClientLayout({
   children: React.ReactNode;
 }>) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    checkForAppUpdates();
+  }, []);
 
   return (
     <SettingsContext.Provider value={{ setIsSettingsOpen }}>

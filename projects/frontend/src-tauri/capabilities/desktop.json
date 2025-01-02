@@ -1,14 +1,11 @@
 {
   "identifier": "desktop-capability",
-  "platforms": [
-    "macOS",
-    "windows",
-    "linux"
-  ],
-  "windows": [
-    "main"
-  ],
+  "platforms": ["macOS", "windows", "linux"],
+  "windows": ["main"],
   "permissions": [
-    "updater:default"
+    "dialog:default",
+    "updater:default",
+    "process:default",
+    "process:allow-restart"
   ]
 }
