@@ -133,8 +133,17 @@ jobs:
           echo "Key partition list set"
           
           # Store certificate ID
-          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Apple Development")
+          echo "Listing all identities in keychain:"
+          security find-identity -v -p codesigning build.keychain
+          
+          echo "Attempting to find signing certificate..."
+          CERT_INFO=$(security find-identity -v -p codesigning build.keychain | head -1)
+          if [ -z "$CERT_INFO" ]; then
+            echo "No signing certificates found in keychain!"
+            exit 1
+          fi
           CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
+          echo "Found certificate ID: $CERT_ID"
           echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
           
           # Build process
