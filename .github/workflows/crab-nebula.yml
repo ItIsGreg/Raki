@@ -106,15 +106,31 @@ jobs:
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ env.CERT_ID }}
         run: |
           # Setup keychain and certificate
+          echo "Decoding certificate..."
           echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
+          echo "Certificate decoded to certificate.p12"
+          
+          echo "Creating keychain..."
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          echo "Keychain created"
+          
+          echo "Setting default keychain..."
           security default-keychain -s build.keychain
+          echo "Default keychain set"
+          
+          echo "Unlocking keychain..."
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          echo "Keychain unlocked"
+          
+          echo "Importing certificate..."
           security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          echo "Certificate imported"
+          
+          echo "Setting key partition list..."
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          echo "Key partition list set"
           
           # Store certificate ID
           CERT_INFO=$(security find-identity -v -p codesigning build.keychain | grep "Apple Development")
