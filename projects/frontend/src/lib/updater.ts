@@ -8,6 +8,7 @@ export async function checkForAppUpdates() {
     const update = await check();
 
     if (update?.available) {
+      console.log("update available");
       const yes = await ask(
         `Update to ${update.version} is available!\nRelease notes: ${update.body}`,
         {
@@ -19,7 +20,9 @@ export async function checkForAppUpdates() {
       );
 
       if (yes) {
+        console.log("trying to update");
         await update.downloadAndInstall();
+        console.log("updated");
         await relaunch();
       }
     }
