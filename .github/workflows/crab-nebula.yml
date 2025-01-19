@@ -104,6 +104,10 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
+          APPLE_NOTARIZATION_API_PRIVATE_KEY: ${{ secrets.APPLE_NOTARIZATION_API_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
@@ -111,6 +115,11 @@ jobs:
           echo "Decoding certificate..."
           echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
           echo "Certificate decoded to certificate.p12"
+          
+          # Decode Apple Notarization API key
+          echo "Decoding Apple Notarization API key..."
+          echo $APPLE_NOTARIZATION_API_PRIVATE_KEY | base64 --decode > AuthKey.p8
+          echo "API key decoded to AuthKey.p8"
           
           echo "Creating keychain..."
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
