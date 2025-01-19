@@ -116,9 +116,6 @@ jobs:
           echo $APPLE_NOTARIZATION_API_PRIVATE_KEY | base64 --decode > ~/private_keys/AuthKey.p8
           echo "API key decoded to ~/private_keys/AuthKey.p8"
           
-          # Update APPLE_API_KEY_PATH to use the absolute path
-          echo "APPLE_API_KEY_PATH=/Users/runner/private_keys/AuthKey.p8" >> $GITHUB_ENV
-          
           # Rest of your existing setup
           echo "Decoding certificate..."
           echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
