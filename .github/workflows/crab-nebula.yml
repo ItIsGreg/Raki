@@ -111,15 +111,18 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
-          # Setup keychain and certificate
+          # Create a directory for the API key and decode it there
+          mkdir -p ~/private_keys
+          echo $APPLE_NOTARIZATION_API_PRIVATE_KEY | base64 --decode > ~/private_keys/AuthKey.p8
+          echo "API key decoded to ~/private_keys/AuthKey.p8"
+          
+          # Update APPLE_API_KEY_PATH to use the absolute path
+          echo "APPLE_API_KEY_PATH=/Users/runner/private_keys/AuthKey.p8" >> $GITHUB_ENV
+          
+          # Rest of your existing setup
           echo "Decoding certificate..."
           echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
           echo "Certificate decoded to certificate.p12"
-          
-          # Decode Apple Notarization API key
-          echo "Decoding Apple Notarization API key..."
-          echo $APPLE_NOTARIZATION_API_PRIVATE_KEY | base64 --decode > AuthKey.p8
-          echo "API key decoded to AuthKey.p8"
           
           echo "Creating keychain..."
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
