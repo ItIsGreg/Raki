@@ -28,10 +28,13 @@ async def extract_datapoint_substrings_service(
         "en": prompt_list.extract_datapoint_substrings,
     }
 
+    # Convert Pydantic models to raw JSON/dict
+    datapoints_json = [datapoint.model_dump() for datapoint in req.datapoints]
+
     result = await call_llm_function(
         lang_prompts[lang],
         {
-            "datapoints": req.datapoints,
+            "datapoints": datapoints_json,  # Pass JSON instead of Pydantic models
             "text": req.text,
         },
         llm_provider=req.llm_provider,
@@ -140,7 +143,7 @@ async def select_substring_service(
     result = await call_llm_function(
         lang_prompts[lang],
         {
-            "datapoint": req.datapoint,
+            "datapoint": req.datapoint.model_dump(),  # Convert to JSON
             "substrings": req.substrings,
         },
         llm_provider=req.llm_provider,
