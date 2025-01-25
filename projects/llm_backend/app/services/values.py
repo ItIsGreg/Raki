@@ -18,10 +18,13 @@ async def extract_values_service(
         "de": prompt_list.extract_values_german,
         "en": prompt_list.extract_values,
     }
+
+    datapoints_json = [datapoint.model_dump() for datapoint in req.datapoints]
+
     result = await call_llm_function(
         lang_prompts[lang],
         {
-            "datapoints": req.datapoints,
+            "datapoints": datapoints_json,  # Pass JSON instead of Pydantic models
         },
         llm_provider=req.llm_provider,
         api_key=req.api_key,

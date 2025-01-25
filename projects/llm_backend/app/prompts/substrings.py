@@ -88,6 +88,7 @@ class Extract_Datapoint_Substrings_Template_List:
     If the substring is representing a medication, only extract the name of the medication, not the dosage or frequency.
     If the datapoint is not present in the text, you should leave out the datapoint in the response.
     Do not provide any explanations or additional information in the response. Do not attempt to write code to solve the problem.
+    Do not attempt to attempt to use some tool or function calling to solve the problem.
 
     %DATAPOINTS:
     {datapoints}
@@ -224,6 +225,7 @@ class Extract_Datapoint_Substrings_Template_List:
 
     Do not add any additional information to the output, like an explanation of your decision. Do not attempt to write code to solve the problem.
     Only provide the index of the selected substring. Nothing more, nothing less.
+    Do not attempt to attempt to use some tool or function calling to solve the problem.
 
     JSON_OUTPUT:
 """

@@ -84,6 +84,7 @@ class Extract_Values_Template_List:
         The output should be valid JSON and only valid JSON.
         Do not add any additional information to the output, like an explanation of the datapoints or how you processed the datapoints.
         Do not use trailing commas in the JSON output. Do not attempt to write code to solve the problem.
+        Do not attempt to attempt to use some tool or function calling to solve the problem.
 
         %EXAMPLE_DATAPOINTS:
 
