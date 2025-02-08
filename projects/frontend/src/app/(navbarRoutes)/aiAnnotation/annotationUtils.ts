@@ -20,6 +20,14 @@ import {
 } from "@/lib/db/crud";
 import { db } from "@/lib/db/db";
 
+interface LLMConfig {
+  provider: string;
+  model: string;
+  url: string;
+  apiKey: string;
+  maxTokens: number;
+}
+
 const updateExistingAndCreateNewDataPoints = async (
   data: ResDataPoint[],
   annotatedTextId: string,
@@ -87,11 +95,7 @@ export const reannotateFaultyText = async (
     const { data, aiFaulty } = await callAnnotationAPI(
       text,
       activeProfilePoints,
-      llmProvider,
-      llmModel,
-      llmUrl,
-      apiKey,
-      maxTokens
+      { provider: llmProvider, model: llmModel, url: llmUrl, apiKey: apiKey, maxTokens: maxTokens }
     );
 
     await updateExistingAndCreateNewDataPoints(
@@ -123,11 +127,7 @@ export const annotateText = async (
   const { data, aiFaulty } = await callAnnotationAPI(
     text,
     activeProfilePoints,
-    llmProvider,
-    llmModel,
-    llmUrl,
-    apiKey,
-    maxTokens
+    { provider: llmProvider, model: llmModel, url: llmUrl, apiKey: apiKey, maxTokens: maxTokens }
   );
 
   try {
@@ -153,21 +153,17 @@ export const annotateText = async (
 async function callAnnotationAPI(
   text: Text,
   activeProfilePoints: ProfilePoint[],
-  llmProvider: string,
-  llmModel: string,
-  llmUrl: string,
-  apiKey: string,
-  maxTokens: number
+  config: LLMConfig
 ) {
   try {
     const body = {
-      llm_provider: llmProvider,
-      model: llmModel,
-      llm_url: llmUrl,
-      api_key: apiKey,
+      llm_provider: config.provider,
+      model: config.model,
+      llm_url: config.url,
+      api_key: config.apiKey,
       text: text.text,
       datapoints: getReqProfilePoints(activeProfilePoints),
-      max_tokens: maxTokens,
+      max_tokens: config.maxTokens,
     };
     const response = await fetch(`${backendURL}/pipeline/pipeline/`, {
       method: "POST",
@@ -423,11 +419,7 @@ export const annotateTextBatch = async (
       const { data, aiFaulty } = await callAnnotationAPI(
         text,
         activeProfilePoints,
-        llmProvider,
-        llmModel,
-        llmUrl,
-        apiKey,
-        maxTokens
+        { provider: llmProvider, model: llmModel, url: llmUrl, apiKey: apiKey, maxTokens: maxTokens }
       );
 
       const annotatedText = await createAnnotatedText({
