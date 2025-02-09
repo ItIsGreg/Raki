@@ -106,7 +106,6 @@ export const useAnnotationState = ({
       batches.push(unannotatedTexts.slice(i, i + batchSize));
     }
 
-    console.log(batches);
 
     setTextBatches(batches);
     setBatchIndex(0);
