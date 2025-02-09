@@ -116,7 +116,6 @@ jobs:
           echo $APPLE_NOTARIZATION_API_PRIVATE_KEY | base64 --decode > ~/private_keys/AuthKey.p8
           echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
 
           security default-keychain -s build.keychain
 
