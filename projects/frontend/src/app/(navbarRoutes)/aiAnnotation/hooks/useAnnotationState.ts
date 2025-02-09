@@ -124,8 +124,6 @@ export const useAnnotationState = ({
       )
         return;
 
-      const maxTokens = dbMaxTokens[0]?.value ?? 6000;
-
       if (annotationState === "regular") {
         if (textBatches.length > 0 && batchIndex < textBatches.length) {
           await annotateTextBatch(
@@ -136,7 +134,7 @@ export const useAnnotationState = ({
             dbLlmModel[0].name,
             dbLlmUrl[0].url,
             dbApiKeys[0].key,
-            maxTokens
+            dbMaxTokens[0]?.value
           );
           setBatchIndex((prevIndex) => prevIndex + 1);
         } else if (autoRerunFaulty) {
@@ -159,7 +157,7 @@ export const useAnnotationState = ({
                 dbLlmModel[0].name,
                 dbLlmUrl[0].url,
                 dbApiKeys[0].key,
-                maxTokens
+                dbMaxTokens[0]?.value
               )
             )
           );

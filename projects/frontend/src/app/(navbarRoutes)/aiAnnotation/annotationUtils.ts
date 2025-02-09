@@ -84,7 +84,7 @@ export const reannotateFaultyText = async (
   llmModel: string,
   llmUrl: string,
   apiKey: string,
-  maxTokens: number
+  maxTokens: number | undefined
 ) => {
   try {
     const text = await db.Texts.get(annotatedFaultyText.textId);
@@ -122,7 +122,7 @@ export const annotateText = async (
   llmModel: string,
   llmUrl: string,
   apiKey: string,
-  maxTokens: number
+  maxTokens: number | undefined
 ) => {
   const { data, aiFaulty } = await callAnnotationAPI(
     text,
@@ -412,7 +412,7 @@ export const annotateTextBatch = async (
   llmModel: string,
   llmUrl: string,
   apiKey: string,
-  maxTokens: number
+  maxTokens: number | undefined
 ) => {
   const annotationPromises = texts.map(async (text) => {
     try {

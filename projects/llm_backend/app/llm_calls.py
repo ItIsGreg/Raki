@@ -90,11 +90,6 @@ async def call_self_hosted_model(
     api_key: str,
     max_tokens: int | None,
 ):
-    print("[bold blue]Self-hosted Model Call[/bold blue]")
-    print("[yellow]Prompt Template:[/yellow]")
-    print(prompt)
-    print("[yellow]Prompt Parameters:[/yellow]")
-    print(prompt_parameters)
 
     llm_params = {
         "temperature": 0,
@@ -112,8 +107,6 @@ async def call_self_hosted_model(
 
     try:
         result_structured = await chain.ainvoke(prompt_parameters)
-        print("[yellow]Raw LLM Response:[/yellow]")
-        print(result_structured)
 
         result_structured = handle_json_prefix(result_structured)
         result_structured = clean_llm_response(result_structured)
@@ -196,7 +189,6 @@ async def call_self_hosted_model_stream(
     api_key: str,
     max_tokens: int | None,
 ):
-    print("[bold blue]Self-hosted Model Stream Call[/bold blue]")
     llm_params = {
         "temperature": 0,
         "model": model,
@@ -207,12 +199,6 @@ async def call_self_hosted_model_stream(
     if max_tokens is not None:
         llm_params["max_tokens"] = max_tokens
     
-    print("[yellow]LLM Parameters:[/yellow]")
-    print(llm_params)
-    print("[yellow]Prompt Template:[/yellow]")
-    print(prompt)
-    print("[yellow]Prompt Parameters:[/yellow]")
-    print(prompt_parameters)
 
     llm_model = ChatOpenAI(**llm_params)
     output_parser = StrOutputParser()
