@@ -105,7 +105,7 @@ export interface BatchSize {
 
 export interface MaxTokens {
   id: string;
-  value: number;
+  value: number | undefined;
 }
 
 export class MySubClassedDexie extends Dexie {
@@ -167,7 +167,7 @@ export class MySubClassedDexie extends Dexie {
       // Default max tokens
       await this.maxTokens.add({
         id: v4(),
-        value: 6000,
+        value: undefined,
       });
     });
   }

@@ -31,12 +31,17 @@ async def call_openai(
     prompt_parameters: dict[str, Any],
     model: str,
     api_key: str,
-    max_tokens: int,
+    max_tokens: int | None,
 ):
+    llm_params = {
+        "temperature": 0,
+        "model": model,
+        "api_key": api_key,
+    }
+    if max_tokens is not None:
+        llm_params["max_tokens"] = max_tokens
 
-    llm_model = ChatOpenAI(
-        temperature=0, model=model, api_key=api_key, max_tokens=max_tokens
-    )
+    llm_model = ChatOpenAI(**llm_params)
     output_parser = StrOutputParser()
 
     chain = prompt | llm_model | output_parser
@@ -55,15 +60,18 @@ async def call_openai_stream(
     prompt_parameters: dict[str, Any],
     model: str,
     api_key: str,
-    max_tokens: int,
+    max_tokens: int | None,
 ):
-    llm_model = ChatOpenAI(
-        temperature=0,
-        model=model,
-        api_key=api_key,
-        max_tokens=max_tokens,
-        streaming=True,
-    )
+    llm_params = {
+        "temperature": 0,
+        "model": model,
+        "api_key": api_key,
+        "streaming": True,
+    }
+    if max_tokens is not None:
+        llm_params["max_tokens"] = max_tokens
+
+    llm_model = ChatOpenAI(**llm_params)
     output_parser = StrOutputParser()
     chain = prompt | llm_model | output_parser
 
@@ -80,7 +88,7 @@ async def call_self_hosted_model(
     model: str,
     llm_url: str,
     api_key: str,
-    max_tokens: int,
+    max_tokens: int | None,
 ):
     print("[bold blue]Self-hosted Model Call[/bold blue]")
     print("[yellow]Prompt Template:[/yellow]")
@@ -88,13 +96,16 @@ async def call_self_hosted_model(
     print("[yellow]Prompt Parameters:[/yellow]")
     print(prompt_parameters)
 
-    llm_model = ChatOpenAI(
-        temperature=0,
-        model=model,
-        api_key=api_key,
-        base_url=llm_url,
-        #max_tokens=max_tokens,
-    )
+    llm_params = {
+        "temperature": 0,
+        "model": model,
+        "api_key": api_key,
+        "base_url": llm_url,
+    }
+    if max_tokens is not None:
+        llm_params["max_tokens"] = max_tokens
+
+    llm_model = ChatOpenAI(**llm_params)
 
     output_parser = StrOutputParser()
     chain = prompt | llm_model | output_parser
@@ -122,15 +133,18 @@ async def call_azure(
     model: str,
     api_key: str,
     llm_url: str,
-    max_tokens: int,
+    max_tokens: int | None,
 ):
+    llm_params = {
+        "endpoint_url": llm_url,
+        "endpoint_api_type": AzureMLEndpointApiType.serverless,
+        "endpoint_api_key": api_key,
+        "content_formatter": LlamaChatContentFormatter(),
+    }
+    if max_tokens is not None:
+        llm_params["max_tokens"] = max_tokens
 
-    llm_model = AzureMLChatOnlineEndpoint(
-        endpoint_url=llm_url,
-        endpoint_api_type=AzureMLEndpointApiType.serverless,
-        endpoint_api_key=api_key,
-        content_formatter=LlamaChatContentFormatter(),
-    )
+    llm_model = AzureMLChatOnlineEndpoint(**llm_params)
     output_parser = StrOutputParser()
 
     chain = prompt | llm_model | output_parser
@@ -180,18 +194,27 @@ async def call_self_hosted_model_stream(
     model: str,
     llm_url: str,
     api_key: str,
-    max_tokens: int,
+    max_tokens: int | None,
 ):
+    print("[bold blue]Self-hosted Model Stream Call[/bold blue]")
+    llm_params = {
+        "temperature": 0,
+        "model": model,
+        "api_key": api_key,
+        "base_url": llm_url,
+        "streaming": True,
+    }
+    if max_tokens is not None:
+        llm_params["max_tokens"] = max_tokens
+    
+    print("[yellow]LLM Parameters:[/yellow]")
+    print(llm_params)
+    print("[yellow]Prompt Template:[/yellow]")
+    print(prompt)
+    print("[yellow]Prompt Parameters:[/yellow]")
+    print(prompt_parameters)
 
-    llm_model = ChatOpenAI(
-        temperature=0,
-        model=model,
-        api_key=api_key,
-        base_url=llm_url,
-        #max_tokens=max_tokens,
-        streaming=True,
-    )
-
+    llm_model = ChatOpenAI(**llm_params)
     output_parser = StrOutputParser()
     chain = prompt | llm_model | output_parser
 

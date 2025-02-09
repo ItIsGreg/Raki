@@ -25,7 +25,7 @@ interface LLMConfig {
   model: string;
   url: string;
   apiKey: string;
-  maxTokens: number;
+  maxTokens: number | undefined;
 }
 
 const updateExistingAndCreateNewDataPoints = async (
@@ -163,7 +163,7 @@ async function callAnnotationAPI(
       api_key: config.apiKey,
       text: text.text,
       datapoints: getReqProfilePoints(activeProfilePoints),
-      max_tokens: config.maxTokens,
+      max_tokens: config.maxTokens || undefined,
     };
     const response = await fetch(`${backendURL}/pipeline/pipeline/`, {
       method: "POST",

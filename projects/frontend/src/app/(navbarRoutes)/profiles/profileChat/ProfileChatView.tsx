@@ -72,7 +72,7 @@ const ProfileChatView = ({
           model: dbLlmModel[0].name,
           llm_url: dbLlmUrl[0].url,
           api_key: dbApiKeys[0].key,
-          max_tokens: dbMaxTokens[0].value,
+          max_tokens: dbMaxTokens?.[0]?.value,
         }),
       });
 
