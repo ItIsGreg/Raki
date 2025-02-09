@@ -114,47 +114,29 @@ jobs:
           # Create a directory for the API key and decode it there
           mkdir -p ~/private_keys
           echo $APPLE_NOTARIZATION_API_PRIVATE_KEY | base64 --decode > ~/private_keys/AuthKey.p8
-          echo "API key decoded to ~/private_keys/AuthKey.p8"
-          
-          # Rest of your existing setup
-          echo "Decoding certificate..."
           echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
-          echo "Certificate decoded to certificate.p12"
-          
-          echo "Creating keychain..."
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          echo "Keychain created"
-          
-          echo "Setting default keychain..."
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+
           security default-keychain -s build.keychain
-          echo "Default keychain set"
-          
-          echo "Unlocking keychain..."
+
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          echo "Keychain unlocked"
-          
-          echo "Importing certificate..."
+
           security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          echo "Certificate imported"
-          
-          echo "Setting key partition list..."
+
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-          echo "Key partition list set"
-          
+
           # Store certificate ID
-          echo "Listing all identities in keychain:"
           security find-identity -v -p codesigning build.keychain
-          
-          echo "Attempting to find signing certificate..."
+
           CERT_INFO=$(security find-identity -v -p codesigning build.keychain | head -1)
           if [ -z "$CERT_INFO" ]; then
             echo "No signing certificates found in keychain!"
             exit 1
           fi
           CERT_ID=$(echo "$CERT_INFO" | awk -F'"' '{print $2}')
-          echo "Found certificate ID: $CERT_ID"
           echo "CERT_ID=$CERT_ID" >> $GITHUB_ENV
-          
+
           # Build process
           cd projects/llm_backend/
           uv venv
@@ -164,6 +146,11 @@ jobs:
           pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
           cp dist/main dist/main-aarch64-apple-darwin
           cp dist/main dist/main-x86_64-apple-darwin
+
+          # Sign the Python executables
+          codesign --force -s "$CERT_ID" --options runtime --timestamp dist/main-aarch64-apple-darwin
+          codesign --force -s "$CERT_ID" --options runtime --timestamp dist/main-x86_64-apple-darwin
+
           cd ../../frontend
           rustup target add x86_64-apple-darwin
           rustup target add aarch64-apple-darwin
