@@ -104,6 +104,7 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
@@ -149,6 +150,18 @@ jobs:
           # Sign the Python executables
           codesign --force -s "$CERT_ID" --options runtime --timestamp dist/main-aarch64-apple-darwin
           codesign --force -s "$CERT_ID" --options runtime --timestamp dist/main-x86_64-apple-darwin
+
+          # Create zip archives for notarization
+          ditto -c -k --keepParent dist/main-aarch64-apple-darwin dist/main-aarch64-apple-darwin.zip
+          ditto -c -k --keepParent dist/main-x86_64-apple-darwin dist/main-x86_64-apple-darwin.zip
+
+          # Notarize the executables
+          xcrun notarytool submit dist/main-aarch64-apple-darwin.zip --apple-id "$APPLE_ID" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+          xcrun notarytool submit dist/main-x86_64-apple-darwin.zip --apple-id "$APPLE_ID" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+
+          # Staple the notarization ticket
+          xcrun stapler staple dist/main-aarch64-apple-darwin
+          xcrun stapler staple dist/main-x86_64-apple-darwin
 
           cd ../../frontend
           rustup target add x86_64-apple-darwin
