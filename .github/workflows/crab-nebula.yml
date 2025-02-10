@@ -155,9 +155,9 @@ jobs:
           ditto -c -k --keepParent dist/main-aarch64-apple-darwin dist/main-aarch64-apple-darwin.zip
           ditto -c -k --keepParent dist/main-x86_64-apple-darwin dist/main-x86_64-apple-darwin.zip
 
-          # Notarize the executables
-          xcrun notarytool submit dist/main-aarch64-apple-darwin.zip --apple-id "$APPLE_ID" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
-          xcrun notarytool submit dist/main-x86_64-apple-darwin.zip --apple-id "$APPLE_ID" --password "$APPLE_ID_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+          # Notarize the executables using API key
+          xcrun notarytool submit dist/main-aarch64-apple-darwin.zip --key ~/private_keys/AuthKey.p8 --key-id "$APPLE_API_KEY" --issuer "$APPLE_API_ISSUER" --wait
+          xcrun notarytool submit dist/main-x86_64-apple-darwin.zip --key ~/private_keys/AuthKey.p8 --key-id "$APPLE_API_KEY" --issuer "$APPLE_API_ISSUER" --wait
 
           # Staple the notarization ticket
           xcrun stapler staple dist/main-aarch64-apple-darwin
