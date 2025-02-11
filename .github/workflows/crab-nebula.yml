@@ -147,17 +147,6 @@ jobs:
           cp dist/main dist/main-aarch64-apple-darwin
           cp dist/main dist/main-x86_64-apple-darwin
 
-          # Sign the Python executables
-          codesign --force -s "$CERT_ID" --options runtime --timestamp dist/main-aarch64-apple-darwin
-          codesign --force -s "$CERT_ID" --options runtime --timestamp dist/main-x86_64-apple-darwin
-
-          # Create zip archives for notarization
-          ditto -c -k --keepParent dist/main-aarch64-apple-darwin dist/main-aarch64-apple-darwin.zip
-          ditto -c -k --keepParent dist/main-x86_64-apple-darwin dist/main-x86_64-apple-darwin.zip
-
-          # Notarize the executables using API key
-          xcrun notarytool submit dist/main-aarch64-apple-darwin.zip --key ~/private_keys/AuthKey.p8 --key-id "$APPLE_API_KEY" --issuer "$APPLE_API_ISSUER" --wait
-          xcrun notarytool submit dist/main-x86_64-apple-darwin.zip --key ~/private_keys/AuthKey.p8 --key-id "$APPLE_API_KEY" --issuer "$APPLE_API_ISSUER" --wait
 
           cd ../../frontend
           rustup target add x86_64-apple-darwin
