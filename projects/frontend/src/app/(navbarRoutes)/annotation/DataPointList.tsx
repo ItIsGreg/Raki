@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import CompactCard from "@/components/CompactCard";
 
 const DataPointList = (props: AnnotationDataPointListProps) => {
   const {
@@ -44,63 +45,50 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
           <CardTitle>Datapoints</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-1">
-          {dataPoints?.map((dataPoint) => {
-            return (
-              <TooltipProvider key={dataPoint.id} delayDuration={100}>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Card
-                      onClick={() =>
-                        setActiveDataPointId(
-                          activeDataPointId === dataPoint.id
-                            ? undefined
-                            : dataPoint.id
-                        )
-                      }
-                      className={`cursor-pointer ${
-                        activeDataPointId === dataPoint.id &&
-                        !dataPoint.verified
-                          ? "bg-gray-100"
-                          : activeDataPointId === dataPoint.id &&
-                            dataPoint.verified
-                          ? "bg-green-100"
-                          : !dataPoint.profilePointId
-                          ? "bg-red-100"
-                          : ""
-                      }
+          {dataPoints?.map((dataPoint) => (
+            <CompactCard
+              key={dataPoint.id}
+              title={dataPoint.name}
+              onClick={() =>
+                setActiveDataPointId(
+                  activeDataPointId === dataPoint.id ? undefined : dataPoint.id
+                )
+              }
+              isActive={activeDataPointId === dataPoint.id}
+              tooltipContent={dataPoint.name}
+              className={`
+                ${
+                  activeDataPointId === dataPoint.id && !dataPoint.verified
+                    ? "bg-gray-100"
+                    : activeDataPointId === dataPoint.id && dataPoint.verified
+                    ? "bg-green-100"
+                    : !dataPoint.profilePointId
+                    ? "bg-red-100"
+                    : ""
+                }
                 ${dataPoint.verified ? "text-green-800" : ""}
                 ${!dataPoint.match ? "text-gray-400" : ""}
-                `}
-                    >
-                      <CardHeader className="flex flex-row gap-1">
-                        <CardTitle className="truncate">
-                          {dataPoint.name}
-                        </CardTitle>
-                        <div className="flex-grow"></div>
-                        <TiDeleteOutline
-                          className="hover:text-red-500 cursor-pointer"
-                          size={24}
-                          onClick={() => {
-                            if (!dataPoint.profilePointId) {
-                              deleteDataPoint(dataPoint.id);
-                            } else {
-                              // reset the data point
-                              updateDataPoint({
-                                ...dataPoint,
-                                match: undefined,
-                                value: undefined,
-                              });
-                            }
-                          }}
-                        />
-                      </CardHeader>
-                    </Card>
-                  </TooltipTrigger>
-                  <TooltipContent>{dataPoint.name}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            );
-          })}
+              `}
+              rightIcon={
+                <TiDeleteOutline
+                  className="hover:text-red-500 cursor-pointer"
+                  size={20}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!dataPoint.profilePointId) {
+                      deleteDataPoint(dataPoint.id);
+                    } else {
+                      updateDataPoint({
+                        ...dataPoint,
+                        match: undefined,
+                        value: undefined,
+                      });
+                    }
+                  }}
+                />
+              }
+            />
+          ))}
         </CardContent>
       </Card>
     </div>

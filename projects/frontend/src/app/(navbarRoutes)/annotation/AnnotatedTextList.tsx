@@ -5,6 +5,7 @@ import {
   readTextsByIds,
 } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
+import CompactCard from "@/components/CompactCard";
 
 const AnnotatedTextList = (props: AnnotatedTextListProps) => {
   const {
@@ -40,29 +41,21 @@ const AnnotatedTextList = (props: AnnotatedTextListProps) => {
           <CardTitle>Annotated Texts</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-1">
-          {sortedAnnotatedTexts?.map((annotatedText) => {
-            return (
-              <Card
-                key={annotatedText.id}
-                onClick={() =>
-                  setActiveAnnotatedText(
-                    activeAnnotatedText === annotatedText
-                      ? undefined
-                      : annotatedText
-                  )
-                }
-                className={`cursor-pointer ${
-                  activeAnnotatedText?.id === annotatedText.id
-                    ? "bg-gray-100"
-                    : ""
-                }`}
-              >
-                <CardHeader>
-                  <CardTitle>{annotatedText.filename}</CardTitle>
-                </CardHeader>
-              </Card>
-            );
-          })}
+          {sortedAnnotatedTexts?.map((annotatedText) => (
+            <CompactCard
+              key={annotatedText.id}
+              title={annotatedText.filename}
+              onClick={() =>
+                setActiveAnnotatedText(
+                  activeAnnotatedText === annotatedText
+                    ? undefined
+                    : annotatedText
+                )
+              }
+              isActive={activeAnnotatedText?.id === annotatedText.id}
+              tooltipContent={annotatedText.filename}
+            />
+          ))}
         </CardContent>
       </Card>
     </div>

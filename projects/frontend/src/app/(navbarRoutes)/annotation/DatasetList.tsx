@@ -23,6 +23,7 @@ import {
 } from "@/lib/db/crud";
 import { TiDownloadOutline } from "react-icons/ti";
 import { AnnotatedDataset, DataPoint, ProfilePoint } from "@/lib/db/db";
+import CompactCard from "@/components/CompactCard";
 
 const DatasetList = (props: AnnotationDatasetListProps) => {
   const { activeAnnotatedDataset, setActiveAnnotatedDataset } = props;
@@ -113,47 +114,32 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
           <CardTitle>Annotated Datasets</CardTitle>
         </CardHeader>
         <CardContent>
-          {annotatedDatasets?.map((annotatedDataset) => {
-            return (
-              <TooltipProvider key={annotatedDataset.id} delayDuration={100}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Card
-                      onClick={() =>
-                        setActiveAnnotatedDataset(
-                          activeAnnotatedDataset === annotatedDataset
-                            ? undefined
-                            : annotatedDataset
-                        )
-                      }
-                      className={`cursor-pointer ${
-                        activeAnnotatedDataset?.id === annotatedDataset.id
-                          ? "bg-gray-100"
-                          : ""
-                      }`}
-                    >
-                      <CardHeader className="flex flex-row gap-2">
-                        <CardTitle className="truncate">
-                          {annotatedDataset.name}
-                        </CardTitle>
-                        <div className="flex flex-grow"></div>
-                        <TiDownloadOutline
-                          size={24}
-                          className="cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downLoadAnnotatedDataset(annotatedDataset);
-                          }}
-                        />
-                      </CardHeader>
-                      <CardFooter>{annotatedDataset.description}</CardFooter>
-                    </Card>
-                  </TooltipTrigger>
-                  <TooltipContent>{annotatedDataset.name}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            );
-          })}
+          {annotatedDatasets?.map((annotatedDataset) => (
+            <CompactCard
+              key={annotatedDataset.id}
+              title={annotatedDataset.name}
+              description={annotatedDataset.description}
+              onClick={() =>
+                setActiveAnnotatedDataset(
+                  activeAnnotatedDataset === annotatedDataset
+                    ? undefined
+                    : annotatedDataset
+                )
+              }
+              isActive={activeAnnotatedDataset?.id === annotatedDataset.id}
+              tooltipContent={annotatedDataset.name}
+              rightIcon={
+                <TiDownloadOutline
+                  size={20}
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    downLoadAnnotatedDataset(annotatedDataset);
+                  }}
+                />
+              }
+            />
+          ))}
         </CardContent>
       </Card>
     </div>
