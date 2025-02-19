@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -24,6 +24,7 @@ import { SelectGroup } from "@radix-ui/react-select";
 import { TiDeleteOutline } from "react-icons/ti";
 import { DataPointEditorProps } from "../../types";
 import { createProfilePoint, updateProfilePoint } from "@/lib/db/crud";
+import debounce from "lodash/debounce";
 
 export function DataPointEditor(props: DataPointEditorProps) {
   const {
@@ -144,6 +145,53 @@ export function DataPointEditor(props: DataPointEditorProps) {
     }
   };
 
+  const debouncedSave = useCallback(
+    debounce((data: any) => {
+      if (!creatingNewDataPoint && activeDataPoint) {
+        updateProfilePoint({
+          id: activeDataPoint.id,
+          name: data.name,
+          explanation: data.explanation,
+          synonyms: data.synonyms,
+          datatype: data.datatype,
+          valueset: data.valueset,
+          unit: data.unit,
+          profileId: activeProfile!.id,
+        });
+      }
+    }, 1000),
+    [creatingNewDataPoint, activeDataPoint, activeProfile]
+  );
+
+  const handleChange = (field: string, value: any) => {
+    switch (field) {
+      case "name":
+        setName(value);
+        break;
+      case "explanation":
+        setExplanation(value);
+        break;
+      case "datatype":
+        setDatatype(value);
+        break;
+      case "unit":
+        setUnit(value);
+        break;
+    }
+
+    if (!creatingNewDataPoint && activeDataPoint) {
+      debouncedSave({
+        name,
+        explanation,
+        synonyms,
+        datatype,
+        valueset,
+        unit,
+        [field]: value,
+      });
+    }
+  };
+
   return (
     <div className="overflow-y-scroll">
       <Card>
@@ -164,7 +212,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                 <Input
                   placeholder="Name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => handleChange("name", e.target.value)}
                 />
               </CardContent>
             </Card>
@@ -179,7 +227,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                 <Textarea
                   placeholder="Explanation"
                   value={explanation}
-                  onChange={(e) => setExplanation(e.target.value)}
+                  onChange={(e) => handleChange("explanation", e.target.value)}
                 />
               </CardContent>
             </Card>
@@ -229,7 +277,10 @@ export function DataPointEditor(props: DataPointEditorProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Select onValueChange={setDatatype} value={datatype}>
+                <Select
+                  onValueChange={(value) => handleChange("datatype", value)}
+                  value={datatype}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a Datatype" />
                   </SelectTrigger>
@@ -299,7 +350,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                   <Input
                     placeholder="Unit"
                     value={unit}
-                    onChange={(e) => setUnit(e.target.value)}
+                    onChange={(e) => handleChange("unit", e.target.value)}
                   />
                 </CardContent>
               </Card>
