@@ -144,9 +144,13 @@ jobs:
           uv sync
           cd app
           pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
+
+          # Code sign the binary
+          codesign --force --deep --timestamp --options runtime --sign "$CERT_ID" dist/main
+
+          # Create architecture-specific copies after signing
           cp dist/main dist/main-aarch64-apple-darwin
           cp dist/main dist/main-x86_64-apple-darwin
-
 
           cd ../../frontend
           rustup target add x86_64-apple-darwin
