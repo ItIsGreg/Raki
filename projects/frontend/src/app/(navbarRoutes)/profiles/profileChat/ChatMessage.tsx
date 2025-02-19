@@ -25,7 +25,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   >([]);
 
   // Common regex pattern
-  const JSON_REGEX = /(```json\n([\s\S]*?)```)|(\{[\s\S]*?\})/g;
+  const JSON_REGEX = /```json\n([\s\S]*?)```/g;
 
   useEffect(() => {
     const extractedPoints = extractProfilePoints(message.content);
@@ -46,13 +46,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             .replace(/:\s*undefined\s*/g, ": null")
             .replace(/:\s*"undefined"\s*/g, ": null");
 
+          console.log("Processing JSON string:", jsonString);
           const parsedJson = JSON.parse(jsonString);
           const cleanedJson = Object.fromEntries(
             Object.entries(parsedJson).filter(([_, value]) => value !== null)
           );
+          console.log("Cleaned JSON:", cleanedJson);
 
           if (isProfilePointCreate(cleanedJson)) {
+            console.log("Valid profile point found:", cleanedJson.name);
             points.push(cleanedJson);
+          } else {
+            console.log("Invalid profile point structure:", cleanedJson);
           }
         } catch (error) {
           console.error("Error parsing JSON:", error);
@@ -82,6 +87,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       return;
     }
 
+    console.log("Adopting all profile points:", validProfilePoints);
     try {
       const results = await Promise.all(
         validProfilePoints.map((point) => {
@@ -94,11 +100,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             unit: point.unit || "",
             profileId: activeProfile.id,
           };
+          console.log("Creating profile point:", completeProfilePoint);
           return createProfilePoint(completeProfilePoint);
         })
       );
-      console.log("Adopted all profile points:", results);
-      setIsOpen(false); // Close the dialog after adopting all
+      console.log("Successfully adopted all profile points:", results);
+      setIsOpen(false);
     } catch (error) {
       console.error("Error adopting profile points:", error);
     }
@@ -127,7 +134,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               .replace(/:\s*undefined\s*/g, ": null")
               .replace(/:\s*"undefined"\s*/g, ": null");
 
-            // Parse and clean the JSON
+            console.log("Rendering JSON content part:", jsonString);
             const parsedJson = JSON.parse(jsonString);
             const cleanedJson = Object.fromEntries(
               Object.entries(parsedJson).filter(([_, value]) => value !== null)
@@ -141,7 +148,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               />
             );
           } catch (error) {
-            console.error("Error parsing JSON:", error);
+            console.error("Error parsing JSON in render:", error);
             return null;
           }
         }
