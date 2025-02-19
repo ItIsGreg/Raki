@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import * as XLSX from "xlsx";
 
 const DatasetList = (props: AnnotationDatasetListProps) => {
   const { activeAnnotatedDataset, setActiveAnnotatedDataset } = props;
@@ -31,21 +32,21 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
   }
 
   const downLoadAnnotatedDataset = async (
-    annotatedDataset: AnnotatedDataset
+    annotatedDataset: AnnotatedDataset,
+    format: "csv" | "xlsx"
   ) => {
-    console.log("Download initiated for dataset:", annotatedDataset.name);
+    console.log(
+      `Download initiated for dataset: ${annotatedDataset.name} in ${format} format`
+    );
 
     // collect data for csv export
     const activeProfile = await readProfile(activeAnnotatedDataset?.profileId);
-    console.log("Active profile:", activeProfile);
 
     const profilePoints = await readProfilePointsByProfile(activeProfile?.id);
-    console.log("Profile points count:", profilePoints?.length);
 
     const annotatedTexts = await readAnnotatedTextsByAnnotatedDataset(
       annotatedDataset.id
     );
-    console.log("Annotated texts count:", annotatedTexts?.length);
     // bring data into shape that is easy to work with
     const annotatedTextDatapoints: AnnotatedTextDatapointsHolder[] = [];
     for (const annotatedText of annotatedTexts) {
@@ -59,28 +60,21 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
         });
       }
     }
-    // generate csv
-    const csv = generateCsv(annotatedTextDatapoints, profilePoints);
-    console.log("CSV generated, first 100 chars:", csv.substring(0, 100));
 
-    // download csv
-    const blob = new Blob([csv], { type: "text/csv" });
-    console.log("Blob created");
+    if (format === "csv") {
+      // generate csv
+      const csv = generateCsv(annotatedTextDatapoints, profilePoints);
 
-    try {
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = annotatedDataset.name + ".csv";
-
-      document.body.appendChild(link);
-
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error during download:", error);
+      // download csv
+      const blob = new Blob([csv], { type: "text/csv" });
+      downloadFile(blob, `${annotatedDataset.name}.csv`);
+    } else {
+      // Generate and download XLSX
+      const xlsx = generateXlsx(annotatedTextDatapoints, profilePoints);
+      const blob = new Blob([xlsx], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      downloadFile(blob, `${annotatedDataset.name}.xlsx`);
     }
   };
 
@@ -109,6 +103,45 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
       return row.join(",");
     });
     return [headers, ...rows].join("\n");
+  };
+
+  const generateXlsx = (
+    annotatedTextDatapoints: AnnotatedTextDatapointsHolder[],
+    profilePoints: ProfilePoint[]
+  ) => {
+    const headers = ["filename", ...profilePoints.map((pp) => pp.name)];
+
+    const rows = annotatedTextDatapoints.map((atd) => {
+      const row: (string | number)[] = [atd.filename];
+      for (const pp of profilePoints) {
+        const dataPoint = atd.datapoints.find(
+          (dp) => dp.profilePointId === pp.id
+        );
+        row.push(dataPoint?.value ?? "");
+      }
+      return row;
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Annotations");
+
+    return XLSX.write(workbook, { type: "array", bookType: "xlsx" });
+  };
+
+  const downloadFile = (blob: Blob, filename: string) => {
+    try {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error during download:", error);
+    }
   };
 
   return (
@@ -147,11 +180,17 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
                     <DropdownMenuItem
-                      onClick={() => downLoadAnnotatedDataset(annotatedDataset)}
+                      onClick={() =>
+                        downLoadAnnotatedDataset(annotatedDataset, "csv")
+                      }
                     >
                       Download as CSV
                     </DropdownMenuItem>
-                    <DropdownMenuItem disabled>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        downLoadAnnotatedDataset(annotatedDataset, "xlsx")
+                      }
+                    >
                       Download as XLSX
                     </DropdownMenuItem>
                   </DropdownMenuContent>

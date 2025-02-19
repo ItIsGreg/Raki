@@ -3873,7 +3873,7 @@ wrappy@1:
 
 xlsx@^0.18.5:
   version "0.18.5"
-  resolved "https://registry.npmjs.org/xlsx/-/xlsx-0.18.5.tgz"
+  resolved "https://registry.yarnpkg.com/xlsx/-/xlsx-0.18.5.tgz#16711b9113c848076b8a177022799ad356eba7d0"
   integrity sha512-dmg3LCjBPHZnQp5/F/+nnTa+miPJxUXB6vtk42YjBBKayDNagxGEeIdWApkYPOf3Z3pm3k62Knjzp7lMeTEtFQ==
   dependencies:
     adler-32 "~1.3.0"
