@@ -12,6 +12,12 @@ import {
 import { TiDownloadOutline } from "react-icons/ti";
 import { AnnotatedDataset, DataPoint, ProfilePoint } from "@/lib/db/db";
 import CompactCard from "@/components/CompactCard";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const DatasetList = (props: AnnotationDatasetListProps) => {
   const { activeAnnotatedDataset, setActiveAnnotatedDataset } = props;
@@ -27,12 +33,19 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
   const downLoadAnnotatedDataset = async (
     annotatedDataset: AnnotatedDataset
   ) => {
+    console.log("Download initiated for dataset:", annotatedDataset.name);
+
     // collect data for csv export
     const activeProfile = await readProfile(activeAnnotatedDataset?.profileId);
+    console.log("Active profile:", activeProfile);
+
     const profilePoints = await readProfilePointsByProfile(activeProfile?.id);
+    console.log("Profile points count:", profilePoints?.length);
+
     const annotatedTexts = await readAnnotatedTextsByAnnotatedDataset(
       annotatedDataset.id
     );
+    console.log("Annotated texts count:", annotatedTexts?.length);
     // bring data into shape that is easy to work with
     const annotatedTextDatapoints: AnnotatedTextDatapointsHolder[] = [];
     for (const annotatedText of annotatedTexts) {
@@ -48,24 +61,27 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
     }
     // generate csv
     const csv = generateCsv(annotatedTextDatapoints, profilePoints);
+    console.log("CSV generated, first 100 chars:", csv.substring(0, 100));
+
     // download csv
     const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+    console.log("Blob created");
 
-    // Create a temporary link element
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = annotatedDataset.name + ".csv";
+    try {
+      const url = URL.createObjectURL(blob);
 
-    // Append the link to the body
-    document.body.appendChild(link);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = annotatedDataset.name + ".csv";
 
-    // Programmatically click the link to trigger the download
-    link.click();
+      document.body.appendChild(link);
 
-    // Clean up
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error during download:", error);
+    }
   };
 
   const generateCsv = (
@@ -95,15 +111,6 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
     return [headers, ...rows].join("\n");
   };
 
-  const handleCsvDownload = async (annotatedDataset: AnnotatedDataset) => {
-    await downLoadAnnotatedDataset(annotatedDataset);
-  };
-
-  const handleXlsxDownload = async (annotatedDataset: AnnotatedDataset) => {
-    // Will implement Excel download logic later
-    console.log("Excel download not implemented yet");
-  };
-
   return (
     <div className="col-span-1 overflow-y-scroll">
       <Card>
@@ -126,10 +133,30 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
               isActive={activeAnnotatedDataset?.id === annotatedDataset.id}
               tooltipContent={annotatedDataset.name}
               rightIcon={
-                <TiDownloadOutline size={20} className="cursor-pointer" />
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    asChild
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="cursor-pointer">
+                      <TiDownloadOutline
+                        size={20}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuItem
+                      onClick={() => downLoadAnnotatedDataset(annotatedDataset)}
+                    >
+                      Download as CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled>
+                      Download as XLSX
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               }
-              onDownloadCsv={() => handleCsvDownload(annotatedDataset)}
-              onDownloadXlsx={() => handleXlsxDownload(annotatedDataset)}
             />
           ))}
         </CardContent>

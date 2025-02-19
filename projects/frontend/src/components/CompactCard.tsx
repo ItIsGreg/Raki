@@ -35,7 +35,12 @@ const CompactCard = ({
         <CardTitle className="truncate text-sm">{title}</CardTitle>
         <div className="flex flex-grow"></div>
         {rightIcon && (
-          <div className="w-5 h-5 flex items-center justify-center">
+          <div
+            className="w-5 h-5 flex items-center justify-center"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
             {rightIcon}
           </div>
         )}
