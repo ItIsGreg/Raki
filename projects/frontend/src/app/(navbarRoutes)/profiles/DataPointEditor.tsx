@@ -44,20 +44,75 @@ export function DataPointEditor(props: DataPointEditorProps) {
   const [currentSynonym, setCurrentSynonym] = useState<string>("");
   const [currentValuesetItem, setCurrentValuesetItem] = useState<string>("");
 
+  const updateDataPoint = (updates: Partial<typeof activeDataPoint>) => {
+    if (!creatingNewDataPoint && activeDataPoint) {
+      updateProfilePoint({
+        id: activeDataPoint.id,
+        name,
+        explanation,
+        synonyms,
+        datatype,
+        valueset,
+        unit,
+        profileId: activeProfile!.id,
+        ...updates,
+      });
+    }
+  };
+
+  const handleArrayUpdate = (
+    type: "synonym" | "valueset",
+    action: "add" | "delete",
+    value?: string
+  ) => {
+    if (type === "synonym") {
+      let newSynonyms: string[];
+      if (action === "add" && value) {
+        newSynonyms = [...synonyms, value.trim()];
+      } else if (action === "delete" && value) {
+        newSynonyms = synonyms.filter((item) => item !== value);
+      } else {
+        return;
+      }
+      setSynonyms(newSynonyms);
+      updateDataPoint({ synonyms: newSynonyms });
+    } else {
+      let newValueset: string[];
+      if (action === "add" && value) {
+        newValueset = [...valueset, value.trim()];
+      } else if (action === "delete" && value) {
+        newValueset = valueset.filter((item) => item !== value);
+      } else {
+        return;
+      }
+      setValueset(newValueset);
+      updateDataPoint({ valueset: newValueset });
+    }
+  };
+
   const handleKeyPress = (
     event: React.KeyboardEvent,
     type: "synonym" | "valueset"
   ) => {
-    if (event.key == "Enter") {
+    if (event.key === "Enter") {
       event.preventDefault();
-      if (type === "synonym" && currentSynonym.trim() !== "") {
-        setSynonyms([...synonyms, currentSynonym.trim()]);
-        setCurrentSynonym("");
-      } else if (type === "valueset" && currentValuesetItem.trim() !== "") {
-        setValueset([...valueset, currentValuesetItem.trim()]);
-        setCurrentValuesetItem("");
+      const value = type === "synonym" ? currentSynonym : currentValuesetItem;
+      if (value.trim() !== "") {
+        handleArrayUpdate(type, "add", value);
+        type === "synonym" ? setCurrentSynonym("") : setCurrentValuesetItem("");
       }
     }
+  };
+
+  const handleDeleteClick = (
+    type: "synonyms" | "valueset",
+    element: string
+  ) => {
+    handleArrayUpdate(
+      type === "synonyms" ? "synonym" : "valueset",
+      "delete",
+      element
+    );
   };
 
   const resetEditor = () => {
@@ -133,17 +188,6 @@ export function DataPointEditor(props: DataPointEditorProps) {
     };
     popuplateDataPoint();
   }, [activeDataPoint]);
-
-  const handleDeleteClick = (array: string, element: string) => {
-    if (array == "synonyms") {
-      const newSynonyms = synonyms.filter((synonym) => synonym !== element);
-      setSynonyms(newSynonyms);
-    }
-    if (array == "valueset") {
-      const newValueset = valueset.filter((valueset) => valueset !== element);
-      setValueset(newValueset);
-    }
-  };
 
   const debouncedSave = useCallback(
     debounce((data: any) => {
@@ -260,8 +304,10 @@ export function DataPointEditor(props: DataPointEditorProps) {
                   />
                   <Button
                     onClick={() => {
-                      setSynonyms([...synonyms, currentSynonym]);
-                      setCurrentSynonym("");
+                      if (currentSynonym.trim() !== "") {
+                        handleArrayUpdate("synonym", "add", currentSynonym);
+                        setCurrentSynonym("");
+                      }
                     }}
                   >
                     Add Synonym
@@ -327,8 +373,14 @@ export function DataPointEditor(props: DataPointEditorProps) {
                     />
                     <Button
                       onClick={() => {
-                        setValueset([...valueset, currentValuesetItem]);
-                        setCurrentValuesetItem("");
+                        if (currentValuesetItem.trim() !== "") {
+                          handleArrayUpdate(
+                            "valueset",
+                            "add",
+                            currentValuesetItem
+                          );
+                          setCurrentValuesetItem("");
+                        }
                       }}
                     >
                       Add Item
