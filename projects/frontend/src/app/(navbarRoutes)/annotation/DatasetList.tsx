@@ -1,16 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnnotationDatasetListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -107,6 +95,15 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
     return [headers, ...rows].join("\n");
   };
 
+  const handleCsvDownload = async (annotatedDataset: AnnotatedDataset) => {
+    await downLoadAnnotatedDataset(annotatedDataset);
+  };
+
+  const handleXlsxDownload = async (annotatedDataset: AnnotatedDataset) => {
+    // Will implement Excel download logic later
+    console.log("Excel download not implemented yet");
+  };
+
   return (
     <div className="col-span-1 overflow-y-scroll">
       <Card>
@@ -129,15 +126,10 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
               isActive={activeAnnotatedDataset?.id === annotatedDataset.id}
               tooltipContent={annotatedDataset.name}
               rightIcon={
-                <TiDownloadOutline
-                  size={20}
-                  className="cursor-pointer"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    downLoadAnnotatedDataset(annotatedDataset);
-                  }}
-                />
+                <TiDownloadOutline size={20} className="cursor-pointer" />
               }
+              onDownloadCsv={() => handleCsvDownload(annotatedDataset)}
+              onDownloadXlsx={() => handleXlsxDownload(annotatedDataset)}
             />
           ))}
         </CardContent>

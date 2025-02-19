@@ -7,13 +7,6 @@ import {
   updateDataPoint,
 } from "@/lib/db/crud";
 import { TiDeleteOutline } from "react-icons/ti";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import CompactCard from "@/components/CompactCard";
 
 const DataPointList = (props: AnnotationDataPointListProps) => {
