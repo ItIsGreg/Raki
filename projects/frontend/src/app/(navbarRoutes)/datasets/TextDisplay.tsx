@@ -4,13 +4,17 @@ import { TextDisplayProps } from "../../types";
 const TextDisplay = (props: TextDisplayProps) => {
   const { activeText } = props;
   return (
-    <div className="overflow-y-scroll">
+    <div className="overflow-y-scroll" data-cy="text-display">
       <Card>
         <CardHeader>
-          <CardTitle>{activeText?.filename}</CardTitle>
+          <CardTitle data-cy="text-display-filename">
+            {activeText?.filename}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="whitespace-pre-wrap">{activeText?.text}</p>
+          <p className="whitespace-pre-wrap" data-cy="text-display-content">
+            {activeText?.text}
+          </p>
         </CardContent>
       </Card>
     </div>

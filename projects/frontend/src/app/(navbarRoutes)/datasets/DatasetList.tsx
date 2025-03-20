@@ -33,12 +33,16 @@ const DatasetList = (props: DatasetListProps) => {
   };
 
   return (
-    <div className="overflow-y-scroll">
+    <div className="overflow-y-scroll" data-cy="dataset-list-container">
       <Card>
         <CardHeader className="flex flex-row">
           <CardTitle>Datasets</CardTitle>
           <div className="flex-grow"></div>
-          <AddButton onClick={() => setAddingDataset(true)} label="Dataset" />
+          <AddButton
+            onClick={() => setAddingDataset(true)}
+            label="Dataset"
+            data-cy="add-dataset-button"
+          />
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {addingDataset && (
@@ -46,6 +50,7 @@ const DatasetList = (props: DatasetListProps) => {
               onCancel={handleCancelAddDataset}
               onSave={handleSaveDataset}
               entityType="Dataset"
+              data-cy="new-dataset-form"
             />
           )}
 
@@ -58,6 +63,7 @@ const DatasetList = (props: DatasetListProps) => {
                   onSave={handleSaveDataset}
                   existingEntity={editingDataset}
                   entityType="Dataset"
+                  data-cy="edit-dataset-form"
                 />
               );
             }
@@ -68,6 +74,7 @@ const DatasetList = (props: DatasetListProps) => {
                 activeDataset={activeDataset}
                 setActiveDataset={setActiveDataset}
                 setEditingDataset={setEditingDataset}
+                data-cy="dataset-card"
               />
             );
           })}

@@ -72,8 +72,8 @@ const TableView: React.FC<TableViewProps> = ({
   const handleImportTexts = () => {
     if (!activeDataset || !indexColumn || !textColumn) return;
 
-    // Skip the first row (header) and start from index 1
-    data.slice(1).forEach((row) => {
+    // Process all rows including the first row
+    data.forEach((row) => {
       const filename = row[indexColumn];
       const text = row[textColumn];
 
@@ -101,12 +101,19 @@ const TableView: React.FC<TableViewProps> = ({
               <TooltipTrigger asChild>
                 <div>
                   <Select onValueChange={setIndexColumn}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger
+                      className="w-[180px]"
+                      data-cy="index-column-select"
+                    >
                       <SelectValue placeholder="Select index column" />
                     </SelectTrigger>
                     <SelectContent>
                       {columnNames.map((name) => (
-                        <SelectItem key={name} value={name}>
+                        <SelectItem
+                          key={name}
+                          value={name}
+                          data-cy={`index-column-option-${name}`}
+                        >
                           {name}
                         </SelectItem>
                       ))}
@@ -129,12 +136,19 @@ const TableView: React.FC<TableViewProps> = ({
               <TooltipTrigger asChild>
                 <div>
                   <Select onValueChange={setTextColumn}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger
+                      className="w-[180px]"
+                      data-cy="text-column-select"
+                    >
                       <SelectValue placeholder="Select text column" />
                     </SelectTrigger>
                     <SelectContent>
                       {columnNames.map((name) => (
-                        <SelectItem key={name} value={name}>
+                        <SelectItem
+                          key={name}
+                          value={name}
+                          data-cy={`text-column-option-${name}`}
+                        >
                           {name}
                         </SelectItem>
                       ))}
@@ -159,6 +173,7 @@ const TableView: React.FC<TableViewProps> = ({
                   <Button
                     onClick={handleImportTexts}
                     disabled={!indexColumn || !textColumn}
+                    data-cy="import-texts-btn"
                   >
                     Import Texts
                   </Button>
@@ -173,7 +188,11 @@ const TableView: React.FC<TableViewProps> = ({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
+        <div
+          className="ag-theme-alpine"
+          style={{ height: 400, width: "100%" }}
+          data-cy="table-grid"
+        >
           <AgGridReact
             columnDefs={columnDefs}
             rowData={data}

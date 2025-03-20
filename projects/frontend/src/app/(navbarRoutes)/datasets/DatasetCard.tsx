@@ -15,10 +15,18 @@ interface DatasetCardProps {
   activeDataset: Dataset | undefined;
   setActiveDataset: (dataset: Dataset) => void;
   setEditingDataset: (dataset: Dataset) => void;
+  "data-cy": string;
 }
 
 const DatasetCard = (props: DatasetCardProps) => {
-  const { dataset, activeDataset, setActiveDataset, setEditingDataset } = props;
+  const {
+    dataset,
+    activeDataset,
+    setActiveDataset,
+    setEditingDataset,
+    "data-cy": dataCy,
+  } = props;
+
   return (
     <Card
       key={dataset.id}
@@ -27,14 +35,22 @@ const DatasetCard = (props: DatasetCardProps) => {
         "bg-gray-100 shadow-lg border-black border-2"
       } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
       onClick={() => setActiveDataset(dataset)}
+      data-cy={dataCy}
     >
       <CardHeader className="flex flex-row gap-3">
-        <CardTitle>{dataset.name}</CardTitle>
+        <CardTitle className="truncate">{dataset.name}</CardTitle>
         <div className="flex-grow"></div>
-        <EditButton onClick={() => setEditingDataset(dataset)} />
+        <EditButton
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingDataset(dataset);
+          }}
+          data-cy="edit-dataset-button"
+        />
         <DeleteButton
           onDelete={() => deleteDataset(dataset.id)}
           itemName="dataset"
+          data-cy="delete-dataset-button"
         />
       </CardHeader>
       <CardContent>

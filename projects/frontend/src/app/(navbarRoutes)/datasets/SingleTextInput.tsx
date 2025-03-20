@@ -54,6 +54,7 @@ const SingleTextInput: React.FC<SingleTextInputProps> = ({
               placeholder="Enter filename"
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
+              data-cy="single-text-filename-input"
             />
           </div>
           <div>
@@ -63,12 +64,14 @@ const SingleTextInput: React.FC<SingleTextInputProps> = ({
               value={text}
               onChange={(e) => setText(e.target.value)}
               className="min-h-[200px]"
+              data-cy="single-text-content-input"
             />
           </div>
           <Button
             onClick={handleSubmit}
             disabled={!filename || !text}
             className="w-full"
+            data-cy="add-single-text-btn"
           >
             Add Text
           </Button>

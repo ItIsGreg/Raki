@@ -161,13 +161,22 @@ const TextList = (props: TextListProps) => {
 
           {activeDataset && (
             <div className="grid grid-cols-2 gap-2">
-              <Button onClick={handleUploadButtonClick}>Upload Texts</Button>
-              <Button onClick={() => setIsSingleTextOpen(true)}>
+              <Button
+                onClick={handleUploadButtonClick}
+                data-cy="upload-texts-btn"
+              >
+                Upload Texts
+              </Button>
+              <Button
+                onClick={() => setIsSingleTextOpen(true)}
+                data-cy="single-text-btn"
+              >
                 Single Text
               </Button>
               <Button
                 onClick={handleUploadTableClick}
                 className="flex items-center"
+                data-cy="upload-table-btn"
               >
                 <FaTable className="mr-2" />
                 Upload Table
@@ -175,6 +184,7 @@ const TextList = (props: TextListProps) => {
               <Button
                 onClick={handleOpenTableClick}
                 className="flex items-center"
+                data-cy="open-table-btn"
               >
                 <FaFolderOpen className="mr-2" />
                 Open Table
@@ -183,6 +193,7 @@ const TextList = (props: TextListProps) => {
                 onClick={handleDownloadTexts}
                 className="col-span-2 flex items-center justify-center"
                 title="Download Texts"
+                data-cy="download-all-btn"
               >
                 <FaDownload className="mr-2" />
                 Download All
@@ -196,6 +207,7 @@ const TextList = (props: TextListProps) => {
             accept=".txt,.pdf"
             multiple
             onChange={handleFileChange}
+            data-cy="file-input"
           />
           <input
             type="file"
@@ -203,6 +215,7 @@ const TextList = (props: TextListProps) => {
             hidden
             accept=".csv,.xlsx,.xls"
             onChange={handleTableFileUpload}
+            data-cy="table-file-input"
           />
         </CardHeader>
         <CardContent>
@@ -217,6 +230,7 @@ const TextList = (props: TextListProps) => {
                   activeText == text &&
                   "bg-gray-100 shadow-lg border-black border-2"
                 } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
+                data-cy="text-card"
               >
                 <CardHeader className="flex flex-row">
                   <CardTitle>{text.filename}</CardTitle>
@@ -227,6 +241,7 @@ const TextList = (props: TextListProps) => {
                     onClick={() => {
                       deleteText(text.id);
                     }}
+                    data-cy="delete-text-btn"
                   />
                 </CardHeader>
               </Card>
