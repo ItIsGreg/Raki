@@ -10,9 +10,14 @@ import {
 interface AddButtonProps {
   onClick: () => void;
   label: string;
+  "data-cy"?: string;
 }
 
-export const AddButton: React.FC<AddButtonProps> = ({ onClick, label }) => {
+export const AddButton: React.FC<AddButtonProps> = ({
+  onClick,
+  label,
+  "data-cy": dataCy,
+}) => {
   return (
     <TooltipProvider>
       <Tooltip delayDuration={100}>
@@ -23,6 +28,7 @@ export const AddButton: React.FC<AddButtonProps> = ({ onClick, label }) => {
               e.stopPropagation();
               onClick();
             }}
+            data-cy={dataCy}
           >
             <CiSquarePlus className=" hover:text-gray-500" size={30} />
           </button>

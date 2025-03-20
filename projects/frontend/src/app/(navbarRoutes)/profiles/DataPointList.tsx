@@ -88,6 +88,7 @@ const DataPointList = (props: DataPointListProps) => {
                 size={26}
                 className="hover:text-blue-500 cursor-pointer"
                 onClick={handleUploadButtonClick}
+                data-cy="upload-datapoints-button"
               />
               <input
                 type="file"
@@ -95,18 +96,24 @@ const DataPointList = (props: DataPointListProps) => {
                 className="hidden"
                 accept=".json"
                 onChange={handleUploadDatapoints}
+                data-cy="upload-datapoints-input"
               />
               <MdDownload
                 size={26}
                 className="hover:text-blue-500 cursor-pointer"
                 onClick={handleDownloadDatapoints}
+                data-cy="download-datapoints-button"
               />
-              <ProfileChatButton onClick={() => setIsChatOpen(true)} />
+              <ProfileChatButton
+                onClick={() => setIsChatOpen(true)}
+                data-cy="profile-chat-button"
+              />
               <Button
                 onClick={() => {
                   setActiveDataPoint(undefined);
                   setCreatingNewDataPoint(true);
                 }}
+                data-cy="new-datapoint-button"
               >
                 New
               </Button>
@@ -114,7 +121,10 @@ const DataPointList = (props: DataPointListProps) => {
           )}
         </CardHeader>
         {dataPoints && (
-          <CardContent className="flex flex-col gap-2">
+          <CardContent
+            className="flex flex-col gap-2"
+            data-cy="datapoints-container"
+          >
             {dataPoints.map((dataPoint) => {
               return (
                 <DataPointCard
@@ -123,6 +133,7 @@ const DataPointList = (props: DataPointListProps) => {
                   activeDataPoint={activeDataPoint}
                   setActiveDataPoint={setActiveDataPoint}
                   setCreatingNewDataPoint={setCreatingNewDataPoint}
+                  data-cy="datapoint-card"
                 />
               );
             })}
@@ -133,6 +144,7 @@ const DataPointList = (props: DataPointListProps) => {
         isOpen={isChatOpen}
         setIsOpen={setIsChatOpen}
         activeProfile={activeProfile}
+        data-cy="profile-chat-view"
       />
     </div>
   );

@@ -143,6 +143,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
             resetEditor();
           }
         }}
+        data-cy="save-datapoint-button"
       >
         Save
       </Button>
@@ -167,6 +168,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
             resetEditor();
           }
         }}
+        data-cy="update-datapoint-button"
       >
         Update
       </Button>
@@ -257,6 +259,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                   placeholder="Name"
                   value={name}
                   onChange={(e) => handleChange("name", e.target.value)}
+                  data-cy="datapoint-name-input"
                 />
               </CardContent>
             </Card>
@@ -272,6 +275,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                   placeholder="Explanation"
                   value={explanation}
                   onChange={(e) => handleChange("explanation", e.target.value)}
+                  data-cy="datapoint-explanation-input"
                 />
               </CardContent>
             </Card>
@@ -284,13 +288,17 @@ export function DataPointEditor(props: DataPointEditorProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-2 flex-wrap">
-                <div className="flex flex-row gap-1 flex-wrap">
+                <div
+                  className="flex flex-row gap-1 flex-wrap"
+                  data-cy="synonyms-list"
+                >
                   {synonyms.map((synonym, index) => (
-                    <Badge key={index}>
+                    <Badge key={index} data-cy={`synonym-badge-${index}`}>
                       {synonym}
                       <TiDeleteOutline
                         size={20}
                         onClick={() => handleDeleteClick("synonyms", synonym)}
+                        data-cy={`delete-synonym-${index}`}
                       />
                     </Badge>
                   ))}
@@ -301,6 +309,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                     value={currentSynonym}
                     onChange={(e) => setCurrentSynonym(e.target.value)}
                     onKeyDown={(e) => handleKeyPress(e, "synonym")}
+                    data-cy="synonym-input"
                   />
                   <Button
                     onClick={() => {
@@ -309,6 +318,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                         setCurrentSynonym("");
                       }
                     }}
+                    data-cy="add-synonym-button"
                   >
                     Add Synonym
                   </Button>
@@ -326,16 +336,25 @@ export function DataPointEditor(props: DataPointEditorProps) {
                 <Select
                   onValueChange={(value) => handleChange("datatype", value)}
                   value={datatype}
+                  data-cy="datatype-select"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-cy="datatype-trigger">
                     <SelectValue placeholder="Select a Datatype" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="valueset">Valueset</SelectItem>
-                      <SelectItem value="number">Number</SelectItem>
-                      <SelectItem value="boolean">True/False</SelectItem>
-                      <SelectItem value="text">Text</SelectItem>
+                      <SelectItem value="valueset" data-cy="datatype-valueset">
+                        Valueset
+                      </SelectItem>
+                      <SelectItem value="number" data-cy="datatype-number">
+                        Number
+                      </SelectItem>
+                      <SelectItem value="boolean" data-cy="datatype-boolean">
+                        True/False
+                      </SelectItem>
+                      <SelectItem value="text" data-cy="datatype-text">
+                        Text
+                      </SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>

@@ -16,6 +16,7 @@ const DataPointCard = (props: DataPointCardProps) => {
     activeDataPoint,
     setActiveDataPoint,
     setCreatingNewDataPoint,
+    "data-cy": dataCy,
   } = props;
   return (
     <Card
@@ -28,6 +29,7 @@ const DataPointCard = (props: DataPointCardProps) => {
         setActiveDataPoint(dataPoint);
         setCreatingNewDataPoint(false);
       }}
+      data-cy={dataCy}
     >
       <CardHeader className="flex flex-row">
         <CardTitle className="truncate">{dataPoint.name}</CardTitle>

@@ -18,6 +18,7 @@ export interface ProfileCardProps {
   activeProfile: Profile | undefined;
   setActiveProfile: (profile: Profile) => void;
   setEditingProfile: (profile: Profile | undefined) => void;
+  "data-cy": string;
 }
 
 export interface DataPointCardProps {
@@ -25,6 +26,7 @@ export interface DataPointCardProps {
   activeDataPoint: ProfilePoint | undefined;
   setActiveDataPoint: (dataPoint: ProfilePoint | undefined) => void;
   setCreatingNewDataPoint: (creating: boolean) => void;
+  "data-cy": string;
 }
 export interface DataPointListProps {
   activeProfile: Profile | undefined;

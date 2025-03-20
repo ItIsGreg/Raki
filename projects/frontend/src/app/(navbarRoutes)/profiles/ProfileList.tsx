@@ -31,12 +31,16 @@ const ProfileList = (props: ProfileListProps) => {
   };
 
   return (
-    <div className="overflow-y-scroll">
+    <div className="overflow-y-scroll" data-cy="profile-list-container">
       <Card>
         <CardHeader className="flex flex-row">
           <CardTitle>Profiles</CardTitle>
           <div className="flex-grow"></div>
-          <AddButton onClick={() => setAddingProfile(true)} label="Profile" />
+          <AddButton
+            onClick={() => setAddingProfile(true)}
+            label="Profile"
+            data-cy="add-profile-button"
+          />
         </CardHeader>
         <CardContent>
           {addingProfile && (
@@ -44,6 +48,7 @@ const ProfileList = (props: ProfileListProps) => {
               onCancel={handleCancelAddProfile}
               onSave={handleSaveProfile}
               entityType="Profile"
+              data-cy="new-profile-form"
             />
           )}
           {dbProfiles &&
@@ -56,6 +61,7 @@ const ProfileList = (props: ProfileListProps) => {
                     onSave={handleSaveProfile}
                     existingEntity={editingProfile}
                     entityType="Profile"
+                    data-cy="edit-profile-form"
                   />
                 );
               }
@@ -66,6 +72,7 @@ const ProfileList = (props: ProfileListProps) => {
                   activeProfile={activeProfile}
                   setActiveProfile={setActiveProfile}
                   setEditingProfile={setEditingProfile}
+                  data-cy="profile-card"
                 />
               );
             })}

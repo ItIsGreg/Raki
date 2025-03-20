@@ -68,6 +68,7 @@ const EntityForm = <T extends Profile | Dataset>({
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => handleKeyDown(e, "name")}
+          data-cy="entity-name-input"
         />
         <Input
           ref={descriptionInputRef}
@@ -75,13 +76,16 @@ const EntityForm = <T extends Profile | Dataset>({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           onKeyDown={(e) => handleKeyDown(e, "description")}
+          data-cy="entity-description-input"
         />
       </CardContent>
       <CardFooter className="flex flex-row gap-2">
-        <Button onClick={handleSave}>
+        <Button onClick={handleSave} data-cy="entity-save-button">
           {existingEntity ? "Update" : "Save"}
         </Button>
-        <Button onClick={onCancel}>Cancel</Button>
+        <Button onClick={onCancel} data-cy="entity-cancel-button">
+          Cancel
+        </Button>
       </CardFooter>
     </Card>
   );

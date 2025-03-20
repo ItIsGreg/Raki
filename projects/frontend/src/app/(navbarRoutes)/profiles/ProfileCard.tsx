@@ -17,7 +17,13 @@ import {
 } from "@/components/ui/tooltip";
 
 const ProfileCard = (props: ProfileCardProps) => {
-  const { profile, activeProfile, setActiveProfile, setEditingProfile } = props;
+  const {
+    profile,
+    activeProfile,
+    setActiveProfile,
+    setEditingProfile,
+    "data-cy": dataCy,
+  } = props;
 
   // Function to truncate text
   const truncateText = (text: string, maxLength: number) => {
@@ -32,6 +38,7 @@ const ProfileCard = (props: ProfileCardProps) => {
         "bg-gray-100 shadow-lg border-black border-2"
       } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
       onClick={() => setActiveProfile(profile)}
+      data-cy={dataCy}
     >
       <CardHeader className="flex flex-row gap-3">
         <TooltipProvider>
@@ -52,10 +59,12 @@ const ProfileCard = (props: ProfileCardProps) => {
             e.stopPropagation();
             setEditingProfile(profile);
           }}
+          data-cy="edit-profile-button"
         />
         <DeleteButton
           onDelete={() => deleteProfile(profile.id)}
           itemName="profile"
+          data-cy="delete-profile-button"
         />
       </CardHeader>
       <CardContent>
