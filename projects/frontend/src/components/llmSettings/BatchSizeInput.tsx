@@ -64,8 +64,11 @@ export const BatchSizeInput: React.FC = () => {
           placeholder={getPlaceholder()}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
+          data-cy="batch-size-input"
         />
-        <Button onClick={handleSetBatchSize}>Set</Button>
+        <Button onClick={handleSetBatchSize} data-cy="batch-size-set-button">
+          Set
+        </Button>
       </div>
     </div>
   );

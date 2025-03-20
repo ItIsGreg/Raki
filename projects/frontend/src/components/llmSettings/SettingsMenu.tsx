@@ -31,31 +31,53 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
 }) => {
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="left">
+      <SheetContent
+        side="left"
+        data-cy="settings-dialog"
+        className="overflow-y-auto max-h-screen flex flex-col"
+      >
         <SheetHeader>
           <SheetTitle>Settings</SheetTitle>
         </SheetHeader>
-        <div className="flex flex-col gap-4 py-4">
-          <LLMProviderSelect />
+        <div className="flex flex-col gap-4 py-4 flex-1 overflow-y-auto">
+          <div data-cy="llm-provider-section">
+            <LLMProviderSelect />
+          </div>
           <Separator className="my-2" />
-          <ModelInput />
+          <div data-cy="model-section">
+            <ModelInput />
+          </div>
           <Separator className="my-2" />
-          <LLMUrlInput />
+          <div data-cy="url-section">
+            <LLMUrlInput />
+          </div>
           <Separator className="my-2" />
-          <ApiKeyInput />
+          <div data-cy="api-key-section">
+            <ApiKeyInput />
+          </div>
           <Separator className="my-2" />
-          <BatchSizeInput />
+          <div data-cy="batch-size-section">
+            <BatchSizeInput />
+          </div>
           <Separator className="my-2" />
-          <MaxTokensInput />
+          <div data-cy="max-tokens-section">
+            <MaxTokensInput />
+          </div>
           <Separator className="my-2" />
-          <RerunCheckbox
-            autoRerunFaulty={autoRerunFaulty}
-            setAutoRerunFaulty={setAutoRerunFaulty}
-          />
+          <div data-cy="rerun-section">
+            <RerunCheckbox
+              autoRerunFaulty={autoRerunFaulty}
+              setAutoRerunFaulty={setAutoRerunFaulty}
+            />
+          </div>
           <Separator className="my-2" />
         </div>
         <SheetClose asChild>
-          <Button variant="outline" className="mt-4">
+          <Button
+            variant="outline"
+            className="mt-4"
+            data-cy="settings-close-button"
+          >
             Close
           </Button>
         </SheetClose>

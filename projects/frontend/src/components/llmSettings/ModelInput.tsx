@@ -34,8 +34,11 @@ export const ModelInput = () => {
           placeholder={getPlaceholder()}
           value={newModel}
           onChange={(e) => setNewModel(e.target.value)}
+          data-cy="model-input"
         />
-        <Button onClick={handleSetModel}>Set</Button>
+        <Button onClick={handleSetModel} data-cy="model-set-button">
+          Set
+        </Button>
       </div>
     </div>
   );

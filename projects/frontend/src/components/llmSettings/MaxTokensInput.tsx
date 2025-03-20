@@ -74,8 +74,13 @@ export const MaxTokensInput = () => {
             setShowMaxTokens(checked as boolean);
             handleSetMaxTokens(checked as boolean);
           }}
+          data-cy="max-tokens-checkbox"
         />
-        <Label htmlFor="showMaxTokens" className="text-sm font-medium">
+        <Label
+          htmlFor="showMaxTokens"
+          className="text-sm font-medium"
+          data-cy="max-tokens-label"
+        >
           Max Tokens Setting
         </Label>
       </div>
@@ -92,8 +97,12 @@ export const MaxTokensInput = () => {
               placeholder={getPlaceholder()}
               value={newMaxTokens}
               onChange={(e) => setNewMaxTokens(e.target.value)}
+              data-cy="max-tokens-input"
             />
-            <Button onClick={() => handleSetMaxTokens(showMaxTokens)}>
+            <Button
+              onClick={() => handleSetMaxTokens(showMaxTokens)}
+              data-cy="max-tokens-set-button"
+            >
               Set
             </Button>
           </div>

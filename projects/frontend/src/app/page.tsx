@@ -13,7 +13,10 @@ export default function Home() {
     <div className="flex justify-center w-full">
       <div className="flex flex-col w-full max-w-md">
         <Link href="/profiles" className="m-10">
-          <Card className="hover:bg-gray-100 transform hover:shadow-md">
+          <Card
+            className="hover:bg-gray-100 transform hover:shadow-md"
+            data-cy="profile-card"
+          >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-center">Profile</CardTitle>
               <Rocket className="h-8 w-8" />
@@ -22,7 +25,10 @@ export default function Home() {
         </Link>
 
         <Link href="/datasets" className="m-10">
-          <Card className="hover:bg-gray-100 transform hover:shadow-md">
+          <Card
+            className="hover:bg-gray-100 transform hover:shadow-md"
+            data-cy="datasets-card"
+          >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-center">Datasets</CardTitle>
               <Database className="h-8 w-8" />
@@ -31,7 +37,10 @@ export default function Home() {
         </Link>
 
         <Link href="/aiAnnotation" className="m-10">
-          <Card className="hover:bg-gray-100 transform hover:shadow-md">
+          <Card
+            className="hover:bg-gray-100 transform hover:shadow-md"
+            data-cy="ai-annotation-card"
+          >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-center">AI-Annotation</CardTitle>
               <Brain className="h-8 w-8" />
@@ -40,7 +49,10 @@ export default function Home() {
         </Link>
 
         <Link href="/annotation" className="m-10">
-          <Card className="hover:bg-gray-100 transform hover:shadow-md">
+          <Card
+            className="hover:bg-gray-100 transform hover:shadow-md"
+            data-cy="manual-annotation-card"
+          >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-center">Manual Annotation</CardTitle>
               <ScanText className="h-8 w-8" />
@@ -52,6 +64,7 @@ export default function Home() {
           <Card
             className="hover:bg-gray-100 transform hover:shadow-md"
             onClick={() => setIsSettingsOpen(true)}
+            data-cy="setup-card"
           >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-center">Setup</CardTitle>

@@ -35,8 +35,11 @@ export const ApiKeyInput = () => {
           placeholder={getPlaceholder()}
           value={newApiKey}
           onChange={(e) => setNewApiKey(e.target.value)}
+          data-cy="api-key-input"
         />
-        <Button onClick={handleSetApiKey}>Set</Button>
+        <Button onClick={handleSetApiKey} data-cy="api-key-set-button">
+          Set
+        </Button>
       </div>
     </div>
   );

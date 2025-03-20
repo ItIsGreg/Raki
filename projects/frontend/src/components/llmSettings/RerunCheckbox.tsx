@@ -23,6 +23,7 @@ export const RerunCheckbox: React.FC<RerunCheckboxProps> = ({
         id="auto-rerun"
         checked={autoRerunFaulty}
         onCheckedChange={(checked) => setAutoRerunFaulty(checked as boolean)}
+        data-cy="rerun-checkbox"
       />
       <TooltipProvider>
         <Tooltip>

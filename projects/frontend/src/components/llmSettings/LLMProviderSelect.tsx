@@ -40,13 +40,19 @@ export const LLMProviderSelect = () => {
     <div className="space-y-2">
       <label className="text-sm font-medium">LLM Provider</label>
       <Select value={getCurrentProvider} onValueChange={handleProviderChange}>
-        <SelectTrigger>
+        <SelectTrigger data-cy="llm-provider-trigger">
           <SelectValue placeholder="Select provider" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="openai">OpenAI</SelectItem>
-          <SelectItem value="azure">Azure</SelectItem>
-          <SelectItem value="custom">Custom Provider</SelectItem>
+        <SelectContent data-cy="llm-provider-content">
+          <SelectItem value="openai" data-cy="llm-provider-openai">
+            OpenAI
+          </SelectItem>
+          <SelectItem value="azure" data-cy="llm-provider-azure">
+            Azure
+          </SelectItem>
+          <SelectItem value="custom" data-cy="llm-provider-custom">
+            Custom Provider
+          </SelectItem>
         </SelectContent>
       </Select>
     </div>

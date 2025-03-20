@@ -38,8 +38,11 @@ export const LLMUrlInput = () => {
           placeholder={getPlaceholder()}
           value={newLlmUrl}
           onChange={(e) => setNewLlmUrl(e.target.value)}
+          data-cy="llm-url-input"
         />
-        <Button onClick={handleSetLlmUrl}>Set</Button>
+        <Button onClick={handleSetLlmUrl} data-cy="llm-url-set-button">
+          Set
+        </Button>
       </div>
     </div>
   );

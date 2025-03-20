@@ -18,7 +18,7 @@ export default function ClientLayout({
 
   return (
     <SettingsContext.Provider value={{ setIsSettingsOpen }}>
-      <main className="h-screen">
+      <main className="h-screen overflow-y-auto">
         {children}
         <SettingsMenu
           isOpen={isSettingsOpen}
