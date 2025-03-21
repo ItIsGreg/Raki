@@ -16,11 +16,11 @@ import {
 export const LLMProviderSelect = () => {
   const dbProvider = useLiveQuery(() => readAllLLMProviders());
 
-  const getCurrentProvider = useMemo(() => {
+  const currentProvider = useMemo(() => {
     if (dbProvider && dbProvider.length > 0) {
       return dbProvider[0].provider;
     }
-    return "openai"; // default value
+    return undefined; // No default value, use placeholder instead
   }, [dbProvider]);
 
   const handleProviderChange = useCallback(
@@ -39,7 +39,7 @@ export const LLMProviderSelect = () => {
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">LLM Provider</label>
-      <Select value={getCurrentProvider} onValueChange={handleProviderChange}>
+      <Select value={currentProvider} onValueChange={handleProviderChange}>
         <SelectTrigger data-cy="llm-provider-trigger">
           <SelectValue placeholder="Select provider" />
         </SelectTrigger>

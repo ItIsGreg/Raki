@@ -48,24 +48,35 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
-    <div className="overflow-y-scroll">
+    <div className="overflow-y-scroll" data-cy="ai-annotate-datasets-container">
       <Card>
         <CardHeader className="flex flex-row items-center">
           <CardTitle>Annotated Datasets</CardTitle>
           <div className="flex-grow"></div>
-          <SettingsButton onClick={() => setIsSettingsOpen(true)} />
+          <SettingsButton
+            data-cy="ai-annotate-settings-button"
+            onClick={() => setIsSettingsOpen(true)}
+          />
           <div className="w-4"></div>
-          <AddButton onClick={() => setAddingDataset(true)} label="Dataset" />
+          <AddButton
+            data-cy="ai-annotate-add-dataset-button"
+            onClick={() => setAddingDataset(true)}
+            label="Dataset"
+          />
           <div className="w-2"></div>
-          <UploadDatasetButton />
+          <UploadDatasetButton data-cy="ai-annotate-upload-dataset-button" />
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {addingDataset && (
-            <AddDatasetForm onClose={() => setAddingDataset(false)} />
+            <AddDatasetForm
+              data-cy="ai-annotate-add-dataset-form"
+              onClose={() => setAddingDataset(false)}
+            />
           )}
 
           {editingDataset && (
             <EntityForm<AnnotatedDataset>
+              data-cy="ai-annotate-edit-dataset-form"
               onCancel={() => setEditingDataset(undefined)}
               onSave={handleSaveDataset}
               existingEntity={editingDataset}
@@ -73,38 +84,43 @@ const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
             />
           )}
 
-          {dbAnnotatedDatasets?.map((dataset) =>
-            editingDataset && editingDataset.id === dataset.id ? (
-              <EntityForm<AnnotatedDataset>
-                key={dataset.id}
-                onCancel={() => setEditingDataset(undefined)}
-                onSave={handleSaveDataset}
-                existingEntity={editingDataset}
-                entityType="Annotated Dataset"
-              />
-            ) : (
-              <AnnotatedDatasetCard
-                key={dataset.id}
-                dataset={dataset}
-                isActive={activeAnnotatedDataset === dataset}
-                annotationState={annotationState}
-                onSelect={() => {
-                  identifyActiveProfilePoints(dataset.profileId);
-                  setActiveAnnotatedDataset(dataset);
-                }}
-                onStart={() => {
-                  identifyActiveProfilePoints(dataset.profileId);
-                  setActiveAnnotatedDataset(dataset);
-                  handleStart();
-                }}
-                onStop={handleStop}
-                onEdit={() => setEditingDataset(dataset)}
-              />
-            )
-          )}
+          <div data-cy="ai-annotate-datasets-list">
+            {dbAnnotatedDatasets?.map((dataset) =>
+              editingDataset && editingDataset.id === dataset.id ? (
+                <EntityForm<AnnotatedDataset>
+                  key={dataset.id}
+                  data-cy="ai-annotate-edit-dataset-form"
+                  onCancel={() => setEditingDataset(undefined)}
+                  onSave={handleSaveDataset}
+                  existingEntity={editingDataset}
+                  entityType="Annotated Dataset"
+                />
+              ) : (
+                <AnnotatedDatasetCard
+                  key={dataset.id}
+                  data-cy="ai-annotate-dataset-card"
+                  dataset={dataset}
+                  isActive={activeAnnotatedDataset === dataset}
+                  annotationState={annotationState}
+                  onSelect={() => {
+                    identifyActiveProfilePoints(dataset.profileId);
+                    setActiveAnnotatedDataset(dataset);
+                  }}
+                  onStart={() => {
+                    identifyActiveProfilePoints(dataset.profileId);
+                    setActiveAnnotatedDataset(dataset);
+                    handleStart();
+                  }}
+                  onStop={handleStop}
+                  onEdit={() => setEditingDataset(dataset)}
+                />
+              )
+            )}
+          </div>
         </CardContent>
       </Card>
       <SettingsMenu
+        data-cy="ai-annotate-settings-menu"
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         autoRerunFaulty={autoRerunFaulty}

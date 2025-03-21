@@ -13,14 +13,19 @@ const LLMAnnotation = () => {
   >([]);
 
   return (
-    <div className="grid grid-cols-2 gap-4 h-full">
+    <div
+      className="grid grid-cols-2 gap-4 h-full"
+      data-cy="llm-annotation-container"
+    >
       <AnnotatedDatasetList
+        data-cy="annotated-dataset-list"
         activeAnnotatedDataset={activeAnnotatedDataset}
         activeProfilePoints={activeProfilePoints}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         setActiveProfilePoints={setActiveProfilePoints}
       />
       <AnnotatedTextsList
+        data-cy="annotated-texts-list"
         activeAnnotatedDataset={activeAnnotatedDataset}
         activeProfilePoints={activeProfilePoints}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}

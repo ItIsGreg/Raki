@@ -84,24 +84,26 @@ const AnnotatedTextsList = ({
     });
 
   return (
-    <div className="overflow-y-scroll">
+    <div className="overflow-y-scroll" data-cy="annotated-texts-container">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Annotated Texts</CardTitle>
-            <CardDescription>{activeAnnotatedDataset?.name}</CardDescription>
+            <CardTitle data-cy="annotated-texts-title">
+              Annotated Texts
+            </CardTitle>
+            <CardDescription data-cy="dataset-name">
+              {activeAnnotatedDataset?.name}
+            </CardDescription>
           </div>
-          {/*           <Button onClick={() => console.log("Rerun Faulty Texts")}>
-            Rerun Faulty Texts
-          </Button> */}
         </CardHeader>
         <CardContent>
           {sortedAnnotatedTexts?.map((annotatedText) => {
             return (
-              <Card key={annotatedText.id}>
+              <Card key={annotatedText.id} data-cy="annotated-text-card">
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle
                     className={annotatedText.aiFaulty ? "text-red-500" : ""}
+                    data-cy="text-filename"
                   >
                     {
                       dbTexts?.find((text) => text.id === annotatedText.textId)
@@ -110,13 +112,14 @@ const AnnotatedTextsList = ({
                   </CardTitle>
                   {annotatedText.aiFaulty &&
                     (rerunningTexts.includes(annotatedText.id) ? (
-                      <Button disabled>
+                      <Button disabled data-cy="rerunning-button">
                         <span className="animate-spin mr-2">&#9696;</span>
                         Rerunning...
                       </Button>
                     ) : (
                       <Button
                         onClick={() => handleRerunFaultyText(annotatedText)}
+                        data-cy="rerun-button"
                       >
                         Rerun
                       </Button>

@@ -19,16 +19,26 @@ export default function Navbar() {
   ];
 
   return (
-    <div className="navbar">
+    <div className="navbar" data-cy="navbar">
       <Card>
         <CardContent className="flex flex-row gap-2">
           <div className="flex-grow"></div>
           {routes.map(({ path, label }) => (
             <Link key={path} href={path}>
-              <Button disabled={currentPathname === path}>{label}</Button>
+              <Button
+                data-cy={`nav-${label.toLowerCase().replace(" ", "-")}-button`}
+                disabled={currentPathname === path}
+              >
+                {label}
+              </Button>
             </Link>
           ))}
-          <Button onClick={() => setIsSettingsOpen(true)}>Setup</Button>
+          <Button
+            data-cy="nav-setup-button"
+            onClick={() => setIsSettingsOpen(true)}
+          >
+            Setup
+          </Button>
           <div className="flex-grow"></div>
         </CardContent>
       </Card>

@@ -47,17 +47,19 @@ export const AnnotatedDatasetCard = ({
 
   return (
     <Card
+      data-cy="annotated-dataset-card"
       className={`${
         isActive && "bg-gray-100 shadow-lg border-black border-2"
       } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
       onClick={onSelect}
     >
       <CardHeader className="flex flex-row gap-2">
-        <CardTitle>{dataset.name}</CardTitle>
+        <CardTitle data-cy="dataset-title">{dataset.name}</CardTitle>
         <div className="flex-grow"></div>
-        <EditButton onClick={onEdit} />
-        <DownloadButton dataset={dataset} />
+        <EditButton data-cy="edit-dataset-button" onClick={onEdit} />
+        <DownloadButton data-cy="download-dataset-button" dataset={dataset} />
         <DeleteButton
+          data-cy="delete-dataset-button"
           onDelete={() => deleteAnnotatedDataset(dataset.id)}
           itemName="annotated dataset"
         />
@@ -65,7 +67,7 @@ export const AnnotatedDatasetCard = ({
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-row gap-2">
           {dbProfiles && (
-            <CardDescription>
+            <CardDescription data-cy="profile-description">
               Profile:{" "}
               {
                 dbProfiles.find((profile) => profile.id === dataset.profileId)
@@ -75,7 +77,7 @@ export const AnnotatedDatasetCard = ({
           )}
           <div className="flex-grow"></div>
           {dbDatasets && (
-            <CardDescription>
+            <CardDescription data-cy="dataset-description">
               Dataset:{" "}
               {
                 dbDatasets.find(
@@ -86,10 +88,12 @@ export const AnnotatedDatasetCard = ({
           )}
           <div className="flex-grow"></div>
         </div>
-        <CardDescription>Description: {dataset.description}</CardDescription>
+        <CardDescription data-cy="dataset-description-text">
+          Description: {dataset.description}
+        </CardDescription>
         {dbTexts && dbAnnotatedTexts && (
           <>
-            <CardDescription>
+            <CardDescription data-cy="annotated-texts-count">
               Annotated Texts:{" "}
               {
                 dbAnnotatedTexts.filter((text) => {
@@ -103,7 +107,7 @@ export const AnnotatedDatasetCard = ({
                 }).length
               }
             </CardDescription>
-            <CardDescription>
+            <CardDescription data-cy="faulty-texts-count">
               Faulty Texts:{" "}
               {
                 dbAnnotatedTexts.filter((text) => {
@@ -121,6 +125,7 @@ export const AnnotatedDatasetCard = ({
           dbAnnotatedTexts &&
           annotationState === "regular" && (
             <Progress
+              data-cy="annotation-progress"
               value={
                 (dbAnnotatedTexts.filter(
                   (text) => text.annotatedDatasetId === dataset.id
@@ -135,13 +140,22 @@ export const AnnotatedDatasetCard = ({
         {isActive && (
           <>
             {annotationState === "idle" ? (
-              <Button onClick={onStart}>Start Annotation</Button>
+              <Button data-cy="start-annotation-button" onClick={onStart}>
+                Start Annotation
+              </Button>
             ) : (
               <div className="flex flex-col items-center gap-2">
-                <Button onClick={onStop} className="w-full">
+                <Button
+                  data-cy="stop-annotation-button"
+                  onClick={onStop}
+                  className="w-full"
+                >
                   Stop {annotationState === "faulty" ? "Faulty " : ""}Annotation
                 </Button>
-                <div className="flex items-center gap-2">
+                <div
+                  className="flex items-center gap-2"
+                  data-cy="annotation-status"
+                >
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-gray-500">
                     {annotationState === "regular"
