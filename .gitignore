@@ -94,3 +94,11 @@ out/
 
 # Other
 .nvm
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+cypress/results/
+.cypress/
+cypress.env.json
