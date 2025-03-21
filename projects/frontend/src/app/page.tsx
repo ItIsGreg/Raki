@@ -3,7 +3,14 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, Database, Rocket, ScanText, Settings } from "lucide-react";
+import {
+  Brain,
+  Database,
+  Rocket,
+  ScanText,
+  Settings,
+  Scissors,
+} from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 
 export default function Home() {
@@ -56,6 +63,18 @@ export default function Home() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-center">Manual Annotation</CardTitle>
               <ScanText className="h-8 w-8" />
+            </CardHeader>
+          </Card>
+        </Link>
+
+        <Link href="/textSegmentation" className="m-10">
+          <Card
+            className="hover:bg-gray-100 transform hover:shadow-md"
+            data-cy="text-segmentation-card"
+          >
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-center">Text Segmentation</CardTitle>
+              <Scissors className="h-8 w-8" />
             </CardHeader>
           </Card>
         </Link>
