@@ -32,15 +32,22 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
     return 0;
   });
   return (
-    <div className="col-span-1 overflow-y-scroll">
+    <div
+      className="col-span-1 overflow-y-scroll"
+      data-cy="datapoint-list-container"
+    >
       <Card>
         <CardHeader className="flex flex-row justify-between">
-          <CardTitle>Datapoints</CardTitle>
+          <CardTitle data-cy="datapoint-list-title">Datapoints</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1">
+        <CardContent
+          className="flex flex-col gap-1"
+          data-cy="datapoint-list-content"
+        >
           {dataPoints?.map((dataPoint) => (
             <CompactCard
               key={dataPoint.id}
+              data-cy={`datapoint-card-${dataPoint.id}`}
               title={dataPoint.name}
               onClick={() =>
                 setActiveDataPointId(
@@ -65,6 +72,7 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
               rightIcon={
                 <TiDeleteOutline
                   className="hover:text-red-500 cursor-pointer"
+                  data-cy={`datapoint-delete-${dataPoint.id}`}
                   size={20}
                   onClick={(e) => {
                     e.stopPropagation();

@@ -15,6 +15,7 @@ interface CompactCardProps {
   tooltipContent?: string;
   rightIcon?: ReactNode;
   className?: string;
+  "data-cy"?: string;
 }
 
 const CompactCard = ({
@@ -25,11 +26,13 @@ const CompactCard = ({
   tooltipContent,
   rightIcon,
   className = "",
+  "data-cy": dataCy,
 }: CompactCardProps) => {
   const card = (
     <Card
       onClick={onClick}
       className={`cursor-pointer ${isActive ? "bg-gray-100" : ""} ${className}`}
+      data-cy={dataCy}
     >
       <CardHeader className="flex flex-row gap-2 py-2">
         <CardTitle className="truncate text-sm">{title}</CardTitle>

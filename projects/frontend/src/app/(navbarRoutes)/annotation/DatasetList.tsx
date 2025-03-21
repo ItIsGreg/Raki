@@ -145,15 +145,21 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
   };
 
   return (
-    <div className="col-span-1 overflow-y-scroll">
+    <div
+      className="col-span-1 overflow-y-scroll"
+      data-cy="manual-dataset-list-container"
+    >
       <Card>
         <CardHeader>
-          <CardTitle>Annotated Datasets</CardTitle>
+          <CardTitle data-cy="manual-dataset-list-title">
+            Annotated Datasets
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent data-cy="manual-dataset-list-content">
           {annotatedDatasets?.map((annotatedDataset) => (
             <CompactCard
               key={annotatedDataset.id}
+              data-cy="manual-annotated-dataset-card"
               title={annotatedDataset.name}
               description={annotatedDataset.description}
               onClick={() =>
@@ -170,6 +176,7 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
                   <DropdownMenuTrigger
                     asChild
                     onClick={(e) => e.stopPropagation()}
+                    data-cy="manual-dataset-download-trigger"
                   >
                     <div className="cursor-pointer">
                       <TiDownloadOutline
@@ -180,6 +187,7 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
                     <DropdownMenuItem
+                      data-cy="manual-dataset-download-csv"
                       onClick={() =>
                         downLoadAnnotatedDataset(annotatedDataset, "csv")
                       }
@@ -187,6 +195,7 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
                       Download as CSV
                     </DropdownMenuItem>
                     <DropdownMenuItem
+                      data-cy="manual-dataset-download-xlsx"
                       onClick={() =>
                         downLoadAnnotatedDataset(annotatedDataset, "xlsx")
                       }

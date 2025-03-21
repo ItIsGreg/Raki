@@ -24,8 +24,12 @@ const Annotation = () => {
   >(undefined);
 
   return (
-    <div className="grid grid-cols-7 gap-4 h-full">
+    <div
+      className="grid grid-cols-7 gap-4 h-full"
+      data-cy="annotation-container"
+    >
       <TextAnnotation
+        data-cy="text-annotation"
         activeAnnotatedDataset={activeAnnotatedDataset}
         activeDataPointId={activeDataPointId}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
@@ -33,6 +37,7 @@ const Annotation = () => {
         activeAnnotatedText={activeAnnotatedText}
       />
       <DataPointList
+        data-cy="data-point-list"
         activeAnnotatedDataset={activeAnnotatedDataset}
         activeDataPointId={activeDataPointId}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
@@ -41,12 +46,14 @@ const Annotation = () => {
         setActiveAnnotatedText={setActiveAnnotatedText}
       />
       <AnnotatedTextList
+        data-cy="annotated-text-list"
         activeAnnotatedDataset={activeAnnotatedDataset}
         activeAnnotatedText={activeAnnotatedText}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         setActiveAnnotatedText={setActiveAnnotatedText}
       />
       <DatasetList
+        data-cy="dataset-list"
         activeAnnotatedDataset={activeAnnotatedDataset}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
       />

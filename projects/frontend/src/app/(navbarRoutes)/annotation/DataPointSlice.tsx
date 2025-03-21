@@ -39,6 +39,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
       <Tooltip open={activeDataPointId === dataPoint.id}>
         <TooltipTrigger>
           <Badge
+            data-cy="datapoint-badge"
             onClick={() =>
               setActiveDataPointId(
                 activeDataPointId === dataPoint.id ? undefined : dataPoint.id
@@ -50,11 +51,12 @@ const DataPointSlice = (props: DataPointSliceProps) => {
           </Badge>
         </TooltipTrigger>
         <TooltipContent side="bottom">
-          <Card>
+          <Card data-cy="text-datapoint-card">
             <CardHeader className="flex flex-row gap-2">
-              <CardTitle>{dataPoint.name}</CardTitle>
+              <CardTitle data-cy="datapoint-title">{dataPoint.name}</CardTitle>
               <div className="flex-grow"></div>
               <TiDeleteOutline
+                data-cy="datapoint-delete-btn"
                 className="hover:text-red-500 cursor-pointer"
                 size={24}
                 onClick={() => {
@@ -74,6 +76,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
             <CardContent>
               {!dataPoint.profilePointId ? (
                 <Select
+                  data-cy="profile-point-select"
                   onValueChange={(value: string) => {
                     // update the placeholder data point
                     const placeholderDataPoint = dataPoints.find(
@@ -92,9 +95,11 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                     });
                   }}
                 >
-                  <SelectTrigger>Select a profile Point</SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
+                  <SelectTrigger data-cy="profile-point-select-trigger">
+                    Select a profile Point
+                  </SelectTrigger>
+                  <SelectContent data-cy="profile-point-select-content">
+                    <SelectGroup data-cy="profile-point-group">
                       {activeProfilePoints
                         ?.filter((profilePoint) => {
                           return (
@@ -110,6 +115,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                           <SelectItem
                             key={profilePoint.id}
                             value={profilePoint.id}
+                            data-cy="profile-point-option"
                           >
                             {profilePoint.name}
                           </SelectItem>
@@ -121,8 +127,12 @@ const DataPointSlice = (props: DataPointSliceProps) => {
 
               {dataPoint.profilePointId &&
               activeProfilePoint?.datatype === "valueset" ? (
-                <div className="flex flex-col gap-2">
+                <div
+                  className="flex flex-col gap-2"
+                  data-cy="valueset-container"
+                >
                   <Select
+                    data-cy="valueset-select"
                     onValueChange={(value: string) => {
                       // update the data point value
                       updateDataPoint({
@@ -132,10 +142,10 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                       });
                     }}
                   >
-                    <SelectTrigger autoFocus>
+                    <SelectTrigger data-cy="valueset-trigger" autoFocus>
                       {dataPoint.value?.toString() ?? "Value"}
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent data-cy="valueset-content">
                       {activeProfilePoint?.valueset?.map((value) => (
                         <SelectItem key={value} value={value}>
                           {value}
@@ -144,6 +154,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                     </SelectContent>
                   </Select>
                   <Button
+                    data-cy="verify-button"
                     className="bg-green-800"
                     onClick={() => {
                       // verify the data point
@@ -157,8 +168,12 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                   </Button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div
+                  className="flex flex-col gap-2"
+                  data-cy="value-input-container"
+                >
                   <Input
+                    data-cy="value-input"
                     value={activeDataPointValue}
                     onChange={(e) => setActiveDataPointValue(e.target.value)}
                     placeholder={dataPoint.value?.toString() ?? "Value"}
@@ -166,6 +181,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                   />
                   <div className="flex flex-row gap-1">
                     <Button
+                      data-cy="update-value-btn"
                       onClick={() => {
                         // update the data point value
                         updateDataPoint({
@@ -179,6 +195,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                     </Button>
                     <div className="flex-grow"></div>
                     <Button
+                      data-cy="verify-value-btn"
                       className="bg-green-800"
                       onClick={() => {
                         // verify the data point

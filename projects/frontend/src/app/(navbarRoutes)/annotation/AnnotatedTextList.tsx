@@ -35,15 +35,24 @@ const AnnotatedTextList = (props: AnnotatedTextListProps) => {
     );
 
   return (
-    <div className="overflow-y-scroll">
+    <div
+      className="overflow-y-scroll"
+      data-cy="manual-annotated-text-list-container"
+    >
       <Card>
         <CardHeader>
-          <CardTitle>Annotated Texts</CardTitle>
+          <CardTitle data-cy="manual-annotated-text-list-title">
+            Annotated Texts
+          </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-1">
+        <CardContent
+          className="flex flex-col gap-1"
+          data-cy="manual-annotated-text-list-content"
+        >
           {sortedAnnotatedTexts?.map((annotatedText) => (
             <CompactCard
               key={annotatedText.id}
+              data-cy="manual-annotated-text-card"
               title={annotatedText.filename}
               onClick={() =>
                 setActiveAnnotatedText(

@@ -389,6 +389,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                       value={currentValuesetItem}
                       onChange={(e) => setCurrentValuesetItem(e.target.value)}
                       onKeyDown={(e) => handleKeyPress(e, "valueset")}
+                      data-cy="valueset-item-input"
                     />
                     <Button
                       onClick={() => {
@@ -401,6 +402,7 @@ export function DataPointEditor(props: DataPointEditorProps) {
                           setCurrentValuesetItem("");
                         }
                       }}
+                      data-cy="add-valueset-item-button"
                     >
                       Add Item
                     </Button>

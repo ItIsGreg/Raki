@@ -64,14 +64,22 @@ const TextAnnotation = (props: TextAnnotationProps) => {
   );
 
   return (
-    <div className="col-span-4 overflow-y-auto">
+    <div
+      className="col-span-4 overflow-y-auto"
+      data-cy="text-annotation-container"
+    >
       <Card>
         <CardHeader>
-          <CardTitle>Annotation</CardTitle>
+          <CardTitle data-cy="text-annotation-title">Annotation</CardTitle>
         </CardHeader>
-        <CardContent className="whitespace-pre-wrap">
+        <CardContent
+          className="whitespace-pre-wrap"
+          data-cy="text-annotation-content"
+        >
           {highlightedText.map((element, index) => (
-            <span key={index}>{element}</span>
+            <span key={index} data-cy="text-annotation-span">
+              {element}
+            </span>
           ))}
         </CardContent>
       </Card>

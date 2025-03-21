@@ -18,6 +18,7 @@ const TextSlice = (props: TextSliceProps) => {
 
   return (
     <span
+      data-cy="text-slice"
       onMouseUp={async () => {
         const selection = window.getSelection();
         if (selection) {
