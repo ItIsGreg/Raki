@@ -155,20 +155,31 @@ const ProfileChatView = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-[80%] w-full sm:h-[80vh] flex flex-col">
+      <DialogContent
+        className="sm:max-w-[80%] w-full sm:h-[80vh] flex flex-col"
+        data-cy="profile-chat-dialog"
+      >
         <DialogHeader>
           <DialogTitle>AI Chat</DialogTitle>
-          <Button onClick={handleNewChat} className="ml-auto">
+          <Button
+            onClick={handleNewChat}
+            className="ml-auto"
+            data-cy="new-chat-button"
+          >
             New Chat
           </Button>
         </DialogHeader>
-        <div className="flex-grow overflow-y-auto mb-4">
+        <div
+          className="flex-grow overflow-y-auto mb-4"
+          data-cy="chat-messages-container"
+        >
           {messages.map((message, index) => (
             <ChatMessage
               key={index}
               message={message}
               activeProfile={activeProfile}
               setIsOpen={setIsOpen}
+              data-cy={`chat-message-${message.role}`}
             />
           ))}
           <div ref={messagesEndRef} />
@@ -191,8 +202,14 @@ const ProfileChatView = ({
             disabled={isLoading}
             className="flex-1 min-h-[40px] px-3 py-2 rounded-md border border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
             rows={1}
+            data-cy="message-input"
           />
-          <Button onClick={handleSend} disabled={isLoading} className="ml-2">
+          <Button
+            onClick={handleSend}
+            disabled={isLoading}
+            className="ml-2"
+            data-cy="send-button"
+          >
             Send
           </Button>
         </div>
