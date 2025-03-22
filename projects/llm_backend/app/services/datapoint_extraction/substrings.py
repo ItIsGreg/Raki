@@ -2,7 +2,7 @@ from typing import Callable
 from uu import Error
 
 from app.llm_calls import call_llm
-from app.models.models import (
+from app.models.datapoint_extraction_models import (
     DataPointSubstring,
     DataPointSubstringMatch,
     ExtractDatapointSubstringsReq,

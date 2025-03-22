@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.models.models import ProfileChatRequest
+from app.models.datapoint_extraction_models import ProfileChatRequest
 from app.services.datapoint_extraction.profile_chat import profile_chat_service
 
 router = APIRouter()

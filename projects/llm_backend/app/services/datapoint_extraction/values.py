@@ -1,6 +1,6 @@
 from typing import Callable
 from app.llm_calls import call_llm
-from app.models.models import ExtractValuesReq
+from app.models.datapoint_extraction_models import ExtractValuesReq
 from app.prompts.values import Extract_Values_Prompt_List
 from app.config.environment import prompt_language
 
