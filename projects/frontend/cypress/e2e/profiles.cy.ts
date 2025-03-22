@@ -140,7 +140,7 @@ describe('Profiles page', () => {
       .should('contain', 'Text')
   })
 
-  it.only('should handle profile points upload', () => {
+  it('should handle profile points upload', () => {
     const profileName = 'Upload Test Profile'
     const profileDescription = 'Profile for testing upload functionality'
     const fixtureFilePath = 'cypress/fixtures/upload_test/uploadProfilePoints.json'
