@@ -72,21 +72,24 @@ const ProfileChatView = ({
     }
 
     try {
-      const response = await fetch(`${backendURL}/profile-chat/profile-chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: messages,
-          stream: true,
-          llm_provider: dbLlmProvider[0].provider,
-          model: dbLlmModel[0].name,
-          llm_url: dbLlmUrl[0].url,
-          api_key: dbApiKeys[0].key,
-          max_tokens: dbMaxTokens?.[0]?.value,
-        }),
-      });
+      const response = await fetch(
+        `${backendURL}/datapoint-extraction/profile-chat/profile-chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: messages,
+            stream: true,
+            llm_provider: dbLlmProvider[0].provider,
+            model: dbLlmModel[0].name,
+            llm_url: dbLlmUrl[0].url,
+            api_key: dbApiKeys[0].key,
+            max_tokens: dbMaxTokens?.[0]?.value,
+          }),
+        }
+      );
 
       if (!response.ok) {
         console.error("API Error:", await response.text());

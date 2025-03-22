@@ -165,7 +165,7 @@ async function callAnnotationAPI(
       datapoints: getReqProfilePoints(activeProfilePoints),
       max_tokens: config.maxTokens || undefined,
     };
-    const response = await fetch(`${backendURL}/pipeline/pipeline/`, {
+    const response = await fetch(`${backendURL}/datapoint-extraction/pipeline/pipeline`, {
       method: "POST",
       mode: "cors",
       headers: {
