@@ -39,11 +39,6 @@ export const TextDisplay = memo(function TextDisplay({
   }
 
   const renderedText = useMemo(() => {
-    console.log("[TextDisplay] Rendering segments:", {
-      segmentCount: segments.length,
-      totalTextLength: inputText.length,
-    });
-
     let lastIndex = 0;
     const textParts = [];
     const sortedSegments = [...segments].sort(
@@ -51,14 +46,6 @@ export const TextDisplay = memo(function TextDisplay({
     );
 
     for (const segment of sortedSegments) {
-      console.log("[TextDisplay] Processing segment:", {
-        id: segment.id,
-        name: segment.name,
-        textLength: segment.text.length,
-        startIndex: segment.startIndex,
-        endIndex: segment.endIndex,
-      });
-
       if (segment.startIndex > lastIndex) {
         const normalText = inputText.substring(lastIndex, segment.startIndex);
         if (isMarkdownEnabled) {
@@ -112,18 +99,13 @@ export const TextDisplay = memo(function TextDisplay({
     return <div className="whitespace-pre-wrap break-words">{textParts}</div>;
   }, [inputText, segments, isMarkdownEnabled]);
 
-  const handleTextSelection = () => {
-    console.log("[TextDisplay] Text selection event triggered");
-    onTextSelection();
-  };
-
   return (
     <div
       ref={textareaRef}
       className="min-h-[200px] p-3 border rounded-md bg-white text-foreground leading-normal"
       tabIndex={0}
-      onMouseUp={handleTextSelection}
-      onKeyUp={handleTextSelection}
+      onMouseUp={onTextSelection}
+      onKeyUp={onTextSelection}
       data-cy="text-display"
     >
       {renderedText}

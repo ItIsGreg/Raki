@@ -177,15 +177,6 @@ export default function TextSegmentation() {
             const startIndex = tempRange.toString().length;
             const endIndex = startIndex + selText.length;
 
-            console.log("[TextSegmentation] Text selected:", {
-              length: selText.length,
-              startIndex,
-              endIndex,
-              preview:
-                selText.substring(0, 50) + (selText.length > 50 ? "..." : ""),
-            });
-
-            // Store selection info
             setSelectionInfo({
               text: selText,
               startIndex,
@@ -195,10 +186,7 @@ export default function TextSegmentation() {
             setShowSectionNaming(true);
           }
         } catch (error) {
-          console.error(
-            "[TextSegmentation] Error processing selection:",
-            error
-          );
+          console.error("Error processing selection:", error);
         }
       }
     }
@@ -207,14 +195,6 @@ export default function TextSegmentation() {
   // Create a new segment from selection
   const createSegment = useCallback(() => {
     if (selectionInfo && sectionName && textareaRef.current) {
-      console.log("[TextSegmentation] Creating new segment:", {
-        sectionName,
-        textLength: selectionInfo.text.length,
-        preview:
-          selectionInfo.text.substring(0, 50) +
-          (selectionInfo.text.length > 50 ? "..." : ""),
-      });
-
       const newSegment = {
         id: uuidv4(),
         text: selectionInfo.text,
@@ -223,44 +203,16 @@ export default function TextSegmentation() {
         endIndex: selectionInfo.endIndex,
       };
 
-      console.log("[TextSegmentation] Adding new segment to state:", {
-        id: newSegment.id,
-        name: newSegment.name,
-        startIndex: selectionInfo.startIndex,
-        endIndex: selectionInfo.endIndex,
-        textPreview:
-          newSegment.text.substring(0, 50) +
-          (newSegment.text.length > 50 ? "..." : ""),
-      });
+      setSegments((prevSegments) => [...prevSegments, newSegment]);
 
-      setSegments((prevSegments) => {
-        const updatedSegments = [...prevSegments, newSegment];
-        console.log("[TextSegmentation] Updated segments array:", {
-          previousCount: prevSegments.length,
-          newCount: updatedSegments.length,
-        });
-        return updatedSegments;
-      });
-
-      // Clear the selection states
       setSelectionInfo(null);
       setSectionName("");
       setSelectedText("");
       setShowSectionNaming(false);
-    } else {
-      console.warn(
-        "[TextSegmentation] Missing required data for segment creation:",
-        {
-          hasSelectionInfo: Boolean(selectionInfo),
-          hasSectionName: Boolean(sectionName),
-          hasTextareaRef: Boolean(textareaRef.current),
-        }
-      );
     }
   }, [selectionInfo, sectionName]);
 
   const cancelSegmentCreation = () => {
-    console.log("[TextSegmentation] Segment creation cancelled");
     setSelectionInfo(null);
     setSelectedText("");
     setSectionName("");
@@ -269,7 +221,6 @@ export default function TextSegmentation() {
 
   // Reset everything
   const resetSegmentation = () => {
-    console.log("[TextSegmentation] Resetting all segmentation");
     setIsTextConfirmed(false);
     setSegments([]);
     setSelectionInfo(null);

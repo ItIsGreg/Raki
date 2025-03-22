@@ -2,7 +2,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, X, Type, Bug } from "lucide-react";
+import { Check, X, Type } from "lucide-react";
 
 interface SidebarProps {
   isMarkdownEnabled: boolean;
@@ -29,33 +29,7 @@ export function Sidebar({
   setSectionName,
   createSegment,
   cancelSegmentCreation,
-  segments,
 }: SidebarProps) {
-  const handleCreateSegment = () => {
-    console.log("[Sidebar] Creating segment:", { sectionName });
-    createSegment();
-  };
-
-  const handleCancelSegment = () => {
-    console.log("[Sidebar] Canceling segment creation");
-    cancelSegmentCreation();
-  };
-
-  const handleDebugState = () => {
-    console.log("[Sidebar] Current State:", {
-      isMarkdownEnabled,
-      showSectionNaming,
-      sectionName,
-      segments: segments.map((seg) => ({
-        id: seg.id,
-        name: seg.name,
-        textLength: seg.text.length,
-        startIndex: seg.startIndex,
-        endIndex: seg.endIndex,
-      })),
-    });
-  };
-
   return (
     <div className="flex-shrink-0 w-64 bg-gray-50 p-4 border-l">
       <div className="mb-4">
@@ -76,17 +50,6 @@ export function Sidebar({
             Render Markdown
           </Label>
         </div>
-
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleDebugState}
-          className="w-full mt-2"
-          data-cy="debug-button"
-        >
-          <Bug className="h-4 w-4 mr-1" />
-          Debug State
-        </Button>
       </div>
 
       {showSectionNaming && (
@@ -105,7 +68,7 @@ export function Sidebar({
           <div className="flex space-x-2">
             <Button
               size="sm"
-              onClick={handleCreateSegment}
+              onClick={createSegment}
               disabled={!sectionName}
               data-cy="create-segment-button"
             >
@@ -115,7 +78,7 @@ export function Sidebar({
             <Button
               size="sm"
               variant="outline"
-              onClick={handleCancelSegment}
+              onClick={cancelSegmentCreation}
               data-cy="cancel-segment-button"
             >
               <X className="h-4 w-4 mr-1" />
