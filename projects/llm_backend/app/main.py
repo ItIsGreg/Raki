@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 import uvicorn
 from starlette.middleware.cors import CORSMiddleware
 
-from app.routers import substrings, values, pipeline, profile_chat
+from app.routers.datapoint_extraction import substrings, values, pipeline, profile_chat
 
 app = FastAPI()
 
@@ -27,22 +27,22 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 router.include_router(
     substrings.router,
     tags=["substrings"],
-    prefix="/substrings",
+    prefix="/datapoint-extraction/substrings",
 )
 router.include_router(
     values.router,
     tags=["values"],
-    prefix="/values",
+    prefix="/datapoint-extraction/values",
 )
 router.include_router(
     pipeline.router,
     tags=["pipeline"],
-    prefix="/pipeline",
+    prefix="/datapoint-extraction/pipeline",
 )
 router.include_router(
     profile_chat.router,
     tags=["profile_chat"],
-    prefix="/profile-chat",
+    prefix="/datapoint-extraction/profile-chat",
 )
 
 app.add_middleware(

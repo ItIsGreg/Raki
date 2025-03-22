@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.models.models import ExtractDatapointSubstringsReq, SelectSubstringReq
-from app.services.substrings import (
+from app.services.datapoint_extraction.substrings import (
     extract_datapoint_substrings_and_match_service,
     extract_datapoint_substrings_service,
     select_substring_service,

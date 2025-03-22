@@ -7,8 +7,8 @@ from app.models.models import (
     PipelineReq,
     PipelineResDatapoint,
 )
-from app.services.substrings import extract_datapoint_substrings_and_match_service
-from app.services.values import extract_values_service
+from app.services.datapoint_extraction.substrings import extract_datapoint_substrings_and_match_service
+from app.services.datapoint_extraction.values import extract_values_service
 
 
 def get_text_excerpt(text: str, match: tuple[int, int], overlap: int = 25) -> str:

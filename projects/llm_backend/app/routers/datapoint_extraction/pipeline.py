@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.models.models import PipelineReq, PipelineResDatapoint
-from app.services.pipeline import pipeline_service
+from app.services.datapoint_extraction.pipeline import pipeline_service
 
 router = APIRouter()
 

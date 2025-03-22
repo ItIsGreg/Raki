@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.models.models import ExtractValuesReq
-from app.services.values import extract_values_service
+from app.services.datapoint_extraction.values import extract_values_service
 
 router = APIRouter()
 
