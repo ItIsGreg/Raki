@@ -56,12 +56,13 @@ const JsonContent: React.FC<JsonContentProps> = ({
     const parsedJson = JSON.parse(content);
     if (isProfilePointCreate(parsedJson)) {
       return (
-        <div>
+        <div data-cy="json-content-container">
           <Button
             variant="outline"
             size="sm"
             className="text-xs text-gray-500 hover:text-gray-700 border-gray-300 mb-2"
             onClick={() => handleAdopt(parsedJson)}
+            data-cy="adopt-button"
           >
             Adopt
           </Button>
@@ -73,6 +74,7 @@ const JsonContent: React.FC<JsonContentProps> = ({
               borderRadius: "0.375rem",
               fontSize: "0.875rem",
             }}
+            data-cy="json-syntax-highlighter"
           >
             {JSON.stringify(parsedJson, null, 2)}
           </SyntaxHighlighter>
@@ -86,7 +88,7 @@ const JsonContent: React.FC<JsonContentProps> = ({
   }
 
   // Regular text content or failed JSON parsing
-  return <span>{content}</span>;
+  return <span data-cy="plain-text-content">{content}</span>;
 };
 
 export default JsonContent;

@@ -145,6 +145,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 key={index}
                 content={JSON.stringify(cleanedJson, null, 2)}
                 activeProfile={activeProfile}
+                data-cy="json-content"
               />
             );
           } catch (error) {
@@ -160,11 +161,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   return (
     <div
       className={`mb-2 ${message.role === "user" ? "text-right" : "text-left"}`}
+      data-cy={message.role === "user" ? "user-message" : "assistant-message"}
     >
       <div
         className={`inline-block p-2 rounded-lg ${
           message.role === "user" ? "bg-blue-500 text-white" : "bg-gray-200"
         }`}
+        data-cy="message-content"
       >
         {message.role === "assistant" && validProfilePoints.length > 0 && (
           <div className="mb-2">
@@ -173,6 +176,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               size="sm"
               className="text-xs text-gray-500 hover:text-gray-700 border-gray-300"
               onClick={handleAdoptAll}
+              data-cy="adopt-all-button-top"
             >
               Adopt All ({validProfilePoints.length})
             </Button>
@@ -186,6 +190,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               size="sm"
               className="text-xs text-gray-500 hover:text-gray-700 border-gray-300"
               onClick={handleAdoptAll}
+              data-cy="adopt-all-button-bottom"
             >
               Adopt All ({validProfilePoints.length})
             </Button>

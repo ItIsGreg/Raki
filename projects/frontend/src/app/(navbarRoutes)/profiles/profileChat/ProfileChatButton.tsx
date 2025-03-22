@@ -15,11 +15,16 @@ const ProfileChatButton = ({ onClick }: ProfileChatButtonProps) => (
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={onClick}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClick}
+          data-cy="profile-chat-button"
+        >
           <BotMessageSquare className="h-5 w-5" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>
+      <TooltipContent data-cy="profile-chat-tooltip">
         <p>Use AI chat to create a profile</p>
       </TooltipContent>
     </Tooltip>
