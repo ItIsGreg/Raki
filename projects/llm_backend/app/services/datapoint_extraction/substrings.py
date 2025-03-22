@@ -8,7 +8,7 @@ from app.models.datapoint_extraction_models import (
     ExtractDatapointSubstringsReq,
     SelectSubstringReq,
 )
-from app.prompts.substrings import (
+from app.prompts.datapoint_extraction.substrings import (
     Extract_Datapoint_Substrings_Prompt_List,
 )
 from app.config.environment import prompt_language

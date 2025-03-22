@@ -2,7 +2,7 @@ from typing import Callable
 from fastapi.responses import StreamingResponse
 from app.llm_calls import call_llm
 from app.models.datapoint_extraction_models import ProfileChatRequest
-from app.prompts.profile_chat import ProfileChatPrompt
+from app.prompts.datapoint_extraction.profile_chat import ProfileChatPrompt
 from app.config.environment import prompt_language
 
 prompt = ProfileChatPrompt()
