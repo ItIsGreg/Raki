@@ -6,6 +6,9 @@ import {
   Profile,
   ProfilePoint,
   Text,
+  SegmentationProfilePoint,
+  ProfilePointCreate,
+  SegmentationProfilePointCreate,
 } from "@/lib/db/db";
 import { TaskMode } from "./constants";
 
@@ -30,11 +33,14 @@ export interface DataPointCardProps {
   setCreatingNewDataPoint: (creating: boolean) => void;
   "data-cy": string;
 }
+
 export interface DataPointListProps {
   activeProfile: Profile | undefined;
-  activeDataPoint: ProfilePoint | undefined;
-  setActiveDataPoint: (dataPoint: ProfilePoint | undefined) => void;
+  activeDataPoint: ProfilePoint | SegmentationProfilePoint | undefined;
+  setActiveDataPoint: (dataPoint: ProfilePoint | SegmentationProfilePoint | undefined) => void;
   setCreatingNewDataPoint: (creating: boolean) => void;
+  readPointsByProfile: (profileId: string | undefined) => Promise<(ProfilePoint | SegmentationProfilePoint)[]>;
+  createPoint: (point: ProfilePointCreate | SegmentationProfilePointCreate) => Promise<ProfilePoint | SegmentationProfilePoint>;
 }
 
 export interface DataPointEditorProps {

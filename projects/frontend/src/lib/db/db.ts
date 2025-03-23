@@ -16,6 +16,18 @@ export interface ProfilePointCreate {
 export interface ProfilePoint extends ProfilePointCreate {
   id: string;
 }
+
+export interface SegmentationProfilePointCreate {
+  name: string;
+  explanation: string;
+  synonyms: string[];
+  profileId: string;
+}
+
+export interface SegmentationProfilePoint extends SegmentationProfilePointCreate {
+  id: string;
+}
+
 export interface ProfileCreate {
   name: string;
   description: string;
@@ -116,6 +128,7 @@ export class MySubClassedDexie extends Dexie {
   // 'friends' is added by dexie when declaring the stores()
   // We just tell the typing system this is the case
   profilePoints!: Table<ProfilePoint>;
+  segmentationProfilePoints!: Table<SegmentationProfilePoint>;
   Profiles!: Table<Profile>;
   Datasets!: Table<Dataset>;
   AnnotatedTexts!: Table<AnnotatedText>;
@@ -188,6 +201,11 @@ export class MySubClassedDexie extends Dexie {
           annotatedDataset.mode = "datapoint_extraction";
         }
       });
+    });
+
+    // Add version 11 to add segmentation profile points
+    this.version(11).stores({
+      segmentationProfilePoints: "++id, name, profileId",
     });
 
     // Add hooks to populate default values

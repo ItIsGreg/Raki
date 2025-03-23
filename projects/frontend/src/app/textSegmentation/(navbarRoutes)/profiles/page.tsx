@@ -1,15 +1,22 @@
 "use client";
 import { useState } from "react";
-import { Profile, ProfilePoint } from "@/lib/db/db";
+import {
+  Profile,
+  ProfilePoint,
+  SegmentationProfilePoint,
+  SegmentationProfilePointCreate,
+} from "@/lib/db/db";
 import ProfileList from "@/components/profiles/ProfileList";
-import DataPointEditor from "@/components/profiles/DataPointEditor";
+import DataPointEditorSegmentation from "@/components/profiles/DataPointEditorSegmentation";
 import DataPointList from "@/components/profiles/DataPointList";
 import { TASK_MODE } from "@/app/constants";
+import { readSegmentationProfilePointsByProfile } from "@/lib/db/crud";
+import { createSegmentationProfilePoint } from "@/lib/db/crud";
 
 const Profiles = () => {
   const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
   const [activeDataPoint, setActiveDataPoint] = useState<
-    ProfilePoint | undefined
+    SegmentationProfilePoint | undefined
   >(undefined);
   const [creatingNewDataPoint, setCreatingNewDataPoint] =
     useState<boolean>(false);
@@ -25,11 +32,19 @@ const Profiles = () => {
       <DataPointList
         activeProfile={activeProfile}
         activeDataPoint={activeDataPoint}
-        setActiveDataPoint={setActiveDataPoint}
+        setActiveDataPoint={(dataPoint) =>
+          setActiveDataPoint(dataPoint as SegmentationProfilePoint | undefined)
+        }
         setCreatingNewDataPoint={setCreatingNewDataPoint}
+        readPointsByProfile={readSegmentationProfilePointsByProfile}
+        createPoint={(point) =>
+          createSegmentationProfilePoint(
+            point as SegmentationProfilePointCreate
+          )
+        }
         data-cy="datapoint-list"
       />
-      <DataPointEditor
+      <DataPointEditorSegmentation
         activeProfile={activeProfile}
         activeDataPoint={activeDataPoint}
         setActiveDataPoint={setActiveDataPoint}

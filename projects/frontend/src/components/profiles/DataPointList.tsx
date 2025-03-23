@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MdDownload, MdUpload } from "react-icons/md";
 import { useLiveQuery } from "dexie-react-hooks";
-import { createProfilePoint, readProfilePointsByProfile } from "@/lib/db/crud";
 import DataPointCard from "./DataPointCard";
 import { useRef, useState } from "react";
 import ProfileChatButton from "./profileChat/ProfileChatButton";
@@ -15,14 +14,16 @@ const DataPointList = (props: DataPointListProps) => {
     activeDataPoint,
     setActiveDataPoint,
     setCreatingNewDataPoint,
+    readPointsByProfile,
+    createPoint,
   } = props;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const dataPoints = useLiveQuery(
-    () => readProfilePointsByProfile(activeProfile?.id),
-    [activeProfile]
+    () => readPointsByProfile(activeProfile?.id),
+    [activeProfile, readPointsByProfile]
   );
 
   const handleUploadButtonClick = () => {
@@ -61,12 +62,12 @@ const DataPointList = (props: DataPointListProps) => {
           const uploadDataPoints = JSON.parse(content);
 
           for (const dataPoint of uploadDataPoints) {
-            await createProfilePoint({
+            await createPoint({
               ...dataPoint,
               profileId: activeProfile.id,
             });
           }
-          alert("Data Points uploading successfull!");
+          alert("Data Points uploading successful!");
         } catch (error) {
           console.error("Error uploading data points: ", error);
           alert("Error uploading data points. Please check the file format");

@@ -1,15 +1,21 @@
 "use client";
 import { useState } from "react";
-import { Profile, ProfilePoint } from "@/lib/db/db";
+import {
+  Profile,
+  ProfilePoint,
+  ProfilePointCreate,
+  SegmentationProfilePoint,
+} from "@/lib/db/db";
 import ProfileList from "@/components/profiles/ProfileList";
 import DataPointEditor from "@/components/profiles/DataPointEditor";
 import DataPointList from "@/components/profiles/DataPointList";
 import { TASK_MODE } from "@/app/constants";
+import { createProfilePoint, readProfilePointsByProfile } from "@/lib/db/crud";
 
 const Profiles = () => {
   const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
   const [activeDataPoint, setActiveDataPoint] = useState<
-    ProfilePoint | undefined
+    ProfilePoint | SegmentationProfilePoint | undefined
   >(undefined);
   const [creatingNewDataPoint, setCreatingNewDataPoint] =
     useState<boolean>(false);
@@ -27,11 +33,13 @@ const Profiles = () => {
         activeDataPoint={activeDataPoint}
         setActiveDataPoint={setActiveDataPoint}
         setCreatingNewDataPoint={setCreatingNewDataPoint}
+        readPointsByProfile={readProfilePointsByProfile}
+        createPoint={(point) => createProfilePoint(point as ProfilePointCreate)}
         data-cy="datapoint-list"
       />
       <DataPointEditor
         activeProfile={activeProfile}
-        activeDataPoint={activeDataPoint}
+        activeDataPoint={activeDataPoint as ProfilePoint | undefined}
         setActiveDataPoint={setActiveDataPoint}
         creatingNewDataPoint={creatingNewDataPoint}
         setCreatingNewDataPoint={setCreatingNewDataPoint}

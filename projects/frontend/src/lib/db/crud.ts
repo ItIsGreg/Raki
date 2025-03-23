@@ -6,6 +6,7 @@ import {
   DatasetCreate,
   ProfileCreate,
   ProfilePointCreate,
+  SegmentationProfilePointCreate,
   TextCreate,
   db,
 } from "./db";
@@ -17,6 +18,7 @@ import {
   AnnotatedDataset,
   Text,
   DataPoint,
+  SegmentationProfilePoint,
 } from "./db";
 
 // The CRUD operations for the ProfilePoint table
@@ -420,4 +422,51 @@ export const updateMaxTokens = async (id: string, value: number | undefined) => 
 
 export const deleteMaxTokens = async (id: string) => {
   return await db.maxTokens.delete(id);
+};
+
+// The CRUD operations for the SegmentationProfilePoint table
+export const createSegmentationProfilePoint = async (profilePoint: SegmentationProfilePointCreate) => {
+  const id = v4();
+  try {
+    const profile = await db.Profiles.get(profilePoint.profileId);
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+    const newProfilePoint = { ...profilePoint, id };
+    await db.segmentationProfilePoints.add(newProfilePoint);
+    return newProfilePoint;
+  } catch (error) {
+    throw new Error(
+      "Failed to create segmentation profile point: " + (error as Error).message
+    );
+  }
+};
+
+export const readSegmentationProfilePoint = async (id: string | undefined) => {
+  if (!id) {
+    return undefined;
+  }
+  return db.segmentationProfilePoints.get(id);
+};
+
+export const readAllSegmentationProfilePoints = async () => {
+  return db.segmentationProfilePoints.toArray();
+};
+
+// read all segmentation profile points that belong to a specific profile
+export const readSegmentationProfilePointsByProfile = async (
+  profileId: string | undefined
+) => {
+  if (!profileId) {
+    return [];
+  }
+  return db.segmentationProfilePoints.where("profileId").equals(profileId).toArray();
+};
+
+export const updateSegmentationProfilePoint = async (profilePoint: SegmentationProfilePoint) => {
+  return db.segmentationProfilePoints.put(profilePoint);
+};
+
+export const deleteSegmentationProfilePoint = async (id: string) => {
+  return db.segmentationProfilePoints.delete(id);
 };
