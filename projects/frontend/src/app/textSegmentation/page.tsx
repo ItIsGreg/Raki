@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Sidebar } from "./components/Sidebar";
 import { TextDisplay } from "./components/TextDisplay";
 import { getTextNodeOffset } from "./utils";
+import { backendURL } from "../constants";
 
 // Interface for our segments
 interface Segment {
@@ -63,93 +64,31 @@ export default function TextSegmentation() {
     setFileName(file.name);
 
     try {
-      const textContent = await extractTextFromPDF(file);
-      setInputText(textContent);
+      // Create form data
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Send to backend API
+      const response = await fetch(
+        `${backendURL}/text_segmentation/extract-pdf`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to process PDF");
+      }
+
+      const data = await response.json();
+      setInputText(data.markdown);
       setIsLoading(false);
     } catch (error) {
-      console.error("Error extracting text from PDF:", error);
-      alert("Failed to extract text from PDF");
+      console.error("Error processing PDF:", error);
+      alert("Failed to process PDF");
       setIsLoading(false);
     }
-  };
-
-  // Function to extract text from PDF with improved formatting
-  const extractTextFromPDF = async (file: File): Promise<string> => {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = "";
-
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-
-      // Group text items by their vertical position to detect paragraphs
-      const textItems = textContent.items;
-      const lines: Record<string, Array<any>> = {};
-
-      // Group by y-position (rounded to handle slight variations)
-      textItems.forEach((item: any) => {
-        if (!item.str) return;
-
-        // Round to nearest 3 pixels to group lines
-        const yPos = Math.round(item.transform[5] / 3) * 3;
-        if (!lines[yPos]) lines[yPos] = [];
-        lines[yPos].push(item);
-      });
-
-      // Sort line positions from top to bottom (reverse, as PDF coords start from bottom)
-      const sortedLineKeys = Object.keys(lines)
-        .map(Number)
-        .sort((a, b) => b - a);
-
-      // Process each line
-      let lastX = -1;
-      let lastY = -1;
-      let pageText = "";
-
-      sortedLineKeys.forEach((yPos) => {
-        // Sort items in the line by x position
-        const lineItems = lines[yPos].sort(
-          (a: any, b: any) => a.transform[4] - b.transform[4]
-        );
-        let lineText = "";
-
-        lineItems.forEach((item: any) => {
-          // Add appropriate spacing between words based on position
-          const x = item.transform[4];
-
-          // Detect if this is a new paragraph - significant y-distance from last line
-          if (lastY !== -1 && Math.abs(lastY - yPos) > 15) {
-            pageText += "\n\n"; // Double newline for paragraph break
-          } else if (lastX !== -1) {
-            // Add space if needed between words on same line
-            const spaceWidth = item.width || 5; // Estimate word spacing
-            if (x - lastX > spaceWidth * 0.5) {
-              lineText += " ";
-            }
-          }
-
-          lineText += item.str;
-          lastX = x + (item.width || 0);
-        });
-
-        pageText += lineText.trim() + "\n";
-        lastY = yPos;
-      });
-
-      // Clean up the text
-      pageText = pageText
-        .replace(/\n{3,}/g, "\n\n") // Replace excessive newlines
-        .replace(/\s{2,}/g, " ") // Replace multiple spaces with single space
-        .trim();
-
-      fullText += pageText + "\n\n" + "—".repeat(30) + "\n\n"; // Page separator
-    }
-
-    // Final cleanup
-    fullText = fullText.trim();
-
-    return fullText;
   };
 
   // Trigger file input click
@@ -230,6 +169,27 @@ export default function TextSegmentation() {
   return (
     <div className="flex h-full">
       <div className="flex-1 p-4">
+        <div className="mb-4">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept=".pdf"
+            className="hidden"
+          />
+          <Button
+            onClick={openFileDialog}
+            variant="outline"
+            disabled={isLoading}
+            className="mr-2"
+          >
+            {isLoading ? "Processing..." : "Upload PDF"}
+          </Button>
+          {fileName && (
+            <span className="text-sm text-gray-600">{fileName}</span>
+          )}
+        </div>
+
         <TextDisplay
           isTextConfirmed={isTextConfirmed}
           isMarkdownEnabled={isMarkdownEnabled}

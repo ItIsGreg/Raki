@@ -13,4 +13,5 @@ dependencies = [
     "pyinstaller>=6.11.1",
     "fuzzywuzzy[speedup]>=0.18.0",
     "langchain-openai>=0.2.14",
+    "pymupdf4llm>=0.0.17",
 ]
