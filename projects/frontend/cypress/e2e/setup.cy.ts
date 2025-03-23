@@ -4,7 +4,7 @@ describe('Setup user journey', () => {
     indexedDB.deleteDatabase('myDatabase')
     
     // Start from the homepage before each test
-    cy.visit('http://localhost:3000')
+    cy.visit('http://localhost:3000/dataPointExtraction')
   })
 
   it('should configure LLM settings', () => {

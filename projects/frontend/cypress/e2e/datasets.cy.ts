@@ -14,7 +14,7 @@ describe('Datasets page', () => {
     // Clear IndexedDB (Dexie) before each test
     indexedDB.deleteDatabase('myDatabase')
     // Start from the homepage
-    cy.visit('http://localhost:3000')
+    cy.visit('http://localhost:3000/dataPointExtraction')
   })
 
   it('should navigate to datasets page', () => {
@@ -194,7 +194,7 @@ describe('Datasets page', () => {
       // Clear IndexedDB (Dexie) before each test
       indexedDB.deleteDatabase('myDatabase')
       // Start from the homepage
-      cy.visit('http://localhost:3000')
+      cy.visit('http://localhost:3000/dataPointExtraction')
       
       // Navigate to datasets page and create a test dataset
       cy.get('[data-cy="datasets-card"]').click()

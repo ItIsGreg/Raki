@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import AnnotatedDatasetList from "../../../components/aiAnnotation/AnnotatedDatasetList";
-import AnnotatedTextsList from "../../../components/aiAnnotation/AnnotatedTextsList";
+import AnnotatedDatasetList from "@/components/aiAnnotation/AnnotatedDatasetList";
+import AnnotatedTextsList from "@/components/aiAnnotation/AnnotatedTextsList";
 import { AnnotatedDataset, ProfilePoint } from "@/lib/db/db";
 
 const LLMAnnotation = () => {

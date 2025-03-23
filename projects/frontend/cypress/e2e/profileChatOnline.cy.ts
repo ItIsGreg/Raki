@@ -6,7 +6,7 @@ function runTestSuiteWithProvider(providerType) {
       indexedDB.deleteDatabase('myDatabase')
       
       // Start from the homepage
-      cy.visit('http://localhost:3000')
+      cy.visit('http://localhost:3000/dataPointExtraction')
 
       // Configure LLM settings
       cy.get('[data-cy="setup-card"]').click()

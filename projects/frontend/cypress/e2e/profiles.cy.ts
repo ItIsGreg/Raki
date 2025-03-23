@@ -4,7 +4,7 @@ describe('Profiles page', () => {
     indexedDB.deleteDatabase('myDatabase')
     
     // Start from the homepage before each test
-    cy.visit('http://localhost:3000')
+    cy.visit('http://localhost:3000/dataPointExtraction')
   })
 
   it('should navigate to profiles page and show all components', () => {

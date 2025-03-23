@@ -6,17 +6,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSettings } from "@/contexts/SettingsContext";
 
-export default function Navbar() {
+export interface NavRoute {
+  path: string;
+  label: string;
+}
+
+interface NavbarProps {
+  routes: NavRoute[];
+}
+
+export default function Navbar({ routes }: NavbarProps) {
   const { setIsSettingsOpen } = useSettings();
   const currentPathname = usePathname();
-
-  const routes = [
-    { path: "/", label: "Home" },
-    { path: "/profiles", label: "Profiles" },
-    { path: "/datasets", label: "Datasets" },
-    { path: "/aiAnnotation", label: "AI-Annotation" },
-    { path: "/annotation", label: "Manual Annotation" },
-  ];
 
   return (
     <div className="navbar" data-cy="navbar">
