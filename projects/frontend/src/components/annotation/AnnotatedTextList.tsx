@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnnotatedTextListProps } from "../../types";
+import { AnnotatedTextListProps } from "@/app/types";
 import {
   readAnnotatedTextsByAnnotatedDataset,
   readTextsByIds,

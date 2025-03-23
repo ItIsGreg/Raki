@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnnotationDataPointListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   deleteDataPoint,
@@ -8,6 +7,7 @@ import {
 } from "@/lib/db/crud";
 import { TiDeleteOutline } from "react-icons/ti";
 import CompactCard from "@/components/CompactCard";
+import { AnnotationDataPointListProps } from "@/app/types";
 
 const DataPointList = (props: AnnotationDataPointListProps) => {
   const {

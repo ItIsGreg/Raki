@@ -1,6 +1,6 @@
 import { createDataPoint, readDataPoint, updateDataPoint } from "@/lib/db/crud";
-import { TextSliceProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
+import { TextSliceProps } from "@/app/types";
 
 const TextSlice = (props: TextSliceProps) => {
   const {

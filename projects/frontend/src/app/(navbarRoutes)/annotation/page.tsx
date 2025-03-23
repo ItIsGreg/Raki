@@ -1,16 +1,11 @@
 "use client";
 
 import { useState } from "react";
-
-import { Badge } from "@/components/ui/badge";
-import TextAnnotation from "./TextAnnotation";
-import DataPointList from "./DataPointList";
-import DatasetList from "./DatasetList";
-import { AnnotatedDataset, AnnotatedText, DataPoint } from "@/lib/db/db";
-import AnnotatedTextList from "./AnnotatedTextList";
-
-// create a representation of the text and the data points
-// where the data points are highlighted
+import { AnnotatedDataset, AnnotatedText } from "@/lib/db/db";
+import TextAnnotation from "@/components/annotation/TextAnnotation";
+import DataPointList from "@/components/annotation/DataPointList";
+import AnnotatedTextList from "@/components/annotation/AnnotatedTextList";
+import DatasetList from "@/components/annotation/DatasetList";
 
 const Annotation = () => {
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] = useState<

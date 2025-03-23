@@ -1,10 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TextAnnotationProps } from "../../types";
 import { useState, useMemo } from "react";
 import { useAnnotationData } from "./hooks/useAnnotationData";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 import { generateHighlightedText } from "./utils/textAnnotationUtils";
-
+import { TextAnnotationProps } from "@/app/types";
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
     activeAnnotatedDataset,

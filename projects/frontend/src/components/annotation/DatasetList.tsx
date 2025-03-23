@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnnotationDatasetListProps } from "../../types";
+import { AnnotationDatasetListProps } from "@/app/types";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   readAllAnnotatedDatasets,
