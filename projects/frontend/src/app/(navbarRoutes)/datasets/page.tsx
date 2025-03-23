@@ -5,6 +5,7 @@ import DatasetList from "./DatasetList";
 import TextDisplay from "./TextDisplay";
 import TextList from "./TextList";
 import { Dataset, Text } from "@/lib/db/db";
+import { TASK_MODE } from "@/app/constants";
 
 const Datasets = () => {
   const [activeDataset, setActiveDataset] = useState<Dataset | undefined>(
@@ -18,6 +19,7 @@ const Datasets = () => {
         activeDataset={activeDataset}
         setActiveDataset={setActiveDataset}
         data-cy="dataset-list"
+        mode={TASK_MODE.DATAPOINT_EXTRACTION}
       />
       <TextList
         activeText={activeText}

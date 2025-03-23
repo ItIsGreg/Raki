@@ -1,4 +1,5 @@
 // db.ts
+import { TaskMode } from "@/app/constants";
 import Dexie, { Table } from "dexie";
 import { v4 } from "uuid";
 
@@ -27,6 +28,7 @@ export interface Profile extends ProfileCreate {
 export interface DatasetCreate {
   name: string;
   description: string;
+  mode: TaskMode;
 }
 
 export interface Dataset extends DatasetCreate {
@@ -142,6 +144,28 @@ export class MySubClassedDexie extends Dexie {
       llmUrls: "++id, url",
       batchSizes: "++id, value",
       maxTokens: "++id, value",
+    });
+    
+    this.version(9).stores({
+      Datasets: "++id, name, mode",
+      profilePoints: "++id, name, profileId",
+      Profiles: "++id, name",
+      AnnotatedTexts: "++id, textId, annotatedDatasetId, aiFaulty",
+      AnnotatedDatasets: "++id, datasetId, profileId, name",
+      Texts: "++id, datasetId, filename",
+      DataPoints: "++id, annotatedTextId, name",
+      ApiKeys: "++id, key",
+      models: "++id, name",
+      llmProviders: "++id, provider",
+      llmUrls: "++id, url",
+      batchSizes: "++id, value",
+      maxTokens: "++id, value",
+    }).upgrade(tx => {
+      return tx.table("Datasets").toCollection().modify(dataset => {
+        if (!dataset.mode) {
+          dataset.mode = "datapoint_extraction";
+        }
+      });
     });
 
     // Add hooks to populate default values

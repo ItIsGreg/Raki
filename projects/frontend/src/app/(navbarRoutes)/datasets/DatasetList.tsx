@@ -1,5 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createDataset, readAllDatasets, updateDataset } from "@/lib/db/crud";
+import {
+  createDataset,
+  readDatasetsByMode,
+  updateDataset,
+} from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { DatasetListProps } from "../../types";
@@ -9,24 +13,26 @@ import DatasetCard from "./DatasetCard";
 import { AddButton } from "@/components/AddButton";
 
 const DatasetList = (props: DatasetListProps) => {
-  const { activeDataset, setActiveDataset } = props;
+  const { activeDataset, setActiveDataset, mode } = props;
 
   const [addingDataset, setAddingDataset] = useState(false);
   const [editingDataset, setEditingDataset] = useState<Dataset | undefined>(
     undefined
   );
 
-  const dbDatasets = useLiveQuery(() => readAllDatasets());
+  const dbDatasets = useLiveQuery(() => readDatasetsByMode(mode), [mode]);
 
   const handleCancelAddDataset = () => {
     setAddingDataset(false);
   };
 
   const handleSaveDataset = (dataset: Dataset) => {
-    if (dataset.id) {
-      updateDataset(dataset);
+    const datasetWithMode = { ...dataset, mode };
+
+    if (datasetWithMode.id) {
+      updateDataset(datasetWithMode);
     } else {
-      createDataset(dataset);
+      createDataset(datasetWithMode);
     }
     setAddingDataset(false);
     setEditingDataset(undefined);

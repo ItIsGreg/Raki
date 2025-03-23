@@ -7,6 +7,7 @@ import {
   ProfilePoint,
   Text,
 } from "@/lib/db/db";
+import { TaskMode } from "./constants";
 
 export interface ProfileListProps {
   activeProfile: Profile | undefined;
@@ -56,6 +57,7 @@ export interface TextDisplayProps {
 export interface DatasetListProps {
   activeDataset: Dataset | undefined;
   setActiveDataset: (dataset: Dataset) => void;
+  mode: TaskMode;
 }
 
 export interface AnnotatedTextsListProps {

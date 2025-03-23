@@ -132,6 +132,11 @@ export const deleteDataset = async (id: string) => {
   return db.Datasets.delete(id);
 };
 
+// Read datasets by mode
+export const readDatasetsByMode = async (mode: "text_segmentation" | "datapoint_extraction") => {
+  return db.Datasets.where("mode").equals(mode).toArray();
+};
+
 // The CRUD operations for the AnnotatedText table
 export const createAnnotatedText = async (
   annotatedText: AnnotatedTextCreate
