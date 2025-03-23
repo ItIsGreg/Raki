@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import DatasetList from "./DatasetList";
-import TextDisplay from "./TextDisplay";
-import TextList from "./TextList";
+import DatasetList from "../../../components/datasets/DatasetList";
+import TextDisplay from "../../../components/datasets/TextDisplay";
+import TextList from "../../../components/datasets/TextList";
 import { Dataset, Text } from "@/lib/db/db";
 import { TASK_MODE } from "@/app/constants";
 

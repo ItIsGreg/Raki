@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createText, deleteText, readTextsByDataset } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
-import { TextListProps } from "../../types";
+import { TextListProps } from "../../app/types";
 import { TiDeleteOutline } from "react-icons/ti";
 import { useRef, useState, useEffect } from "react";
 import { FaTable, FaFolderOpen, FaDownload } from "react-icons/fa";

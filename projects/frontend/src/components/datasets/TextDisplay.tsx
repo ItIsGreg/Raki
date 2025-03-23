@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TextDisplayProps } from "../../types";
+import { TextDisplayProps } from "../../app/types";
 
 const TextDisplay = (props: TextDisplayProps) => {
   const { activeText } = props;

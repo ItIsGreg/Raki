@@ -6,7 +6,7 @@ import {
 } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
-import { DatasetListProps } from "../../types";
+import { DatasetListProps } from "../../app/types";
 import EntityForm from "@/components/EntityForm";
 import { Dataset } from "@/lib/db/db";
 import DatasetCard from "./DatasetCard";
