@@ -19,6 +19,7 @@ export interface ProfilePoint extends ProfilePointCreate {
 export interface ProfileCreate {
   name: string;
   description: string;
+  mode: TaskMode;
 }
 
 export interface Profile extends ProfileCreate {
@@ -51,6 +52,7 @@ export interface AnnotatedDatasetCreate {
   description: string;
   datasetId: string;
   profileId: string;
+  mode: TaskMode;
 }
 
 export interface AnnotatedDataset extends AnnotatedDatasetCreate {
@@ -149,9 +151,9 @@ export class MySubClassedDexie extends Dexie {
     this.version(9).stores({
       Datasets: "++id, name, mode",
       profilePoints: "++id, name, profileId",
-      Profiles: "++id, name",
+      Profiles: "++id, name, mode",
       AnnotatedTexts: "++id, textId, annotatedDatasetId, aiFaulty",
-      AnnotatedDatasets: "++id, datasetId, profileId, name",
+      AnnotatedDatasets: "++id, datasetId, profileId, name, mode",
       Texts: "++id, datasetId, filename",
       DataPoints: "++id, annotatedTextId, name",
       ApiKeys: "++id, key",
@@ -164,6 +166,26 @@ export class MySubClassedDexie extends Dexie {
       return tx.table("Datasets").toCollection().modify(dataset => {
         if (!dataset.mode) {
           dataset.mode = "datapoint_extraction";
+        }
+      });
+    });
+
+    // Add version 10 to upgrade existing Profiles and AnnotatedDatasets
+    this.version(10).stores({
+      Profiles: "++id, name, mode",
+      AnnotatedDatasets: "++id, datasetId, profileId, name, mode",
+    }).upgrade(tx => {
+      // Set default mode for existing Profiles
+      tx.table("Profiles").toCollection().modify(profile => {
+        if (!profile.mode) {
+          profile.mode = "datapoint_extraction";
+        }
+      });
+      
+      // Set default mode for existing AnnotatedDatasets
+      tx.table("AnnotatedDatasets").toCollection().modify(annotatedDataset => {
+        if (!annotatedDataset.mode) {
+          annotatedDataset.mode = "datapoint_extraction";
         }
       });
     });

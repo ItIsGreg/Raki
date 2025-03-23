@@ -137,6 +137,11 @@ export const readDatasetsByMode = async (mode: "text_segmentation" | "datapoint_
   return db.Datasets.where("mode").equals(mode).toArray();
 };
 
+// Read profiles by mode
+export const readProfilesByMode = async (mode: "text_segmentation" | "datapoint_extraction") => {
+  return db.Profiles.where("mode").equals(mode).toArray();
+};
+
 // The CRUD operations for the AnnotatedText table
 export const createAnnotatedText = async (
   annotatedText: AnnotatedTextCreate
@@ -204,6 +209,11 @@ export const readAllAnnotatedDatasets = async () => {
 // read all annotated datasets that belong to a specific dataset
 export const readAnnotatedDatasetsByDataset = async (datasetId: string) => {
   return db.AnnotatedDatasets.where({ datasetId }).toArray();
+};
+
+// Read annotated datasets by mode
+export const readAnnotatedDatasetsByMode = async (mode: "text_segmentation" | "datapoint_extraction") => {
+  return db.AnnotatedDatasets.where("mode").equals(mode).toArray();
 };
 
 export const updateAnnotatedDataset = async (

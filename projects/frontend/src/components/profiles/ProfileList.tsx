@@ -1,6 +1,9 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createProfile, readAllProfiles, updateProfile } from "@/lib/db/crud";
+import {
+  createProfile,
+  readProfilesByMode,
+  updateProfile,
+} from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import ProfileCard from "./ProfileCard";
@@ -10,24 +13,28 @@ import { AddButton } from "@/components/AddButton";
 import { ProfileListProps } from "@/app/types";
 
 const ProfileList = (props: ProfileListProps) => {
-  const { activeProfile, setActiveProfile } = props;
+  const { activeProfile, setActiveProfile, mode } = props;
 
   const [addingProfile, setAddingProfile] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Profile | undefined>(
     undefined
   );
-  const dbProfiles = useLiveQuery(() => readAllProfiles());
+  const dbProfiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
 
   const handleCancelAddProfile = () => {
     setAddingProfile(false);
   };
 
   const handleSaveProfile = (profile: Profile) => {
-    if (profile.id) {
-      updateProfile(profile);
+    const profileWithMode = { ...profile, mode };
+
+    if (profileWithMode.id) {
+      updateProfile(profileWithMode);
     } else {
-      createProfile(profile);
+      createProfile(profileWithMode);
     }
+    setAddingProfile(false);
+    setEditingProfile(undefined);
   };
 
   return (
@@ -42,7 +49,7 @@ const ProfileList = (props: ProfileListProps) => {
             data-cy="add-profile-button"
           />
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
           {addingProfile && (
             <EntityForm<Profile>
               onCancel={handleCancelAddProfile}

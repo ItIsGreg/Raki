@@ -12,6 +12,7 @@ import { TaskMode } from "./constants";
 export interface ProfileListProps {
   activeProfile: Profile | undefined;
   setActiveProfile: (profile: Profile) => void;
+  mode: TaskMode;
 }
 
 export interface ProfileCardProps {

@@ -4,6 +4,7 @@ import { Profile, ProfilePoint } from "@/lib/db/db";
 import ProfileList from "@/components/profiles/ProfileList";
 import DataPointEditor from "@/components/profiles/DataPointEditor";
 import DataPointList from "@/components/profiles/DataPointList";
+import { TASK_MODE } from "@/app/constants";
 
 const Profiles = () => {
   const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
@@ -18,6 +19,7 @@ const Profiles = () => {
       <ProfileList
         activeProfile={activeProfile}
         setActiveProfile={setActiveProfile}
+        mode={TASK_MODE.DATAPOINT_EXTRACTION}
         data-cy="profile-list"
       />
       <DataPointList
