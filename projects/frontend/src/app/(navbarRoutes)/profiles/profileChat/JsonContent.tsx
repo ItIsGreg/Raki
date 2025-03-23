@@ -4,6 +4,10 @@ import { ProfilePointCreate, Profile } from "@/lib/db/db";
 import { createProfilePoint } from "@/lib/db/crud";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { github } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import {
+  isProfilePointCreate,
+  handleAdoptProfilePoint,
+} from "./profileChatUtils";
 
 interface JsonContentProps {
   content: string;
@@ -14,19 +18,6 @@ const JsonContent: React.FC<JsonContentProps> = ({
   content,
   activeProfile,
 }) => {
-  const isProfilePointCreate = (obj: any): obj is ProfilePointCreate => {
-    return (
-      typeof obj === "object" &&
-      obj !== null &&
-      typeof obj.name === "string" &&
-      typeof obj.explanation === "string" &&
-      Array.isArray(obj.synonyms) &&
-      typeof obj.datatype === "string" &&
-      (obj.valueset === undefined || Array.isArray(obj.valueset)) &&
-      (obj.unit === undefined || typeof obj.unit === "string")
-    );
-  };
-
   const handleAdopt = async (profilePoint: Partial<ProfilePointCreate>) => {
     if (!activeProfile) {
       console.error("No active profile");
@@ -34,17 +25,11 @@ const JsonContent: React.FC<JsonContentProps> = ({
     }
 
     try {
-      const completeProfilePoint: ProfilePointCreate = {
-        name: profilePoint.name || "",
-        explanation: profilePoint.explanation || "",
-        synonyms: profilePoint.synonyms || [],
-        datatype: profilePoint.datatype || "",
-        valueset: profilePoint.valueset || [],
-        unit: profilePoint.unit || "",
-        profileId: activeProfile.id,
-      };
-
-      const newProfilePoint = await createProfilePoint(completeProfilePoint);
+      const newProfilePoint = await handleAdoptProfilePoint(
+        profilePoint,
+        activeProfile,
+        createProfilePoint
+      );
       console.log("Adopted profile point:", newProfilePoint);
       // Don't close the dialog here
     } catch (error) {

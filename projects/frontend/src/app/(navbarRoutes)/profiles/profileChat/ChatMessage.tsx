@@ -3,6 +3,10 @@ import { ProfilePointCreate, Profile } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
 import { createProfilePoint } from "@/lib/db/crud";
 import JsonContent from "./JsonContent";
+import {
+  extractProfilePoints,
+  adoptAllProfilePoints,
+} from "./profileChatUtils";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,12 +17,14 @@ interface ChatMessageProps {
   message: Message;
   activeProfile: Profile | undefined;
   setIsOpen: (isOpen: boolean) => void;
+  createProfilePointFn?: (point: ProfilePointCreate) => Promise<any>;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
   activeProfile,
   setIsOpen,
+  createProfilePointFn = createProfilePoint,
 }) => {
   const [validProfilePoints, setValidProfilePoints] = useState<
     ProfilePointCreate[]
@@ -28,58 +34,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   const JSON_REGEX = /```json\n([\s\S]*?)```/g;
 
   useEffect(() => {
+    if (!activeProfile) return;
+
     const extractedPoints = extractProfilePoints(message.content);
     setValidProfilePoints(extractedPoints);
-  }, [message.content]);
-
-  const extractProfilePoints = (content: string): ProfilePointCreate[] => {
-    const points: ProfilePointCreate[] = [];
-    const parts = content.split(JSON_REGEX);
-
-    parts.forEach((part, index) => {
-      if (index % 4 !== 0 && part) {
-        try {
-          const jsonString = (
-            part.startsWith("```json") ? parts[index + 1] : part
-          )
-            .trim()
-            .replace(/:\s*undefined\s*/g, ": null")
-            .replace(/:\s*"undefined"\s*/g, ": null");
-
-          console.log("Processing JSON string:", jsonString);
-          const parsedJson = JSON.parse(jsonString);
-          const cleanedJson = Object.fromEntries(
-            Object.entries(parsedJson).filter(([_, value]) => value !== null)
-          );
-          console.log("Cleaned JSON:", cleanedJson);
-
-          if (isProfilePointCreate(cleanedJson)) {
-            console.log("Valid profile point found:", cleanedJson.name);
-            points.push(cleanedJson);
-          } else {
-            console.log("Invalid profile point structure:", cleanedJson);
-          }
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
-        }
-      }
-    });
-
-    return points;
-  };
-
-  const isProfilePointCreate = (obj: any): obj is ProfilePointCreate => {
-    return (
-      typeof obj === "object" &&
-      obj !== null &&
-      typeof obj.name === "string" &&
-      typeof obj.explanation === "string" &&
-      Array.isArray(obj.synonyms) &&
-      typeof obj.datatype === "string" &&
-      (obj.valueset === undefined || Array.isArray(obj.valueset)) &&
-      (obj.unit === undefined || typeof obj.unit === "string")
-    );
-  };
+  }, [message.content, activeProfile]);
 
   const handleAdoptAll = async () => {
     if (!activeProfile) {
@@ -87,22 +46,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       return;
     }
 
-    console.log("Adopting all profile points:", validProfilePoints);
     try {
-      const results = await Promise.all(
-        validProfilePoints.map((point) => {
-          const completeProfilePoint: ProfilePointCreate = {
-            name: point.name || "",
-            explanation: point.explanation || "",
-            synonyms: point.synonyms || [],
-            datatype: point.datatype || "",
-            valueset: point.valueset || [],
-            unit: point.unit || "",
-            profileId: activeProfile.id,
-          };
-          console.log("Creating profile point:", completeProfilePoint);
-          return createProfilePoint(completeProfilePoint);
-        })
+      const results = await adoptAllProfilePoints(
+        validProfilePoints,
+        activeProfile.id,
+        createProfilePointFn
       );
       console.log("Successfully adopted all profile points:", results);
       setIsOpen(false);
