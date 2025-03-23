@@ -1,45 +1,50 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ProfilePointCreate, Profile } from "@/lib/db/db";
-import { createProfilePoint } from "@/lib/db/crud";
+import { Profile } from "@/lib/db/db";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { github } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import {
-  isProfilePointCreate,
-  handleAdoptProfilePoint,
-} from "./profileChatUtils";
 
-interface JsonContentProps {
+interface JsonContentProps<T, U> {
   content: string;
   activeProfile: Profile | undefined;
+  isValidPoint: (obj: any) => obj is T;
+  handleAdoptPoint: (
+    point: Partial<T>,
+    profile: Profile | undefined,
+    createFn: (point: T) => Promise<any>
+  ) => Promise<any>;
+  createPoint: (point: T) => Promise<any>;
 }
 
-const JsonContent: React.FC<JsonContentProps> = ({
+function JsonContent<T, U>({
   content,
   activeProfile,
-}) => {
-  const handleAdopt = async (profilePoint: Partial<ProfilePointCreate>) => {
+  isValidPoint,
+  handleAdoptPoint,
+  createPoint,
+}: JsonContentProps<T, U>) {
+  const handleAdopt = async (point: Partial<T>) => {
     if (!activeProfile) {
       console.error("No active profile");
       return;
     }
 
     try {
-      const newProfilePoint = await handleAdoptProfilePoint(
-        profilePoint,
+      const newPoint = await handleAdoptPoint(
+        point,
         activeProfile,
-        createProfilePoint
+        createPoint
       );
-      console.log("Adopted profile point:", newProfilePoint);
+      console.log("Adopted point:", newPoint);
       // Don't close the dialog here
     } catch (error) {
-      console.error("Error adopting profile point:", error);
+      console.error("Error adopting point:", error);
     }
   };
 
   try {
     const parsedJson = JSON.parse(content);
-    if (isProfilePointCreate(parsedJson)) {
+    if (isValidPoint(parsedJson)) {
       return (
         <div data-cy="json-content-container">
           <Button
@@ -74,6 +79,6 @@ const JsonContent: React.FC<JsonContentProps> = ({
 
   // Regular text content or failed JSON parsing
   return <span data-cy="plain-text-content">{content}</span>;
-};
+}
 
 export default JsonContent;

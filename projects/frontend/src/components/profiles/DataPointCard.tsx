@@ -5,23 +5,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { deleteProfilePoint } from "@/lib/db/crud";
 import { TiDeleteOutline } from "react-icons/ti";
-import { DataPointCardProps } from "@/app/types";
 
-const DataPointCard = (props: DataPointCardProps) => {
+export interface GenericDataPointCardProps<T> {
+  dataPoint: T;
+  activeDataPoint: T | undefined;
+  setActiveDataPoint: (dataPoint: T | undefined) => void;
+  setCreatingNewDataPoint: (creating: boolean) => void;
+  deleteDataPoint: (id: string) => Promise<void>;
+  "data-cy"?: string;
+}
+
+const DataPointCard = <T extends { id: string }>(
+  props: GenericDataPointCardProps<T>
+) => {
   const {
     dataPoint,
     activeDataPoint,
     setActiveDataPoint,
     setCreatingNewDataPoint,
+    deleteDataPoint,
     "data-cy": dataCy,
   } = props;
+
   return (
     <Card
       key={dataPoint.id}
       className={`${
-        activeDataPoint == dataPoint &&
+        activeDataPoint?.id === dataPoint.id &&
         "bg-gray-100 shadow-lg border-black border-2"
       } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
       onClick={() => {
@@ -31,18 +42,23 @@ const DataPointCard = (props: DataPointCardProps) => {
       data-cy={dataCy}
     >
       <CardHeader className="flex flex-row">
-        <CardTitle className="truncate">{dataPoint.name}</CardTitle>
+        <CardTitle className="truncate">
+          {(dataPoint as any).name || "Unnamed"}
+        </CardTitle>
         <div className="flex-grow"></div>
         <TiDeleteOutline
           className="hover:text-red-500 cursor-pointer"
           size={24}
-          onClick={() => {
-            deleteProfilePoint(dataPoint.id);
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteDataPoint(dataPoint.id);
           }}
         />
       </CardHeader>
       <CardContent>
-        <CardDescription>{dataPoint.explanation}</CardDescription>
+        <CardDescription>
+          {(dataPoint as any).explanation || ""}
+        </CardDescription>
       </CardContent>
     </Card>
   );

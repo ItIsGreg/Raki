@@ -6,9 +6,26 @@ import DataPointCard from "./DataPointCard";
 import { useRef, useState } from "react";
 import ProfileChatButton from "./profileChat/ProfileChatButton";
 import ProfileChatView from "./profileChat/ProfileChatView";
-import { DataPointListProps } from "@/app/types";
+import { Profile } from "@/lib/db/db";
+import {
+  deleteProfilePoint,
+  deleteSegmentationProfilePoint,
+} from "@/lib/db/crud";
+import { TASK_MODE } from "@/app/constants";
 
-const DataPointList = (props: DataPointListProps) => {
+export interface DataPointListProps<T> {
+  activeProfile: Profile | undefined;
+  activeDataPoint: T | undefined;
+  setActiveDataPoint: (dataPoint: T | undefined) => void;
+  setCreatingNewDataPoint: (creating: boolean) => void;
+  readPointsByProfile: (profileId: string | undefined) => Promise<T[]>;
+  createPoint: (point: any) => Promise<any>;
+  "data-cy"?: string;
+}
+
+const DataPointList = <T extends { id: string; profileId: string }>(
+  props: DataPointListProps<T>
+) => {
   const {
     activeProfile,
     activeDataPoint,
@@ -16,6 +33,7 @@ const DataPointList = (props: DataPointListProps) => {
     setCreatingNewDataPoint,
     readPointsByProfile,
     createPoint,
+    "data-cy": dataCy,
   } = props;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,6 +95,20 @@ const DataPointList = (props: DataPointListProps) => {
     }
   };
 
+  const handleDeleteDataPoint = async (id: string) => {
+    if (!activeProfile) return;
+
+    if (activeProfile.mode === TASK_MODE.TEXT_SEGMENTATION) {
+      await deleteSegmentationProfilePoint(id);
+    } else {
+      await deleteProfilePoint(id);
+    }
+
+    if (activeDataPoint && activeDataPoint.id === id) {
+      setActiveDataPoint(undefined);
+    }
+  };
+
   return (
     <div className="overflow-y-scroll">
       <Card>
@@ -134,6 +166,7 @@ const DataPointList = (props: DataPointListProps) => {
                   activeDataPoint={activeDataPoint}
                   setActiveDataPoint={setActiveDataPoint}
                   setCreatingNewDataPoint={setCreatingNewDataPoint}
+                  deleteDataPoint={handleDeleteDataPoint}
                   data-cy="datapoint-card"
                 />
               );

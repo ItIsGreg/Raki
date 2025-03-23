@@ -7,7 +7,7 @@ import uvicorn
 from starlette.middleware.cors import CORSMiddleware
 
 from app.routers.datapoint_extraction import substrings, values, pipeline, profile_chat
-from app.routers.text_segmentation import pdf_extraction
+from app.routers.text_segmentation import pdf_extraction, profile_chat as text_segmentation_profile_chat
 
 app = FastAPI()
 
@@ -43,12 +43,17 @@ router.include_router(
 router.include_router(
     profile_chat.router,
     tags=["profile_chat"],
-    prefix="/datapoint-extraction/profile-chat",
+    prefix="/datapoint-extraction",
 )
 router.include_router(
     pdf_extraction.router,
     tags=["pdf_extraction"],
-    prefix="/text_segmentation",
+    prefix="/text-segmentation",
+)
+router.include_router(
+    text_segmentation_profile_chat.router,
+    tags=["text_segmentation_profile_chat"],
+    prefix="/text-segmentation",
 )
 
 app.add_middleware(

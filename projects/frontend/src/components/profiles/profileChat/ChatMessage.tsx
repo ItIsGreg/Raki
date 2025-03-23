@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { ProfilePointCreate, Profile } from "@/lib/db/db";
+import { Profile } from "@/lib/db/db";
 import { Button } from "@/components/ui/button";
-import { createProfilePoint } from "@/lib/db/crud";
-import JsonContent from "./JsonContent";
+import ProfileJsonContent from "./ProfileJsonContent";
 import {
   extractProfilePoints,
   adoptAllProfilePoints,
 } from "./profileChatUtils";
+import {
+  extractSegmentationProfilePoints,
+  adoptAllSegmentationProfilePoints,
+} from "./profileChatSegmentationUtils";
+import {
+  createProfilePoint,
+  createSegmentationProfilePoint,
+} from "@/lib/db/crud";
+import { TASK_MODE } from "@/app/constants";
 
 interface Message {
   role: "user" | "assistant";
@@ -17,18 +25,14 @@ interface ChatMessageProps {
   message: Message;
   activeProfile: Profile | undefined;
   setIsOpen: (isOpen: boolean) => void;
-  createProfilePointFn?: (point: ProfilePointCreate) => Promise<any>;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
   activeProfile,
   setIsOpen,
-  createProfilePointFn = createProfilePoint,
 }) => {
-  const [validProfilePoints, setValidProfilePoints] = useState<
-    ProfilePointCreate[]
-  >([]);
+  const [validProfilePoints, setValidProfilePoints] = useState<any[]>([]);
 
   // Common regex pattern
   const JSON_REGEX = /```json\n([\s\S]*?)```/g;
@@ -36,8 +40,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   useEffect(() => {
     if (!activeProfile) return;
 
-    const extractedPoints = extractProfilePoints(message.content);
-    setValidProfilePoints(extractedPoints);
+    if (activeProfile.mode === TASK_MODE.TEXT_SEGMENTATION) {
+      const extractedPoints = extractSegmentationProfilePoints(message.content);
+      setValidProfilePoints(extractedPoints);
+    } else {
+      const extractedPoints = extractProfilePoints(message.content);
+      setValidProfilePoints(extractedPoints);
+    }
   }, [message.content, activeProfile]);
 
   const handleAdoptAll = async () => {
@@ -47,11 +56,22 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     }
 
     try {
-      const results = await adoptAllProfilePoints(
-        validProfilePoints,
-        activeProfile.id,
-        createProfilePointFn
-      );
+      let results;
+
+      if (activeProfile.mode === TASK_MODE.TEXT_SEGMENTATION) {
+        results = await adoptAllSegmentationProfilePoints(
+          validProfilePoints,
+          activeProfile.id,
+          createSegmentationProfilePoint
+        );
+      } else {
+        results = await adoptAllProfilePoints(
+          validProfilePoints,
+          activeProfile.id,
+          createProfilePoint
+        );
+      }
+
       console.log("Successfully adopted all profile points:", results);
       setIsOpen(false);
     } catch (error) {
@@ -82,18 +102,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               .replace(/:\s*undefined\s*/g, ": null")
               .replace(/:\s*"undefined"\s*/g, ": null");
 
-            console.log("Rendering JSON content part:", jsonString);
-            const parsedJson = JSON.parse(jsonString);
-            const cleanedJson = Object.fromEntries(
-              Object.entries(parsedJson).filter(([_, value]) => value !== null)
-            );
-
             return (
-              <JsonContent
+              <ProfileJsonContent
                 key={index}
-                content={JSON.stringify(cleanedJson, null, 2)}
+                content={jsonString}
                 activeProfile={activeProfile}
-                data-cy="json-content"
               />
             );
           } catch (error) {
