@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import { handleUploadAnnotatedDataset } from "./annotationUtils";
 import { TiUpload } from "react-icons/ti";
 import {
   Tooltip,
@@ -7,6 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { handleUploadAnnotatedDataset } from "./annotationUtils";
 
 export const UploadDatasetButton = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);

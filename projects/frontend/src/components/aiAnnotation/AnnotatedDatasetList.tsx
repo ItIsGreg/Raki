@@ -9,8 +9,8 @@ import { AnnotatedDataset } from "@/lib/db/db";
 import { updateAnnotatedDataset } from "@/lib/db/crud";
 import { UploadDatasetButton } from "./UploadDatasetButton";
 import { AddButton } from "@/components/AddButton";
-import SettingsMenu from "../../../components/llmSettings/SettingsMenu";
-import SettingsButton from "../../../components/llmSettings/SettingsButton";
+import SettingsMenu from "../llmSettings/SettingsMenu";
+import SettingsButton from "../llmSettings/SettingsButton";
 
 const AnnotatedDatasetList = (props: AnnotatedDatasetListProps) => {
   const {
