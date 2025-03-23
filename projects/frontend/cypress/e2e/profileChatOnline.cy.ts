@@ -201,5 +201,5 @@ function runTestSuiteWithProvider(providerType) {
 }
 
 // Run the test suite with both providers
-runTestSuiteWithProvider('Custom')
-runTestSuiteWithProvider('OpenAI')
+runTestSuiteWithProvider("OpenAI");
+runTestSuiteWithProvider("Custom");
