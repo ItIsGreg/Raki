@@ -1,4 +1,4 @@
-import { ProfilePoint, ProfilePointCreate, Profile } from "@/lib/db/db";
+import { ProfilePointCreate, Profile } from "@/lib/db/db";
 
 /**
  * Validates if an object conforms to the ProfilePointCreate interface

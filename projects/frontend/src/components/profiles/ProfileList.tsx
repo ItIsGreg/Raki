@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createProfile, readAllProfiles, updateProfile } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
-import { ProfileListProps } from "../../types";
 import ProfileCard from "./ProfileCard";
 import EntityForm from "@/components/EntityForm";
 import { Profile } from "@/lib/db/db";
 import { AddButton } from "@/components/AddButton";
+import { ProfileListProps } from "@/app/types";
 
 const ProfileList = (props: ProfileListProps) => {
   const { activeProfile, setActiveProfile } = props;

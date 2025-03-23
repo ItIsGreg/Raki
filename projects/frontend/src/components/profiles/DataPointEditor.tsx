@@ -6,7 +6,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -22,9 +21,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { SelectGroup } from "@radix-ui/react-select";
 import { TiDeleteOutline } from "react-icons/ti";
-import { DataPointEditorProps } from "../../types";
 import { createProfilePoint, updateProfilePoint } from "@/lib/db/crud";
 import debounce from "lodash/debounce";
+import { DataPointEditorProps } from "@/app/types";
 
 export function DataPointEditor(props: DataPointEditorProps) {
   const {

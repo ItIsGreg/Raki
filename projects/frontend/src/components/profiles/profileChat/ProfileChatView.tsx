@@ -6,7 +6,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { backendURL } from "../../../constants";
 import ChatMessage from "./ChatMessage";
 import { Profile } from "@/lib/db/db";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -17,6 +16,7 @@ import {
   readAllModels,
   readAllMaxTokens,
 } from "@/lib/db/crud";
+import { backendURL } from "@/app/constants";
 
 interface ProfileChatViewProps {
   isOpen: boolean;

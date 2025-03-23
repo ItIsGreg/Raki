@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MdDownload, MdUpload } from "react-icons/md";
-import { DataPointListProps } from "../../types";
 import { useLiveQuery } from "dexie-react-hooks";
 import { createProfilePoint, readProfilePointsByProfile } from "@/lib/db/crud";
 import DataPointCard from "./DataPointCard";
 import { useRef, useState } from "react";
 import ProfileChatButton from "./profileChat/ProfileChatButton";
 import ProfileChatView from "./profileChat/ProfileChatView";
+import { DataPointListProps } from "@/app/types";
 
 const DataPointList = (props: DataPointListProps) => {
   const {

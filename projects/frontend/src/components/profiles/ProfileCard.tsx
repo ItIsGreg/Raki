@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { deleteProfile } from "@/lib/db/crud";
-import { ProfileCardProps } from "../../types";
 import DeleteButton from "@/components/DeleteButton";
 import EditButton from "@/components/EditButton";
 import {
@@ -15,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ProfileCardProps } from "@/app/types";
 
 const ProfileCard = (props: ProfileCardProps) => {
   const {

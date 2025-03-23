@@ -1,9 +1,9 @@
 "use client";
-import ProfileList from "./ProfileList";
-import DataPointList from "./DataPointList";
-import DataPointEditor from "./DataPointEditor";
 import { useState } from "react";
 import { Profile, ProfilePoint } from "@/lib/db/db";
+import ProfileList from "@/components/profiles/ProfileList";
+import DataPointEditor from "@/components/profiles/DataPointEditor";
+import DataPointList from "@/components/profiles/DataPointList";
 
 const Profiles = () => {
   const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
