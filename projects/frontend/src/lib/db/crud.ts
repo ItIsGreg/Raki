@@ -7,6 +7,7 @@ import {
   ProfileCreate,
   ProfilePointCreate,
   SegmentationProfilePointCreate,
+  SegmentDataPointCreate,
   TextCreate,
   db,
 } from "./db";
@@ -19,6 +20,7 @@ import {
   Text,
   DataPoint,
   SegmentationProfilePoint,
+  SegmentDataPoint,
 } from "./db";
 
 // The CRUD operations for the ProfilePoint table
@@ -469,4 +471,41 @@ export const updateSegmentationProfilePoint = async (profilePoint: SegmentationP
 
 export const deleteSegmentationProfilePoint = async (id: string) => {
   return db.segmentationProfilePoints.delete(id);
+};
+
+// The CRUD operations for the SegmentDataPoint table
+export const createSegmentDataPoint = async (segmentDataPoint: SegmentDataPointCreate) => {
+  const id = v4();
+  const newSegmentDataPoint = { ...segmentDataPoint, id };
+  await db.SegmentDataPoints.add(newSegmentDataPoint);
+  return newSegmentDataPoint;
+};
+
+export const readSegmentDataPoint = async (id: string | undefined) => {
+  if (!id) {
+    return undefined;
+  }
+  return db.SegmentDataPoints.get(id);
+};
+
+export const readAllSegmentDataPoints = async () => {
+  return db.SegmentDataPoints.toArray();
+};
+
+// read all segment data points that belong to a specific annotated text
+export const readSegmentDataPointsByAnnotatedText = async (
+  annotatedTextId: string | undefined
+) => {
+  if (!annotatedTextId) {
+    return [];
+  }
+  return db.SegmentDataPoints.where({ annotatedTextId }).toArray();
+};
+
+export const updateSegmentDataPoint = async (segmentDataPoint: SegmentDataPoint) => {
+  return db.SegmentDataPoints.put(segmentDataPoint);
+};
+
+export const deleteSegmentDataPoint = async (id: string) => {
+  return db.SegmentDataPoints.delete(id);
 };

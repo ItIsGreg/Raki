@@ -124,6 +124,21 @@ export interface MaxTokens {
   value: number | undefined;
 }
 
+export interface SegmentDataPointCreate {
+  annotatedTextId: string;
+  name: string;
+  begin: string;
+  end: string;
+  beginMatch: number[] | undefined;
+  endMatch: number[] | undefined;
+  profilePointId: string | undefined;
+  verified: boolean | undefined;
+}
+
+export interface SegmentDataPoint extends SegmentDataPointCreate {
+  id: string;
+}
+
 export class MySubClassedDexie extends Dexie {
   // 'friends' is added by dexie when declaring the stores()
   // We just tell the typing system this is the case
@@ -141,6 +156,7 @@ export class MySubClassedDexie extends Dexie {
   llmUrls!: Table<LLMUrl>;
   batchSizes!: Table<BatchSize>;
   maxTokens!: Table<MaxTokens>;
+  SegmentDataPoints!: Table<SegmentDataPoint>;
 
   constructor() {
     super("myDatabase");
@@ -206,6 +222,11 @@ export class MySubClassedDexie extends Dexie {
     // Add version 11 to add segmentation profile points
     this.version(11).stores({
       segmentationProfilePoints: "++id, name, profileId",
+    });
+
+    // Add version 12 to add SegmentDataPoints
+    this.version(12).stores({
+      SegmentDataPoints: "++id, annotatedTextId, name",
     });
 
     // Add hooks to populate default values
