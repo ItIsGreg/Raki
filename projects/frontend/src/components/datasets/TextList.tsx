@@ -74,6 +74,18 @@ const TextList = (props: TextListProps) => {
         } catch (error) {
           console.error("Error processing PDF:", error);
         }
+      } else if (fileExtension === "md") {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const text = e.target?.result as string;
+          if (!activeDataset) return;
+          await createText({
+            datasetId: activeDataset.id,
+            filename: file.name,
+            text,
+          });
+        };
+        reader.readAsText(file);
       } else {
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -204,7 +216,7 @@ const TextList = (props: TextListProps) => {
             type="file"
             ref={fileInputRef}
             hidden
-            accept=".txt,.pdf"
+            accept=".txt,.pdf,.md"
             multiple
             onChange={handleFileChange}
             data-cy="file-input"

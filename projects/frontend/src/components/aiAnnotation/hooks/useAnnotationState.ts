@@ -6,6 +6,7 @@ import {
   readAllTexts,
   readAllAnnotatedTexts,
   readAllProfilePoints,
+  readAllSegmentationProfilePoints,
   readAllLLMProviders,
   readAllLLMUrls,
   readAllModels,
@@ -16,36 +17,41 @@ import {
   AnnotatedDataset,
   AnnotatedText,
   ProfilePoint,
+  SegmentationProfilePoint,
   Text,
 } from "@/lib/db/db";
 import { annotateTextBatch, reannotateFaultyText } from "../annotationUtils";
+import { 
+  annotateSegmentationTextBatch, 
+  reannotateFaultySegmentationText 
+} from "../segmentationAnnotationUtils";
+import { TaskMode } from "@/app/constants";
 
-interface UseAnnotationStateProps {
+type ProfilePointType = ProfilePoint | SegmentationProfilePoint;
+
+interface UseAnnotationStateProps<T extends ProfilePointType> {
   activeAnnotatedDataset: AnnotatedDataset | null;
   setActiveAnnotatedDataset: (dataset: AnnotatedDataset | null) => void;
-  activeProfilePoints: ProfilePoint[];
-  setActiveProfilePoints: (points: ProfilePoint[]) => void;
+  activeProfilePoints: T[];
+  setActiveProfilePoints: (points: T[]) => void;
   autoRerunFaulty: boolean;
+  mode: TaskMode;
 }
 
-export const useAnnotationState = ({
+export const useAnnotationState = <T extends ProfilePointType>({
   activeAnnotatedDataset,
   setActiveAnnotatedDataset,
   activeProfilePoints,
   setActiveProfilePoints,
   autoRerunFaulty,
-}: UseAnnotationStateProps) => {
+  mode,
+}: UseAnnotationStateProps<T>) => {
   // state definitions
   const [addingDataset, setAddingDataset] = useState(false);
-
-  const [annotationState, setAnnotationState] = useState<
-    "idle" | "regular" | "faulty"
-  >("idle");
-
+  const [annotationState, setAnnotationState] = useState<"idle" | "regular" | "faulty">("idle");
   const [isRunning, setIsRunning] = useState(false);
   const [batchIndex, setBatchIndex] = useState(0);
   const [textBatches, setTextBatches] = useState<Text[][]>([]);
-
   const [faultyBatches, setFaultyBatches] = useState<AnnotatedText[][]>([]);
   const [faultyBatchIndex, setFaultyBatchIndex] = useState(0);
 
@@ -54,7 +60,11 @@ export const useAnnotationState = ({
   const dbApiKeys = useLiveQuery(() => readAllApiKeys());
   const dbTexts = useLiveQuery(() => readAllTexts());
   const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
-  const dbProfilePoints = useLiveQuery(() => readAllProfilePoints());
+  const dbProfilePoints = useLiveQuery(() => 
+    mode === "datapoint_extraction" 
+      ? readAllProfilePoints()
+      : readAllSegmentationProfilePoints()
+  );
   const dbLlmProvider = useLiveQuery(() => readAllLLMProviders());
   const dbLlmModel = useLiveQuery(() => readAllModels());
   const dbLlmUrl = useLiveQuery(() => readAllLLMUrls());
@@ -80,12 +90,7 @@ export const useAnnotationState = ({
   }, [activeAnnotatedDataset, dbAnnotatedTexts, dbBatchSize]);
 
   const prepareTextBatches = useCallback(() => {
-    if (
-      !activeAnnotatedDataset ||
-      !dbTexts ||
-      !dbAnnotatedTexts ||
-      !dbBatchSize?.[0]
-    )
+    if (!activeAnnotatedDataset || !dbTexts || !dbAnnotatedTexts || !dbBatchSize?.[0])
       return;
 
     const batchSize = dbBatchSize[0].value;
@@ -106,29 +111,29 @@ export const useAnnotationState = ({
       batches.push(unannotatedTexts.slice(i, i + batchSize));
     }
 
-
     setTextBatches(batches);
     setBatchIndex(0);
   }, [activeAnnotatedDataset, dbTexts, dbAnnotatedTexts, dbBatchSize]);
 
   useEffect(() => {
     const runAnnotation = async () => {
-      if (
-        !activeAnnotatedDataset ||
-        !dbApiKeys ||
-        !dbLlmProvider ||
-        !dbLlmModel ||
-        !dbLlmUrl ||
-        !dbMaxTokens
-      )
+      if (!activeAnnotatedDataset || !dbApiKeys || !dbLlmProvider || !dbLlmModel || !dbLlmUrl || !dbMaxTokens)
         return;
+
+      const annotateFunction = mode === "datapoint_extraction" 
+        ? annotateTextBatch 
+        : annotateSegmentationTextBatch;
+      
+      const reannotateFunction = mode === "datapoint_extraction"
+        ? reannotateFaultyText
+        : reannotateFaultySegmentationText;
 
       if (annotationState === "regular") {
         if (textBatches.length > 0 && batchIndex < textBatches.length) {
-          await annotateTextBatch(
+          await annotateFunction(
             textBatches[batchIndex],
             activeAnnotatedDataset,
-            activeProfilePoints,
+            activeProfilePoints as any, // Type assertion needed due to generic constraints
             dbLlmProvider[0].provider,
             dbLlmModel[0].name,
             dbLlmUrl[0].url,
@@ -143,15 +148,12 @@ export const useAnnotationState = ({
           setAnnotationState("idle");
         }
       } else if (annotationState === "faulty") {
-        if (
-          faultyBatches.length > 0 &&
-          faultyBatchIndex < faultyBatches.length
-        ) {
+        if (faultyBatches.length > 0 && faultyBatchIndex < faultyBatches.length) {
           await Promise.all(
             faultyBatches[faultyBatchIndex].map((annotatedText) =>
-              reannotateFaultyText(
+              reannotateFunction(
                 annotatedText,
-                activeProfilePoints,
+                activeProfilePoints as any, // Type assertion needed due to generic constraints
                 dbLlmProvider[0].provider,
                 dbLlmModel[0].name,
                 dbLlmUrl[0].url,
@@ -184,6 +186,7 @@ export const useAnnotationState = ({
     dbLlmUrl,
     dbMaxTokens,
     autoRerunFaulty,
+    mode,
   ]);
 
   const handleStart = () => {
@@ -201,13 +204,10 @@ export const useAnnotationState = ({
 
   const identifyActiveProfilePoints = (profileId: string) => {
     if (dbProfilePoints) {
-      const activePoints: ProfilePoint[] = [];
-      dbProfilePoints.forEach((profilePoint) => {
-        if (profilePoint.profileId === profileId) {
-          activePoints.push(profilePoint);
-        }
-      });
-      setActiveProfilePoints(activePoints);
+      const activePoints = dbProfilePoints.filter(
+        (profilePoint) => profilePoint.profileId === profileId
+      );
+      setActiveProfilePoints(activePoints as T[]);
     }
   };
 

@@ -5,7 +5,6 @@ from fuzzywuzzy import process, fuzz
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-
 # There is some newline weirdness going on in the transcribed discharge summarie.
 # Need some regex magic to cope with it.
 def create_pattern(substring: str):
@@ -44,23 +43,33 @@ def fuzzy_matching(substring, main_string):
 
 
 def get_matches(text: str, substring: str):
-    # filter out if substring is an empty string
-    if substring == "":
+    # filter out if substring is None or empty string
+    if not substring or substring.strip() == "":
         return []
 
-    pattern = create_pattern(substring)
-    re_matches = list(re.finditer(pattern, text, re.IGNORECASE))
-    matches = [[match.start(), match.end()] for match in re_matches]
+    try:
+        pattern = create_pattern(substring)
+        re_matches = list(re.finditer(pattern, text, re.IGNORECASE))
+        matches = [[match.start(), match.end()] for match in re_matches]
 
-    # add fuzzy matching if no matches are found
-    if len(matches) == 0:
+        # add fuzzy matching if no matches are found
+        if len(matches) == 0:
+            best_match, score = fuzzy_matching(substring, text)
+            if score > 80:
+                start_index = text.find(best_match)
+                if start_index != -1:
+                    matches.append([start_index, start_index + len(best_match)])
+
+        return matches
+    except re.error as e:
+        logger.warning(f"Regex error for pattern '{substring}': {str(e)}")
+        # Fallback to fuzzy matching on regex error
         best_match, score = fuzzy_matching(substring, text)
         if score > 80:
             start_index = text.find(best_match)
             if start_index != -1:
-                matches.append([start_index, start_index + len(best_match)])
-
-    return matches
+                return [[start_index, start_index + len(best_match)]]
+        return []
 
 
 def create_select_substring_text_excerpt(match, text, window_size=50):

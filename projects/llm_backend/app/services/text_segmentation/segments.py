@@ -1,4 +1,5 @@
 from typing import Callable, List
+import logging
 
 from app.llm_calls import call_llm
 from app.prompts.text_segmentation.segments import Text_Segmentation_Prompt_List
@@ -56,17 +57,24 @@ async def text_segmentation_service(
     segments_with_matches = []
     
     for segment_name, boundaries in result.items():
-        # Find matches for begin and end substrings
-        begin_matches = get_matches(req.text, boundaries["begin"])
-        end_matches = get_matches(req.text, boundaries["end"])
-        
-        # Create result object
-        segment_result = TextSegmentationResult(
-            name=segment_name,
-            begin_match=begin_matches[0] if begin_matches else None,
-            end_match=end_matches[0] if end_matches else None,
-        )
-        
-        segments_with_matches.append(segment_result)
+        try:
+            # Validate boundaries
+            if not isinstance(boundaries, dict) or "begin" not in boundaries or "end" not in boundaries:
+                continue
+                
+            # Find matches for begin and end substrings
+            begin_matches = get_matches(req.text, boundaries["begin"])
+            end_matches = get_matches(req.text, boundaries["end"])
+            
+            # Create result object
+            segment_result = TextSegmentationResult(
+                name=segment_name,
+                begin_match=begin_matches[0] if begin_matches else None,
+                end_match=end_matches[0] if end_matches else None,
+            )
+            
+            segments_with_matches.append(segment_result)
+        except Exception as e:
+            continue
     
     return segments_with_matches

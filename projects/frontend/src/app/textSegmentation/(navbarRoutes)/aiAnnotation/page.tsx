@@ -3,38 +3,38 @@
 import { useState } from "react";
 import AnnotatedDatasetList from "@/components/aiAnnotation/AnnotatedDatasetList";
 import AnnotatedTextsList from "@/components/aiAnnotation/AnnotatedTextsList";
-import { AnnotatedDataset, ProfilePoint } from "@/lib/db/db";
+import { AnnotatedDataset, SegmentationProfilePoint } from "@/lib/db/db";
 
-const LLMAnnotation = () => {
+const AIAnnotation = () => {
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] =
     useState<AnnotatedDataset | null>(null);
   const [activeProfilePoints, setActiveProfilePoints] = useState<
-    ProfilePoint[]
+    SegmentationProfilePoint[]
   >([]);
 
   return (
     <div
       className="grid grid-cols-2 gap-4 h-full"
-      data-cy="llm-annotation-container"
+      data-cy="ai-annotation-container"
     >
-      <AnnotatedDatasetList<ProfilePoint>
+      <AnnotatedDatasetList<SegmentationProfilePoint>
         data-cy="annotated-dataset-list"
         activeAnnotatedDataset={activeAnnotatedDataset}
         activeProfilePoints={activeProfilePoints}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         setActiveProfilePoints={setActiveProfilePoints}
-        mode="datapoint_extraction"
+        mode="text_segmentation"
       />
-      <AnnotatedTextsList<ProfilePoint>
+      <AnnotatedTextsList<SegmentationProfilePoint>
         data-cy="annotated-texts-list"
         activeAnnotatedDataset={activeAnnotatedDataset}
         activeProfilePoints={activeProfilePoints}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         setActiveProfilePoints={setActiveProfilePoints}
-        mode="datapoint_extraction"
+        mode="text_segmentation"
       />
     </div>
   );
 };
 
-export default LLMAnnotation;
+export default AIAnnotation;

@@ -1,5 +1,9 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { AnnotatedDataset } from "@/lib/db/db";
+import {
+  AnnotatedDataset,
+  ProfilePoint,
+  SegmentationProfilePoint,
+} from "@/lib/db/db";
 import {
   deleteAnnotatedDataset,
   readAllAnnotatedTexts,
@@ -20,8 +24,11 @@ import EditButton from "@/components/EditButton";
 import DownloadButton from "./DownloadButton";
 import { Progress } from "@/components/ui/progress";
 import { Loader2 } from "lucide-react";
+import { TaskMode } from "@/app/constants";
 
-interface AnnotatedDatasetCardProps {
+interface AnnotatedDatasetCardProps<
+  T extends ProfilePoint | SegmentationProfilePoint
+> {
   dataset: AnnotatedDataset;
   isActive: boolean;
   annotationState: "idle" | "regular" | "faulty";
@@ -29,9 +36,12 @@ interface AnnotatedDatasetCardProps {
   onStart: () => void;
   onStop: () => void;
   onEdit: () => void;
+  mode: TaskMode;
 }
 
-export const AnnotatedDatasetCard = ({
+export const AnnotatedDatasetCard = <
+  T extends ProfilePoint | SegmentationProfilePoint
+>({
   dataset,
   isActive,
   annotationState,
@@ -39,11 +49,37 @@ export const AnnotatedDatasetCard = ({
   onStart,
   onStop,
   onEdit,
-}: AnnotatedDatasetCardProps) => {
+  mode,
+}: AnnotatedDatasetCardProps<T>) => {
   const dbProfiles = useLiveQuery(() => readAllProfiles());
   const dbDatasets = useLiveQuery(() => readAllDatasets());
   const dbTexts = useLiveQuery(() => readAllTexts());
   const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
+
+  const getActionText = () => {
+    if (annotationState === "idle") {
+      return mode === "datapoint_extraction"
+        ? "Start Annotation"
+        : "Start Segmentation";
+    }
+
+    const actionType = annotationState === "faulty" ? "Faulty " : "";
+    return mode === "datapoint_extraction"
+      ? `Stop ${actionType}Annotation`
+      : `Stop ${actionType}Segmentation`;
+  };
+
+  const getProgressText = () => {
+    return mode === "datapoint_extraction"
+      ? "Annotating texts..."
+      : "Segmenting texts...";
+  };
+
+  const getFaultyText = () => {
+    return mode === "datapoint_extraction"
+      ? "Re-Annotating faulty texts..."
+      : "Re-Segmenting faulty texts...";
+  };
 
   return (
     <Card
@@ -61,14 +97,20 @@ export const AnnotatedDatasetCard = ({
         <DeleteButton
           data-cy="delete-dataset-button"
           onDelete={() => deleteAnnotatedDataset(dataset.id)}
-          itemName="annotated dataset"
+          itemName={
+            mode === "datapoint_extraction"
+              ? "annotated dataset"
+              : "segmentation dataset"
+          }
         />
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex flex-row gap-2">
           {dbProfiles && (
             <CardDescription data-cy="profile-description">
-              Profile:{" "}
+              {mode === "datapoint_extraction"
+                ? "Profile: "
+                : "Segmentation Profile: "}
               {
                 dbProfiles.find((profile) => profile.id === dataset.profileId)
                   ?.name
@@ -94,28 +136,28 @@ export const AnnotatedDatasetCard = ({
         {dbTexts && dbAnnotatedTexts && (
           <>
             <CardDescription data-cy="annotated-texts-count">
-              Annotated Texts:{" "}
+              {mode === "datapoint_extraction" ? "Annotated" : "Segmented"}{" "}
+              Texts:{" "}
               {
-                dbAnnotatedTexts.filter((text) => {
-                  return text.annotatedDatasetId === dataset.id;
-                }).length
+                dbAnnotatedTexts.filter(
+                  (text) => text.annotatedDatasetId === dataset.id
+                ).length
               }{" "}
               /{" "}
               {
-                dbTexts.filter((text) => {
-                  return text.datasetId === dataset.datasetId;
-                }).length
+                dbTexts.filter((text) => text.datasetId === dataset.datasetId)
+                  .length
               }
             </CardDescription>
             <CardDescription data-cy="faulty-texts-count">
-              Faulty Texts:{" "}
+              Faulty{" "}
+              {mode === "datapoint_extraction" ? "Annotations" : "Segments"}:{" "}
               {
-                dbAnnotatedTexts.filter((text) => {
-                  return (
+                dbAnnotatedTexts.filter(
+                  (text) =>
                     text.annotatedDatasetId === dataset.id &&
                     text.aiFaulty === true
-                  );
-                }).length
+                ).length
               }
             </CardDescription>
           </>
@@ -141,7 +183,7 @@ export const AnnotatedDatasetCard = ({
           <>
             {annotationState === "idle" ? (
               <Button data-cy="start-annotation-button" onClick={onStart}>
-                Start Annotation
+                {getActionText()}
               </Button>
             ) : (
               <div className="flex flex-col items-center gap-2">
@@ -150,7 +192,7 @@ export const AnnotatedDatasetCard = ({
                   onClick={onStop}
                   className="w-full"
                 >
-                  Stop {annotationState === "faulty" ? "Faulty " : ""}Annotation
+                  {getActionText()}
                 </Button>
                 <div
                   className="flex items-center gap-2"
@@ -159,8 +201,8 @@ export const AnnotatedDatasetCard = ({
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm text-gray-500">
                     {annotationState === "regular"
-                      ? "Annotating texts..."
-                      : "Re-Annotating faulty texts..."}
+                      ? getProgressText()
+                      : getFaultyText()}
                   </span>
                 </div>
               </div>

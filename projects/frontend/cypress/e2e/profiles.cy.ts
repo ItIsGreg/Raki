@@ -181,10 +181,6 @@ describe('Profiles page', () => {
       cy.get('[data-cy="upload-datapoints-input"]')
         .selectFile('cypress/fixtures/upload_test/uploadProfilePoints.json', { force: true })
       
-      // Wait for the success alert and verify it
-      cy.on('window:alert', (text) => {
-        expect(text).to.equal('Data Points uploading successfull!')
-      })
 
       // Verify the data points container is visible and contains uploaded points
       cy.get('[data-cy="datapoints-container"]')

@@ -22,6 +22,7 @@ import {
   SegmentationProfilePoint,
   SegmentDataPoint,
 } from "./db";
+import { TaskMode } from "@/app/constants";
 
 // The CRUD operations for the ProfilePoint table
 export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
@@ -137,12 +138,12 @@ export const deleteDataset = async (id: string) => {
 };
 
 // Read datasets by mode
-export const readDatasetsByMode = async (mode: "text_segmentation" | "datapoint_extraction") => {
+export const readDatasetsByMode = async (mode: TaskMode): Promise<Dataset[]> => {
   return db.Datasets.where("mode").equals(mode).toArray();
 };
 
 // Read profiles by mode
-export const readProfilesByMode = async (mode: "text_segmentation" | "datapoint_extraction") => {
+export const readProfilesByMode = async (mode: TaskMode): Promise<Profile[]> => {
   return db.Profiles.where("mode").equals(mode).toArray();
 };
 

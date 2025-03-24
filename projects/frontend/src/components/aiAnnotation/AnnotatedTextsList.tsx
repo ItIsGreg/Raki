@@ -8,15 +8,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { reannotateFaultyText } from "./annotationUtils";
+import { reannotateFaultySegmentationText } from "./segmentationAnnotationUtils";
 import { useAnnotationState } from "./hooks/useAnnotationState";
-import { AnnotatedTextsListProps } from "@/app/types";
+import {
+  AnnotatedDataset,
+  ProfilePoint,
+  SegmentationProfilePoint,
+} from "@/lib/db/db";
+import { TaskMode } from "@/app/constants";
 
-const AnnotatedTextsList = ({
+interface AnnotatedTextsListProps<
+  T extends ProfilePoint | SegmentationProfilePoint
+> {
+  activeAnnotatedDataset: AnnotatedDataset | null;
+  activeProfilePoints: T[];
+  setActiveAnnotatedDataset: (dataset: AnnotatedDataset | null) => void;
+  setActiveProfilePoints: (points: T[]) => void;
+  mode: TaskMode;
+}
+
+const AnnotatedTextsList = <T extends ProfilePoint | SegmentationProfilePoint>({
   activeAnnotatedDataset,
   activeProfilePoints,
   setActiveAnnotatedDataset,
   setActiveProfilePoints,
-}: AnnotatedTextsListProps) => {
+  mode,
+}: AnnotatedTextsListProps<T>) => {
   const {
     dbApiKeys,
     dbAnnotatedTexts,
@@ -26,12 +43,13 @@ const AnnotatedTextsList = ({
     dbLlmModel,
     dbLlmUrl,
     dbMaxTokens,
-  } = useAnnotationState({
+  } = useAnnotationState<T>({
     activeAnnotatedDataset,
     activeProfilePoints,
     setActiveAnnotatedDataset,
     setActiveProfilePoints,
     autoRerunFaulty: true,
+    mode,
   });
 
   const [rerunningTexts, setRerunningTexts] = useState<string[]>([]);
@@ -50,14 +68,20 @@ const AnnotatedTextsList = ({
       ) {
         throw new Error("Missing required parameters");
       }
-      await reannotateFaultyText(
+
+      const reannotateFunction =
+        mode === "datapoint_extraction"
+          ? reannotateFaultyText
+          : reannotateFaultySegmentationText;
+
+      await reannotateFunction(
         annotatedText,
-        activeProfilePoints,
+        activeProfilePoints as any, // Type assertion needed due to generic constraints
         dbLlmProvider[0].provider,
         dbLlmModel[0].name,
         dbLlmUrl[0].url,
         dbApiKeys[0].key,
-        dbMaxTokens[0].value
+        dbMaxTokens[0]?.value
       );
     } catch (error) {
       console.error("Error rerunning faulty text:", error);
@@ -83,13 +107,24 @@ const AnnotatedTextsList = ({
       });
     });
 
+  const getListTitle = () => {
+    switch (mode) {
+      case "datapoint_extraction":
+        return "Annotated Texts";
+      case "text_segmentation":
+        return "Segmented Texts";
+      default:
+        return "Texts";
+    }
+  };
+
   return (
     <div className="overflow-y-scroll" data-cy="annotated-texts-container">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle data-cy="annotated-texts-title">
-              Annotated Texts
+              {getListTitle()}
             </CardTitle>
             <CardDescription data-cy="dataset-name">
               {activeAnnotatedDataset?.name}

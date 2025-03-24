@@ -74,12 +74,6 @@ export interface AnnotatedTextsListProps {
   setActiveProfilePoints: (points: ProfilePoint[]) => void;
 }
 
-export interface AnnotatedDatasetListProps {
-  activeAnnotatedDataset: AnnotatedDataset | null;
-  activeProfilePoints: ProfilePoint[];
-  setActiveAnnotatedDataset: (dataset: AnnotatedDataset | null) => void;
-  setActiveProfilePoints: (points: ProfilePoint[]) => void;
-}
 
 export interface ReqProfilePoint {
   name: string;

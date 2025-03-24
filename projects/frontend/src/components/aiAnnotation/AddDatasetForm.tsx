@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   createAnnotatedDataset,
-  readAllDatasets,
-  readAllProfiles,
+  readDatasetsByMode,
+  readProfilesByMode,
 } from "@/lib/db/crud";
 import {
   Card,
@@ -21,12 +21,14 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TaskMode } from "@/app/constants";
 
 interface AddDatasetFormProps {
   onClose: () => void;
+  mode: TaskMode;
 }
 
-export const AddDatasetForm = ({ onClose }: AddDatasetFormProps) => {
+export const AddDatasetForm = ({ onClose, mode }: AddDatasetFormProps) => {
   const [addDatasetName, setAddDatasetName] = useState<string>("");
   const [addDatasetDescription, setAddDatasetDescription] =
     useState<string>("");
@@ -37,8 +39,9 @@ export const AddDatasetForm = ({ onClose }: AddDatasetFormProps) => {
     string | undefined
   >(undefined);
 
-  const dbProfiles = useLiveQuery(() => readAllProfiles());
-  const dbDatasets = useLiveQuery(() => readAllDatasets());
+  // Query datasets and profiles based on mode
+  const dbDatasets = useLiveQuery(() => readDatasetsByMode(mode));
+  const dbProfiles = useLiveQuery(() => readProfilesByMode(mode));
 
   const handleSave = () => {
     if (
@@ -54,14 +57,26 @@ export const AddDatasetForm = ({ onClose }: AddDatasetFormProps) => {
       description: addDatasetDescription,
       datasetId: addDatasetDatasetId,
       profileId: addDatasetProfileId,
+      mode: mode,
     });
     onClose();
+  };
+
+  const getFormTitle = () => {
+    switch (mode) {
+      case "datapoint_extraction":
+        return "New Annotated Dataset";
+      case "text_segmentation":
+        return "New Segmentation Dataset";
+      default:
+        return "New Dataset";
+    }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardDescription>New Dataset</CardDescription>
+        <CardDescription>{getFormTitle()}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <Input
@@ -102,7 +117,11 @@ export const AddDatasetForm = ({ onClose }: AddDatasetFormProps) => {
           value={addDatasetProfileId}
         >
           <SelectTrigger data-cy="profile-select-trigger">
-            <SelectValue placeholder="Select a profile" />
+            <SelectValue
+              placeholder={`Select a ${
+                mode === "text_segmentation" ? "segmentation " : ""
+              }profile`}
+            />
           </SelectTrigger>
           <SelectContent>
             {dbProfiles?.map((profile) => (
