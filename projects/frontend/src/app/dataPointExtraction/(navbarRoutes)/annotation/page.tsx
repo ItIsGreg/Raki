@@ -6,6 +6,7 @@ import TextAnnotation from "@/components/annotation/TextAnnotation";
 import DataPointList from "@/components/annotation/DataPointList";
 import AnnotatedTextList from "@/components/annotation/AnnotatedTextList";
 import DatasetList from "@/components/annotation/DatasetList";
+import { TASK_MODE } from "@/app/constants";
 
 const Annotation = () => {
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] = useState<
@@ -17,6 +18,9 @@ const Annotation = () => {
   const [activeDataPointId, setActiveDataPointId] = useState<
     string | undefined
   >(undefined);
+
+  // Since this is in the dataPointExtraction directory, we set the mode accordingly
+  const mode = TASK_MODE.DATAPOINT_EXTRACTION;
 
   return (
     <div
@@ -38,19 +42,21 @@ const Annotation = () => {
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         setActiveDataPointId={setActiveDataPointId}
         activeAnnotatedText={activeAnnotatedText}
-        setActiveAnnotatedText={setActiveAnnotatedText}
+        mode={mode}
       />
       <AnnotatedTextList
         data-cy="annotated-text-list"
         activeAnnotatedDataset={activeAnnotatedDataset}
         activeAnnotatedText={activeAnnotatedText}
-        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         setActiveAnnotatedText={setActiveAnnotatedText}
+        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+        mode={mode}
       />
       <DatasetList
         data-cy="dataset-list"
         activeAnnotatedDataset={activeAnnotatedDataset}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+        mode={mode}
       />
     </div>
   );

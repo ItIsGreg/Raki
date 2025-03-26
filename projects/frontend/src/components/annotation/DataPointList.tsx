@@ -4,33 +4,134 @@ import {
   deleteDataPoint,
   readDataPointsByAnnotatedText,
   updateDataPoint,
+  deleteSegmentDataPoint,
+  readSegmentDataPointsByAnnotatedText,
+  updateSegmentDataPoint,
 } from "@/lib/db/crud";
 import { TiDeleteOutline } from "react-icons/ti";
 import CompactCard from "@/components/CompactCard";
 import { AnnotationDataPointListProps } from "@/app/types";
+import { DataPoint, SegmentDataPoint } from "@/lib/db/db";
+import { TASK_MODE, TaskMode } from "@/app/constants";
 
-const DataPointList = (props: AnnotationDataPointListProps) => {
+type AnyDataPoint = DataPoint | SegmentDataPoint;
+
+interface GenericDataPointListProps {
+  activeAnnotatedDataset: any;
+  activeDataPointId: string | undefined;
+  setActiveAnnotatedDataset: (dataset: any) => void;
+  setActiveDataPointId: (id: string | undefined) => void;
+  activeAnnotatedText: any;
+  mode: TaskMode;
+}
+
+const DataPointList = (props: GenericDataPointListProps) => {
   const {
     activeAnnotatedDataset,
     activeDataPointId,
     setActiveAnnotatedDataset,
     setActiveDataPointId,
     activeAnnotatedText,
+    mode,
   } = props;
 
-  const dataPoints = useLiveQuery(
-    () => readDataPointsByAnnotatedText(activeAnnotatedText?.id),
-    [activeAnnotatedText]
-  )?.sort((a, b) => {
-    if (a.match && b.match) {
-      return a.match[0] - b.match[0];
-    } else if (a.match) {
-      return -1;
-    } else if (b.match) {
-      return 1;
+  const dataPoints = useLiveQuery<AnyDataPoint[]>(() => {
+    if (mode === TASK_MODE.DATAPOINT_EXTRACTION) {
+      return readDataPointsByAnnotatedText(activeAnnotatedText?.id);
+    } else {
+      return readSegmentDataPointsByAnnotatedText(activeAnnotatedText?.id);
+    }
+  }, [activeAnnotatedText, mode])?.sort((a, b) => {
+    if (mode === TASK_MODE.DATAPOINT_EXTRACTION) {
+      const dpA = a as DataPoint;
+      const dpB = b as DataPoint;
+      if (dpA.match && dpB.match) {
+        return dpA.match[0] - dpB.match[0];
+      } else if (dpA.match) {
+        return -1;
+      } else if (dpB.match) {
+        return 1;
+      }
+    } else {
+      const dpA = a as SegmentDataPoint;
+      const dpB = b as SegmentDataPoint;
+      if (dpA.beginMatch && dpB.beginMatch) {
+        return dpA.beginMatch[0] - dpB.beginMatch[0];
+      } else if (dpA.beginMatch) {
+        return -1;
+      } else if (dpB.beginMatch) {
+        return 1;
+      }
     }
     return 0;
   });
+
+  const handleDelete = (dataPoint: AnyDataPoint, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (mode === TASK_MODE.DATAPOINT_EXTRACTION && "match" in dataPoint) {
+      if (!dataPoint.profilePointId) {
+        deleteDataPoint(dataPoint.id);
+      } else {
+        updateDataPoint({
+          ...dataPoint,
+          match: undefined,
+          value: undefined,
+        });
+      }
+    } else if (
+      mode === TASK_MODE.TEXT_SEGMENTATION &&
+      "beginMatch" in dataPoint
+    ) {
+      if (!dataPoint.profilePointId) {
+        deleteSegmentDataPoint(dataPoint.id);
+      } else {
+        updateSegmentDataPoint({
+          ...dataPoint,
+          beginMatch: undefined,
+          endMatch: undefined,
+          begin: "",
+          end: "",
+        });
+      }
+    }
+  };
+
+  const getCardClassName = (dataPoint: AnyDataPoint) => {
+    if (mode === TASK_MODE.DATAPOINT_EXTRACTION && "match" in dataPoint) {
+      return `
+        ${
+          activeDataPointId === dataPoint.id && !dataPoint.verified
+            ? "bg-gray-100"
+            : activeDataPointId === dataPoint.id && dataPoint.verified
+            ? "bg-green-100"
+            : !dataPoint.profilePointId
+            ? "bg-red-100"
+            : ""
+        }
+        ${dataPoint.verified ? "text-green-800" : ""}
+        ${!dataPoint.match ? "text-gray-400" : ""}
+      `;
+    } else if (
+      mode === TASK_MODE.TEXT_SEGMENTATION &&
+      "beginMatch" in dataPoint
+    ) {
+      return `
+        ${
+          activeDataPointId === dataPoint.id && !dataPoint.verified
+            ? "bg-gray-100"
+            : activeDataPointId === dataPoint.id && dataPoint.verified
+            ? "bg-green-100"
+            : !dataPoint.profilePointId
+            ? "bg-red-100"
+            : ""
+        }
+        ${dataPoint.verified ? "text-green-800" : ""}
+        ${!dataPoint.beginMatch && !dataPoint.endMatch ? "text-gray-400" : ""}
+      `;
+    }
+    return "";
+  };
+
   return (
     <div
       className="col-span-1 overflow-y-scroll"
@@ -38,7 +139,11 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
     >
       <Card>
         <CardHeader className="flex flex-row justify-between">
-          <CardTitle data-cy="datapoint-list-title">Datapoints</CardTitle>
+          <CardTitle data-cy="datapoint-list-title">
+            {mode === TASK_MODE.DATAPOINT_EXTRACTION
+              ? "Datapoints"
+              : "Segments"}
+          </CardTitle>
         </CardHeader>
         <CardContent
           className="flex flex-col gap-1"
@@ -56,36 +161,13 @@ const DataPointList = (props: AnnotationDataPointListProps) => {
               }
               isActive={activeDataPointId === dataPoint.id}
               tooltipContent={dataPoint.name}
-              className={`
-                ${
-                  activeDataPointId === dataPoint.id && !dataPoint.verified
-                    ? "bg-gray-100"
-                    : activeDataPointId === dataPoint.id && dataPoint.verified
-                    ? "bg-green-100"
-                    : !dataPoint.profilePointId
-                    ? "bg-red-100"
-                    : ""
-                }
-                ${dataPoint.verified ? "text-green-800" : ""}
-                ${!dataPoint.match ? "text-gray-400" : ""}
-              `}
+              className={getCardClassName(dataPoint)}
               rightIcon={
                 <TiDeleteOutline
                   className="hover:text-red-500 cursor-pointer"
                   data-cy={`datapoint-delete-${dataPoint.id}`}
                   size={20}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!dataPoint.profilePointId) {
-                      deleteDataPoint(dataPoint.id);
-                    } else {
-                      updateDataPoint({
-                        ...dataPoint,
-                        match: undefined,
-                        value: undefined,
-                      });
-                    }
-                  }}
+                  onClick={(e) => handleDelete(dataPoint, e)}
                 />
               }
             />

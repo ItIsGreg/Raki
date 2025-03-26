@@ -5,12 +5,20 @@ import {
   readAllAnnotatedDatasets,
   readAnnotatedTextsByAnnotatedDataset,
   readDataPointsByAnnotatedText,
+  readSegmentDataPointsByAnnotatedText,
   readProfile,
   readProfilePointsByProfile,
+  readSegmentationProfilePointsByProfile,
   readText,
 } from "@/lib/db/crud";
 import { TiDownloadOutline } from "react-icons/ti";
-import { AnnotatedDataset, DataPoint, ProfilePoint } from "@/lib/db/db";
+import {
+  AnnotatedDataset,
+  DataPoint,
+  ProfilePoint,
+  SegmentDataPoint,
+  SegmentationProfilePoint,
+} from "@/lib/db/db";
 import CompactCard from "@/components/CompactCard";
 import {
   DropdownMenu,
@@ -19,16 +27,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import * as XLSX from "xlsx";
+import { TASK_MODE, TaskMode } from "@/app/constants";
 
-const DatasetList = (props: AnnotationDatasetListProps) => {
-  const { activeAnnotatedDataset, setActiveAnnotatedDataset } = props;
+interface DatasetListProps extends AnnotationDatasetListProps {
+  mode: TaskMode;
+}
 
-  const annotatedDatasets = useLiveQuery(() => readAllAnnotatedDatasets());
+const DatasetList = (props: DatasetListProps) => {
+  const { activeAnnotatedDataset, setActiveAnnotatedDataset, mode } = props;
+
+  const annotatedDatasets = useLiveQuery(
+    () => readAllAnnotatedDatasets(),
+    []
+  )?.filter((dataset) => dataset.mode === mode);
 
   interface AnnotatedTextDatapointsHolder {
     annotatedTextId: string;
     filename: string;
-    datapoints: DataPoint[];
+    datapoints: DataPoint[] | SegmentDataPoint[];
   }
 
   const downLoadAnnotatedDataset = async (
@@ -42,7 +58,10 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
     // collect data for csv export
     const activeProfile = await readProfile(activeAnnotatedDataset?.profileId);
 
-    const profilePoints = await readProfilePointsByProfile(activeProfile?.id);
+    const profilePoints =
+      mode === TASK_MODE.DATAPOINT_EXTRACTION
+        ? await readProfilePointsByProfile(activeProfile?.id)
+        : await readSegmentationProfilePointsByProfile(activeProfile?.id);
 
     const annotatedTexts = await readAnnotatedTextsByAnnotatedDataset(
       annotatedDataset.id
@@ -50,7 +69,10 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
     // bring data into shape that is easy to work with
     const annotatedTextDatapoints: AnnotatedTextDatapointsHolder[] = [];
     for (const annotatedText of annotatedTexts) {
-      const datapoints = await readDataPointsByAnnotatedText(annotatedText.id);
+      const datapoints =
+        mode === TASK_MODE.DATAPOINT_EXTRACTION
+          ? await readDataPointsByAnnotatedText(annotatedText.id)
+          : await readSegmentDataPointsByAnnotatedText(annotatedText.id);
       const text = await readText(annotatedText.textId);
       if (text) {
         annotatedTextDatapoints.push({
@@ -63,14 +85,48 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
 
     if (format === "csv") {
       // generate csv
-      const csv = generateCsv(annotatedTextDatapoints, profilePoints);
+      const csv =
+        mode === TASK_MODE.DATAPOINT_EXTRACTION
+          ? generateCsv(
+              annotatedTextDatapoints as {
+                annotatedTextId: string;
+                filename: string;
+                datapoints: DataPoint[];
+              }[],
+              profilePoints as ProfilePoint[]
+            )
+          : generateSegmentationCsv(
+              annotatedTextDatapoints as {
+                annotatedTextId: string;
+                filename: string;
+                datapoints: SegmentDataPoint[];
+              }[],
+              profilePoints as SegmentationProfilePoint[]
+            );
 
       // download csv
       const blob = new Blob([csv], { type: "text/csv" });
       downloadFile(blob, `${annotatedDataset.name}.csv`);
     } else {
       // Generate and download XLSX
-      const xlsx = generateXlsx(annotatedTextDatapoints, profilePoints);
+      const xlsx =
+        mode === TASK_MODE.DATAPOINT_EXTRACTION
+          ? generateXlsx(
+              annotatedTextDatapoints as {
+                annotatedTextId: string;
+                filename: string;
+                datapoints: DataPoint[];
+              }[],
+              profilePoints as ProfilePoint[]
+            )
+          : generateSegmentationXlsx(
+              annotatedTextDatapoints as {
+                annotatedTextId: string;
+                filename: string;
+                datapoints: SegmentDataPoint[];
+              }[],
+              profilePoints as SegmentationProfilePoint[]
+            );
       const blob = new Blob([xlsx], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -79,7 +135,11 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
   };
 
   const generateCsv = (
-    annotatedTextDatapoints: AnnotatedTextDatapointsHolder[],
+    annotatedTextDatapoints: {
+      annotatedTextId: string;
+      filename: string;
+      datapoints: DataPoint[];
+    }[],
     profilePoints: ProfilePoint[]
   ) => {
     const firstHeader = "filename";
@@ -87,7 +147,6 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
       firstHeader,
       ...profilePoints.map((pp) => pp.name.replace(/"/g, '""')),
     ];
-    const headersString = headers.join(",");
     const rows = annotatedTextDatapoints.map((atd) => {
       const row = [atd.filename];
       for (const pp of profilePoints) {
@@ -105,8 +164,44 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
     return [headers, ...rows].join("\n");
   };
 
+  const generateSegmentationCsv = (
+    annotatedTextDatapoints: {
+      annotatedTextId: string;
+      filename: string;
+      datapoints: SegmentDataPoint[];
+    }[],
+    profilePoints: SegmentationProfilePoint[]
+  ) => {
+    const firstHeader = "filename";
+    const headers = [
+      firstHeader,
+      ...profilePoints.map((pp) => pp.name.replace(/"/g, '""')),
+    ];
+    const rows = annotatedTextDatapoints.map((atd) => {
+      const row = [atd.filename];
+      for (const pp of profilePoints) {
+        const segmentPoint = atd.datapoints.find(
+          (dp) => dp.profilePointId === pp.id
+        );
+        if (segmentPoint) {
+          row.push(
+            `${segmentPoint.begin}...${segmentPoint.end}`.replace(/"/g, '""')
+          );
+        } else {
+          row.push("");
+        }
+      }
+      return row.join(",");
+    });
+    return [headers, ...rows].join("\n");
+  };
+
   const generateXlsx = (
-    annotatedTextDatapoints: AnnotatedTextDatapointsHolder[],
+    annotatedTextDatapoints: {
+      annotatedTextId: string;
+      filename: string;
+      datapoints: DataPoint[];
+    }[],
     profilePoints: ProfilePoint[]
   ) => {
     const headers = ["filename", ...profilePoints.map((pp) => pp.name)];
@@ -118,6 +213,36 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
           (dp) => dp.profilePointId === pp.id
         );
         row.push(dataPoint?.value ?? "");
+      }
+      return row;
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Annotations");
+
+    return XLSX.write(workbook, { type: "array", bookType: "xlsx" });
+  };
+
+  const generateSegmentationXlsx = (
+    annotatedTextDatapoints: {
+      annotatedTextId: string;
+      filename: string;
+      datapoints: SegmentDataPoint[];
+    }[],
+    profilePoints: SegmentationProfilePoint[]
+  ) => {
+    const headers = ["filename", ...profilePoints.map((pp) => pp.name)];
+
+    const rows = annotatedTextDatapoints.map((atd) => {
+      const row: string[] = [atd.filename];
+      for (const pp of profilePoints) {
+        const segmentPoint = atd.datapoints.find(
+          (dp) => dp.profilePointId === pp.id
+        );
+        row.push(
+          segmentPoint ? `${segmentPoint.begin}...${segmentPoint.end}` : ""
+        );
       }
       return row;
     });
@@ -152,7 +277,9 @@ const DatasetList = (props: AnnotationDatasetListProps) => {
       <Card>
         <CardHeader>
           <CardTitle data-cy="manual-dataset-list-title">
-            Annotated Datasets
+            {mode === TASK_MODE.DATAPOINT_EXTRACTION
+              ? "Annotated Datasets"
+              : "Segmentation Datasets"}
           </CardTitle>
         </CardHeader>
         <CardContent data-cy="manual-dataset-list-content">

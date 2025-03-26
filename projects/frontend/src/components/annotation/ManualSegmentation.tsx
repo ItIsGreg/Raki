@@ -5,31 +5,33 @@ import { Button } from "@/components/ui/button";
 import * as pdfjsLib from "pdfjs-dist";
 import { v4 as uuidv4 } from "uuid";
 import { Sidebar } from "../../components/annotation/SegmentationSidebar";
-import { TextDisplay } from "../../components/annotation/SegmentationTextDisplay";
-import { getTextNodeOffset } from "./utils";
-import { backendURL } from "../constants";
+import { TextDisplay } from "./SegmentationTextDisplay";
+import { backendURL } from "@/app/constants";
+import { SegmentDataPoint, AnnotatedText } from "@/lib/db/db";
+import {
+  createSegmentDataPoint,
+  readSegmentDataPointsByAnnotatedText,
+} from "@/lib/db/crud";
+import { useLiveQuery } from "dexie-react-hooks";
 
-// Interface for our segments
-interface Segment {
-  id: string;
-  name: string;
-  text: string;
-  startIndex: number;
-  endIndex: number;
+interface ManualSegmentationProps {
+  activeAnnotatedText: AnnotatedText | undefined;
+  activeSegmentId: string | undefined;
+  setActiveSegmentId: (id: string | undefined) => void;
 }
 
-export default function TextSegmentation() {
+export default function ManualSegmentation({
+  activeAnnotatedText,
+  activeSegmentId,
+  setActiveSegmentId,
+}: ManualSegmentationProps) {
   const [inputText, setInputText] = useState("");
-  const [segments, setSegments] = useState<Segment[]>([]);
-  const [isTextConfirmed, setIsTextConfirmed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fileName, setFileName] = useState("");
   const [isMarkdownEnabled, setIsMarkdownEnabled] = useState(false);
   const [selectedText, setSelectedText] = useState("");
   const [showSectionNaming, setShowSectionNaming] = useState(false);
   const [sectionName, setSectionName] = useState("");
-
-  // Add state for storing selection details
   const [selectionInfo, setSelectionInfo] = useState<{
     text: string;
     startIndex: number;
@@ -39,6 +41,12 @@ export default function TextSegmentation() {
   // Reference to the textarea element
   const textareaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch existing segments
+  const segments = useLiveQuery(
+    () => readSegmentDataPointsByAnnotatedText(activeAnnotatedText?.id),
+    [activeAnnotatedText]
+  );
 
   // Initialize PDF.js worker
   useEffect(() => {
@@ -54,7 +62,6 @@ export default function TextSegmentation() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check if file is a PDF
     if (file.type !== "application/pdf") {
       alert("Please upload a PDF file");
       return;
@@ -64,11 +71,9 @@ export default function TextSegmentation() {
     setFileName(file.name);
 
     try {
-      // Create form data
       const formData = new FormData();
       formData.append("file", file);
 
-      // Send to backend API
       const response = await fetch(
         `${backendURL}/text_segmentation/extract-pdf`,
         {
@@ -91,16 +96,9 @@ export default function TextSegmentation() {
     }
   };
 
-  // Trigger file input click
-  const openFileDialog = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
   // Handle text selection
   const handleTextSelection = useCallback(() => {
-    if (isTextConfirmed && !isLoading) {
+    if (!isLoading) {
       const selection = window.getSelection();
       if (selection && selection.toString().trim().length > 0) {
         const selText = selection.toString();
@@ -129,41 +127,36 @@ export default function TextSegmentation() {
         }
       }
     }
-  }, [isTextConfirmed, isLoading]);
+  }, [isLoading]);
 
-  // Create a new segment from selection
-  const createSegment = useCallback(() => {
-    if (selectionInfo && sectionName && textareaRef.current) {
-      const newSegment = {
-        id: uuidv4(),
-        text: selectionInfo.text,
+  // Create a new segment
+  const createSegment = useCallback(async () => {
+    if (selectionInfo && sectionName && activeAnnotatedText) {
+      const newSegment: Omit<SegmentDataPoint, "id"> = {
+        annotatedTextId: activeAnnotatedText.id,
         name: sectionName,
-        startIndex: selectionInfo.startIndex,
-        endIndex: selectionInfo.endIndex,
+        begin: selectionInfo.text.substring(0, 50), // First 50 chars as begin text
+        end: selectionInfo.text.slice(-50), // Last 50 chars as end text
+        beginMatch: [selectionInfo.startIndex],
+        endMatch: [selectionInfo.endIndex],
+        profilePointId: undefined,
+        verified: false,
       };
 
-      setSegments((prevSegments) => [...prevSegments, newSegment]);
+      await createSegmentDataPoint(newSegment);
 
       setSelectionInfo(null);
       setSectionName("");
       setSelectedText("");
       setShowSectionNaming(false);
     }
-  }, [selectionInfo, sectionName]);
+  }, [selectionInfo, sectionName, activeAnnotatedText]);
 
   const cancelSegmentCreation = () => {
     setSelectionInfo(null);
     setSelectedText("");
     setSectionName("");
     setShowSectionNaming(false);
-  };
-
-  // Reset everything
-  const resetSegmentation = () => {
-    setIsTextConfirmed(false);
-    setSegments([]);
-    setSelectionInfo(null);
-    setFileName("");
   };
 
   return (
@@ -178,7 +171,7 @@ export default function TextSegmentation() {
             className="hidden"
           />
           <Button
-            onClick={openFileDialog}
+            onClick={() => fileInputRef.current?.click()}
             variant="outline"
             disabled={isLoading}
             className="mr-2"
@@ -191,30 +184,14 @@ export default function TextSegmentation() {
         </div>
 
         <TextDisplay
-          isTextConfirmed={isTextConfirmed}
+          isTextConfirmed={true}
           isMarkdownEnabled={isMarkdownEnabled}
           inputText={inputText}
-          segments={segments}
+          segments={segments || []}
           onTextSelection={handleTextSelection}
           setInputText={setInputText}
           textareaRef={textareaRef}
         />
-
-        {!isTextConfirmed && inputText && (
-          <Button onClick={() => setIsTextConfirmed(true)} className="mt-4">
-            Confirm Text
-          </Button>
-        )}
-
-        <div className="flex justify-end space-x-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={() => setSegments([])}
-            data-cy="reset-button"
-          >
-            Reset
-          </Button>
-        </div>
       </div>
 
       <Sidebar
@@ -225,7 +202,7 @@ export default function TextSegmentation() {
         setSectionName={setSectionName}
         createSegment={createSegment}
         cancelSegmentCreation={cancelSegmentCreation}
-        segments={segments}
+        segments={segments || []}
       />
     </div>
   );

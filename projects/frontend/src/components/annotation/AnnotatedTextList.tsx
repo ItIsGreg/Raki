@@ -6,12 +6,18 @@ import {
 } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import CompactCard from "@/components/CompactCard";
+import { TASK_MODE, TaskMode } from "@/app/constants";
 
-const AnnotatedTextList = (props: AnnotatedTextListProps) => {
+interface ExtendedAnnotatedTextListProps extends AnnotatedTextListProps {
+  mode: TaskMode;
+}
+
+const AnnotatedTextList = (props: ExtendedAnnotatedTextListProps) => {
   const {
     activeAnnotatedDataset,
     activeAnnotatedText,
     setActiveAnnotatedText,
+    mode,
   } = props;
 
   const annotatedTexts = useLiveQuery(
@@ -42,7 +48,9 @@ const AnnotatedTextList = (props: AnnotatedTextListProps) => {
       <Card>
         <CardHeader>
           <CardTitle data-cy="manual-annotated-text-list-title">
-            Annotated Texts
+            {mode === TASK_MODE.DATAPOINT_EXTRACTION
+              ? "Annotated Texts"
+              : "Segmented Texts"}
           </CardTitle>
         </CardHeader>
         <CardContent

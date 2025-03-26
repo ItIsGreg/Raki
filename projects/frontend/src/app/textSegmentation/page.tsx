@@ -25,7 +25,7 @@ export default function TextSegmentationHome() {
       icon: Brain,
     },
     {
-      path: "/textSegmentation/manualAnnotation",
+      path: "/textSegmentation/annotation",
       label: "Manual Annotation",
       icon: ScanText,
     },
