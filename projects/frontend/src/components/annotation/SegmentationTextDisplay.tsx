@@ -21,18 +21,43 @@ export const TextDisplay = ({
   setActiveSegmentId,
   onCreateSegment,
 }: TextDisplayProps) => {
-  // Render text with segments highlighted
   const renderedContent = useMemo(() => {
     let lastIndex = 0;
     const textParts = [];
-    const sortedSegments = [...segments].sort(
-      (a, b) => (a.beginMatch?.[0] || 0) - (b.beginMatch?.[0] || 0)
-    );
+
+    // Sort segments by start position and handle overlaps
+    const sortedSegments = [...segments]
+      .sort((a, b) => {
+        const aStart = a.beginMatch?.[0] || 0;
+        const bStart = b.beginMatch?.[0] || 0;
+        if (aStart === bStart) {
+          // If starts are equal, sort by end position (longer segment first)
+          return (b.endMatch?.[0] || 0) - (a.endMatch?.[0] || 0);
+        }
+        return aStart - bStart;
+      })
+      .filter((segment, index, array) => {
+        // Filter out segments that are completely contained within previous segments
+        if (index === 0) return true;
+        const currentStart = segment.beginMatch?.[0] || 0;
+        const currentEnd = segment.endMatch?.[0] || 0;
+
+        // Check if this segment is contained within any previous segment
+        for (let i = 0; i < index; i++) {
+          const prevStart = array[i].beginMatch?.[0] || 0;
+          const prevEnd = array[i].endMatch?.[0] || 0;
+          if (currentStart >= prevStart && currentEnd <= prevEnd) {
+            return false; // Skip this segment as it's contained within another
+          }
+        }
+        return true;
+      });
 
     for (const segment of sortedSegments) {
       const startIndex = segment.beginMatch?.[0] || 0;
       const endIndex = segment.endMatch?.[0] || 0;
 
+      // Add non-segment text before this segment
       if (startIndex > lastIndex) {
         const normalText = text.substring(lastIndex, startIndex);
         if (isMarkdownEnabled) {
@@ -46,7 +71,8 @@ export const TextDisplay = ({
         }
       }
 
-      if (startIndex >= 0 && endIndex > startIndex) {
+      // Only add segment if it starts after our last processed position
+      if (startIndex >= lastIndex && endIndex > startIndex) {
         const segmentText = text.substring(startIndex, endIndex);
         const isActive = segment.id === activeSegmentId;
 
@@ -81,9 +107,9 @@ export const TextDisplay = ({
             </span>
           </div>
         );
-      }
 
-      lastIndex = endIndex;
+        lastIndex = endIndex;
+      }
     }
 
     // Add remaining text
