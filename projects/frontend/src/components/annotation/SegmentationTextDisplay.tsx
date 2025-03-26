@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { SegmentDataPoint } from "@/lib/db/db";
 import ReactMarkdown from "react-markdown";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface TextDisplayProps {
   isMarkdownEnabled: boolean;
@@ -103,18 +104,15 @@ export const TextDisplay = ({
   }, [text, segments, isMarkdownEnabled, activeSegmentId, setActiveSegmentId]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Text Segmentation</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div
-          className="w-full min-h-[200px] outline-none"
-          data-cy="text-display"
-        >
-          {renderedContent}
-        </div>
-      </CardContent>
-    </Card>
+    <ScrollArea className="h-screen w-full">
+      <Card>
+        <CardHeader>
+          <CardTitle>Text Segmentation</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div data-cy="text-display">{renderedContent}</div>
+        </CardContent>
+      </Card>
+    </ScrollArea>
   );
 };

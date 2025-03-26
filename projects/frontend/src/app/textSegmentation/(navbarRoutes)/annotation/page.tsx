@@ -48,6 +48,12 @@ export default function AnnotationPage() {
     [activeAnnotatedText?.textId]
   );
 
+  console.log("Annotated Text:", {
+    activeAnnotatedText,
+    textFromDB: text,
+    textContent: text?.text,
+  });
+
   const handleCreateSegment = async (begin: string, end: string) => {
     if (!activeAnnotatedText) return;
 
@@ -71,11 +77,11 @@ export default function AnnotationPage() {
 
   return (
     <div
-      className="grid grid-cols-7 gap-4 h-full"
+      className="grid grid-cols-7 gap-4 h-full p-4"
       data-cy="annotation-container"
     >
-      <div className="col-span-4" data-cy="text-display">
-        <div className="flex items-center space-x-4 mb-4">
+      <div className="col-span-4 flex flex-col h-full" data-cy="text-display">
+        <div className="flex-none flex items-center space-x-4 mb-4">
           <div className="flex items-center space-x-2">
             <Switch
               id="markdown-mode"
@@ -85,14 +91,16 @@ export default function AnnotationPage() {
             <Label htmlFor="markdown-mode">Markdown Mode</Label>
           </div>
         </div>
-        <TextDisplay
-          isMarkdownEnabled={isMarkdownEnabled}
-          text={text?.text || ""}
-          segments={segments}
-          activeSegmentId={activeSegmentId}
-          setActiveSegmentId={setActiveSegmentId}
-          onCreateSegment={handleCreateSegment}
-        />
+        <div className="flex-1 h-full">
+          <TextDisplay
+            isMarkdownEnabled={isMarkdownEnabled}
+            text={text?.text || ""}
+            segments={segments}
+            activeSegmentId={activeSegmentId}
+            setActiveSegmentId={setActiveSegmentId}
+            onCreateSegment={handleCreateSegment}
+          />
+        </div>
       </div>
 
       <DataPointList
