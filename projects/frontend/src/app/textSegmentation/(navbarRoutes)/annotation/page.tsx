@@ -12,6 +12,7 @@ import {
   createSegmentDataPoint,
   readSegmentDataPointsByAnnotatedText,
   readText,
+  updateSegmentDataPoint,
 } from "@/lib/db/crud";
 import { v4 as uuidv4 } from "uuid";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -48,28 +49,9 @@ export default function AnnotationPage() {
     [activeAnnotatedText?.textId]
   );
 
-  console.log("Annotated Text:", {
-    activeAnnotatedText,
-    textFromDB: text,
-    textContent: text?.text,
-  });
-
-  const handleCreateSegment = async (begin: string, end: string) => {
-    if (!activeAnnotatedText) return;
-
-    const newSegment = {
-      id: uuidv4(),
-      name: `Section ${begin}...${end}`,
-      begin,
-      end,
-      beginMatch: [0], // These will need to be calculated properly
-      endMatch: [0], // These will need to be calculated properly
-      annotatedTextId: activeAnnotatedText.id,
-      verified: false,
-      profilePointId: undefined,
-    };
-
-    await createSegmentDataPoint(newSegment);
+  const handleUpdateSegment = async (segment: SegmentDataPoint) => {
+    console.log("Updating segment:", segment);
+    await updateSegmentDataPoint(segment);
   };
 
   // Since this is in the textSegmentation directory, we set the mode accordingly
@@ -98,7 +80,7 @@ export default function AnnotationPage() {
             segments={segments}
             activeSegmentId={activeSegmentId}
             setActiveSegmentId={setActiveSegmentId}
-            onCreateSegment={handleCreateSegment}
+            onUpdateSegment={handleUpdateSegment}
           />
         </div>
       </div>

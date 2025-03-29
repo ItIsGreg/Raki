@@ -127,8 +127,6 @@ export interface MaxTokens {
 export interface SegmentDataPointCreate {
   annotatedTextId: string;
   name: string;
-  begin: string;
-  end: string;
   beginMatch: number[] | undefined;
   endMatch: number[] | undefined;
   profilePointId: string | undefined;

@@ -13,6 +13,8 @@ import CompactCard from "@/components/CompactCard";
 import { AnnotationDataPointListProps } from "@/app/types";
 import { DataPoint, SegmentDataPoint } from "@/lib/db/db";
 import { TASK_MODE, TaskMode } from "@/app/constants";
+import { Button } from "@/components/ui/button";
+import { BugIcon } from "lucide-react";
 
 type AnyDataPoint = DataPoint | SegmentDataPoint;
 
@@ -138,12 +140,24 @@ const DataPointList = (props: GenericDataPointListProps) => {
       data-cy="datapoint-list-container"
     >
       <Card>
-        <CardHeader className="flex flex-row justify-between">
+        <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle data-cy="datapoint-list-title">
             {mode === TASK_MODE.DATAPOINT_EXTRACTION
               ? "Datapoints"
               : "Segments"}
           </CardTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              console.log("Current Datapoints:", {
+                dataPoints,
+              });
+            }}
+            data-cy="debug-datapoints"
+          >
+            <BugIcon className="h-4 w-4" />
+          </Button>
         </CardHeader>
         <CardContent
           className="flex flex-col gap-1"

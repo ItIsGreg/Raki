@@ -504,6 +504,7 @@ export const readSegmentDataPointsByAnnotatedText = async (
 };
 
 export const updateSegmentDataPoint = async (segmentDataPoint: SegmentDataPoint) => {
+  console.log("Updating segment data point:", segmentDataPoint);
   return db.SegmentDataPoints.put(segmentDataPoint);
 };
 
