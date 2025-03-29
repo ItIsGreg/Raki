@@ -71,7 +71,7 @@ export const TextDisplay = ({
     const endIndex = startIndex + selectedText.length;
     console.log("Selection range:", { startIndex, endIndex });
 
-    // Check if selection is completely within an existing segment
+    // First check if selection is completely within an existing segment
     const containingSegment = segments.find((segment) => {
       const segmentStart = segment.beginMatch?.[0] || 0;
       const segmentEnd = segment.endMatch?.[1] || 0;
@@ -94,6 +94,48 @@ export const TextDisplay = ({
         ...containingSegment,
         beginMatch: [startIndex, endIndex],
         endMatch: [startIndex, endIndex],
+      });
+      return;
+    }
+
+    // If not contained, check if selection overlaps with any segment
+    const overlappingSegment = segments.find((segment) => {
+      const segmentStart = segment.beginMatch?.[0] || 0;
+      const segmentEnd = segment.endMatch?.[1] || 0;
+
+      // Check if selection overlaps with segment
+      const hasOverlap =
+        (startIndex <= segmentEnd && endIndex >= segmentStart) ||
+        (segmentStart <= endIndex && segmentEnd >= startIndex);
+
+      console.log("Checking segment overlap:", {
+        segmentId: segment.id,
+        segmentName: segment.name,
+        segmentStart,
+        segmentEnd,
+        hasOverlap,
+      });
+
+      return hasOverlap;
+    });
+
+    if (
+      overlappingSegment &&
+      onUpdateSegment &&
+      overlappingSegment.beginMatch &&
+      overlappingSegment.endMatch
+    ) {
+      console.log("Selection overlaps with segment, expanding segment");
+      // Expand the segment to include the entire selection
+      const newStartIndex = Math.min(
+        startIndex,
+        overlappingSegment.beginMatch[0]
+      );
+      const newEndIndex = Math.max(endIndex, overlappingSegment.endMatch[1]);
+      onUpdateSegment({
+        ...overlappingSegment,
+        beginMatch: [newStartIndex, newEndIndex],
+        endMatch: [newStartIndex, newEndIndex],
       });
       return;
     }
