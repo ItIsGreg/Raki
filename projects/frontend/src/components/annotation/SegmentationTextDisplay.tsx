@@ -49,44 +49,16 @@ export const TextDisplay = ({
       return;
     }
 
-    console.log("Selected text:", selection.toString());
+    const selectedText = selection.toString().trim();
+    console.log("Selected text:", selectedText);
 
-    // Get selection offsets and sort them numerically
-    const [start, end] = [selection.anchorOffset, selection.focusOffset].sort(
-      (a, b) => a - b
-    );
-
-    console.log("Selection offsets:", { start, end });
-
-    // Find parent node containing the selection for context
-    const targetNode = selection.anchorNode?.parentElement;
-    if (!targetNode) {
-      console.log("Parent node not found");
+    // Find the position of the selected text in the source text
+    const startIndex = text.indexOf(selectedText);
+    if (startIndex === -1) {
+      console.log("Selected text not found in source text");
       return;
     }
-    console.log("Target node:", targetNode);
-
-    // Calculate text position by finding all preceding text
-    let offsetIndex = 0;
-    const walker = document.createTreeWalker(
-      document.querySelector('[data-cy="text-display"]')!,
-      NodeFilter.SHOW_TEXT
-    );
-    console.log("Walker:", walker);
-
-    let currentNode;
-    while ((currentNode = walker.nextNode())) {
-      console.log("Current node:", currentNode);
-      if (currentNode === selection.anchorNode) {
-        console.log("Found anchor node:", currentNode);
-        break;
-      }
-      offsetIndex += currentNode.textContent?.length || 0;
-    }
-    console.log("Offset index:", offsetIndex);
-
-    const startIndex = start;
-    const endIndex = end;
+    const endIndex = startIndex + selectedText.length;
 
     console.log("Calculated indices:", { startIndex, endIndex });
 
@@ -106,21 +78,21 @@ export const TextDisplay = ({
       onUpdateSegment({
         ...overlappingSegment,
         beginMatch: [startIndex],
-        endMatch: [endIndex - 1],
+        endMatch: [endIndex],
       });
     } else {
       console.log("Creating new segment with selection info:", {
         startIndex,
         endIndex,
-        text: selection.toString(),
+        text: selectedText,
       });
       setSelectionInfo({
         startIndex,
         endIndex,
-        text: selection.toString(),
+        text: selectedText,
       });
     }
-  }, [segments, onUpdateSegment]);
+  }, [segments, onUpdateSegment, text]);
 
   const handleSegmentSelect = (segmentId: string) => {
     console.log("Segment selected:", segmentId);
