@@ -58,6 +58,15 @@ export const TextDisplay = ({
     const selectedText = selection.toString().trim();
     console.log("Selected text:", selectedText);
 
+    // Get selection direction
+    const range = selection.getRangeAt(0);
+    const isForwardSelection = range.startOffset <= range.endOffset;
+    console.log("Selection direction:", {
+      isForward: isForwardSelection,
+      startOffset: range.startOffset,
+      endOffset: range.endOffset,
+    });
+
     // Find the position of the selected text in the source text
     const startIndex = text.indexOf(selectedText);
     console.log("Found text at index:", startIndex);
@@ -125,18 +134,54 @@ export const TextDisplay = ({
       overlappingSegment.beginMatch &&
       overlappingSegment.endMatch
     ) {
-      console.log("Selection overlaps with segment, expanding segment");
-      // Expand the segment to include the entire selection
-      const newStartIndex = Math.min(
-        startIndex,
-        overlappingSegment.beginMatch[0]
+      console.log(
+        "Selection overlaps with segment, handling based on direction"
       );
-      const newEndIndex = Math.max(endIndex, overlappingSegment.endMatch[1]);
-      onUpdateSegment({
-        ...overlappingSegment,
-        beginMatch: [newStartIndex, newEndIndex],
-        endMatch: [newStartIndex, newEndIndex],
-      });
+      const segmentStart = overlappingSegment.beginMatch[0];
+      const segmentEnd = overlappingSegment.endMatch[1];
+
+      if (isForwardSelection) {
+        // Forward selection: expand the segment
+        const newStartIndex = Math.min(startIndex, segmentStart);
+        const newEndIndex = Math.max(endIndex, segmentEnd);
+        onUpdateSegment({
+          ...overlappingSegment,
+          beginMatch: [newStartIndex, newEndIndex],
+          endMatch: [newStartIndex, newEndIndex],
+        });
+      } else {
+        // Backward selection: subtract the overlapping part
+        let newStartIndex = segmentStart;
+        let newEndIndex = segmentEnd;
+
+        if (startIndex < segmentStart) {
+          // Selection starts before segment
+          newStartIndex = endIndex + 1;
+        } else if (endIndex > segmentEnd) {
+          // Selection ends after segment
+          newEndIndex = startIndex - 1;
+        } else {
+          // Selection is within segment
+          if (startIndex - segmentStart < segmentEnd - endIndex) {
+            // Selection is closer to start
+            newEndIndex = startIndex - 1;
+          } else {
+            // Selection is closer to end
+            newStartIndex = endIndex + 1;
+          }
+        }
+
+        // Only update if the resulting segment is valid
+        if (newStartIndex < newEndIndex) {
+          onUpdateSegment({
+            ...overlappingSegment,
+            beginMatch: [newStartIndex, newEndIndex],
+            endMatch: [newStartIndex, newEndIndex],
+          });
+        } else {
+          console.log("Resulting segment would be invalid, skipping update");
+        }
+      }
       return;
     }
 
