@@ -6,15 +6,7 @@ import { TextDisplay } from "@/components/annotation/SegmentationTextDisplay";
 import DatasetList from "@/components/annotation/DatasetList";
 import AnnotatedTextList from "@/components/annotation/AnnotatedTextList";
 import { TASK_MODE } from "@/app/constants";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import {
-  createSegmentDataPoint,
-  readSegmentDataPointsByAnnotatedText,
-  readText,
-  updateSegmentDataPoint,
-} from "@/lib/db/crud";
-import { v4 as uuidv4 } from "uuid";
+import { readText, updateSegmentDataPoint } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   SegmentDataPoint,
@@ -31,14 +23,6 @@ export default function AnnotationPage() {
     AnnotatedText | undefined
   >();
   const [activeSegmentId, setActiveSegmentId] = useState<string>();
-  const [isMarkdownEnabled, setIsMarkdownEnabled] = useState(false);
-
-  // Get segments from database
-  const segments =
-    useLiveQuery<SegmentDataPoint[]>(
-      () => readSegmentDataPointsByAnnotatedText(activeAnnotatedText?.id),
-      [activeAnnotatedText]
-    ) || [];
 
   // Get text content from database
   const text = useLiveQuery<Text | undefined>(
@@ -63,21 +47,10 @@ export default function AnnotationPage() {
       data-cy="annotation-container"
     >
       <div className="col-span-4 flex flex-col h-full" data-cy="text-display">
-        <div className="flex-none flex items-center space-x-4 mb-4">
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="markdown-mode"
-              checked={isMarkdownEnabled}
-              onCheckedChange={setIsMarkdownEnabled}
-            />
-            <Label htmlFor="markdown-mode">Markdown Mode</Label>
-          </div>
-        </div>
         <div className="flex-1 h-full">
           <TextDisplay
-            isMarkdownEnabled={isMarkdownEnabled}
             text={text?.text || ""}
-            segments={segments}
+            activeAnnotatedText={activeAnnotatedText}
             activeSegmentId={activeSegmentId}
             setActiveSegmentId={setActiveSegmentId}
             onUpdateSegment={handleUpdateSegment}

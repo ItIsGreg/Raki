@@ -1,9 +1,8 @@
 import { useMemo, useCallback, useState } from "react";
-import { SegmentDataPoint } from "@/lib/db/db";
-import ReactMarkdown from "react-markdown";
+import { SegmentDataPoint, AnnotatedText } from "@/lib/db/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { v4 as uuidv4 } from "uuid";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -17,20 +16,20 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { useLiveQuery } from "dexie-react-hooks";
+import { readSegmentDataPointsByAnnotatedText } from "@/lib/db/crud";
 
 interface TextDisplayProps {
-  isMarkdownEnabled: boolean;
   text: string;
-  segments: SegmentDataPoint[];
+  activeAnnotatedText?: AnnotatedText;
   activeSegmentId?: string;
   setActiveSegmentId: (id: string | undefined) => void;
   onUpdateSegment?: (segment: SegmentDataPoint) => void;
 }
 
 export const TextDisplay = ({
-  isMarkdownEnabled,
   text,
-  segments,
+  activeAnnotatedText,
   activeSegmentId,
   setActiveSegmentId,
   onUpdateSegment,
@@ -40,6 +39,13 @@ export const TextDisplay = ({
     endIndex: number;
     text: string;
   } | null>(null);
+
+  // Get segments from database
+  const segments =
+    useLiveQuery<SegmentDataPoint[]>(
+      () => readSegmentDataPointsByAnnotatedText(activeAnnotatedText?.id),
+      [activeAnnotatedText]
+    ) || [];
 
   const handleTextSelection = useCallback(() => {
     console.log("Text selection event triggered");
@@ -54,55 +60,55 @@ export const TextDisplay = ({
 
     // Find the position of the selected text in the source text
     const startIndex = text.indexOf(selectedText);
+    console.log("Found text at index:", startIndex);
+
     if (startIndex === -1) {
       console.log("Selected text not found in source text");
+      console.log("Source text length:", text.length);
+      console.log("Selected text length:", selectedText.length);
       return;
     }
     const endIndex = startIndex + selectedText.length;
+    console.log("Selection range:", { startIndex, endIndex });
 
-    console.log("Calculated indices:", { startIndex, endIndex });
-
-    // Check if selection overlaps with any existing segment
-    const overlappingSegment = segments.find((segment) => {
+    // Check if selection is completely within an existing segment
+    const containingSegment = segments.find((segment) => {
       const segmentStart = segment.beginMatch?.[0] || 0;
-      const segmentEnd = (segment.endMatch?.[1] || 0) + 1;
-      const overlaps =
-        (startIndex >= segmentStart && startIndex < segmentEnd) ||
-        (endIndex > segmentStart && endIndex <= segmentEnd) ||
-        (startIndex <= segmentStart && endIndex >= segmentEnd);
-      return overlaps;
+      const segmentEnd = segment.endMatch?.[1] || 0;
+      const isContained = startIndex >= segmentStart && endIndex <= segmentEnd;
+
+      console.log("Checking if selection is contained in segment:", {
+        segmentId: segment.id,
+        segmentName: segment.name,
+        segmentStart,
+        segmentEnd,
+        isContained,
+      });
+
+      return isContained;
     });
 
-    if (overlappingSegment && onUpdateSegment) {
-      console.log("Updating existing segment:", overlappingSegment.id);
+    if (containingSegment && onUpdateSegment) {
+      console.log("Selection is within existing segment, updating segment");
       onUpdateSegment({
-        ...overlappingSegment,
-        beginMatch: [startIndex],
-        endMatch: [endIndex],
+        ...containingSegment,
+        beginMatch: [startIndex, endIndex],
+        endMatch: [startIndex, endIndex],
       });
-    } else {
-      console.log("Creating new segment with selection info:", {
-        startIndex,
-        endIndex,
-        text: selectedText,
-      });
-      setSelectionInfo({
-        startIndex,
-        endIndex,
-        text: selectedText,
-      });
+      return;
     }
-  }, [segments, onUpdateSegment, text]);
+
+    setSelectionInfo({
+      startIndex,
+      endIndex,
+      text: selectedText,
+    });
+  }, [text, segments, onUpdateSegment]);
 
   const handleSegmentSelect = (segmentId: string) => {
-    console.log("Segment selected:", segmentId);
     if (selectionInfo && onUpdateSegment) {
       const selectedSegment = segments.find((s) => s.id === segmentId);
       if (selectedSegment) {
-        console.log("Updating segment with new selection:", {
-          segmentId,
-          selectionInfo,
-        });
         onUpdateSegment({
           ...selectedSegment,
           beginMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
@@ -142,57 +148,30 @@ export const TextDisplay = ({
           return b.endMatch[1] - a.endMatch[1];
         }
         return aStart - bStart;
-      })
-      .filter((segment, index, array) => {
-        // Filter out segments that are completely contained within previous segments
-        if (index === 0) return true;
-        const currentStart = segment.beginMatch?.[0] || 0;
-        const currentEnd = (segment.endMatch?.[1] || 0) + 1; // Add 1 for inclusive end
-
-        // Check if this segment is contained within any previous segment
-        for (let i = 0; i < index; i++) {
-          const prevStart = array[i].beginMatch?.[0] || 0;
-          const prevEnd = (array[i].endMatch?.[1] || 0) + 1; // Add 1 for inclusive end
-          if (currentStart >= prevStart && currentEnd <= prevEnd) {
-            return false; // Skip this segment as it's contained within another
-          }
-        }
-        return true;
       });
 
     for (const segment of sortedSegments) {
-      const startIndex = segment.beginMatch?.[0] || 0;
-      const endIndex = (segment.endMatch?.[1] || 0) + 1; // Add 1 to include end character
+      const startIndex = segment.beginMatch[0];
+      const endIndex = segment.endMatch[1];
 
       // Add non-segment text before this segment
       if (startIndex > lastIndex) {
         const normalText = text.substring(lastIndex, startIndex);
-        if (isMarkdownEnabled) {
-          textParts.push(
-            <div
-              className="markdown-content"
-              key={`text-${lastIndex}-${partCounter++}`}
-            >
-              <ReactMarkdown>{normalText}</ReactMarkdown>
-            </div>
-          );
-        } else {
-          textParts.push(
-            <span key={`text-${lastIndex}-${partCounter++}`}>{normalText}</span>
-          );
-        }
+        textParts.push(
+          <span key={`text-${lastIndex}-${partCounter++}`}>{normalText}</span>
+        );
       }
 
       // Only add segment if it starts after our last processed position
       if (startIndex >= lastIndex && endIndex > startIndex) {
-        const segmentText = text.substring(startIndex, endIndex); // Now includes end character
+        const segmentText = text.substring(startIndex, endIndex + 1);
         const isActive = segment.id === activeSegmentId;
 
         textParts.push(
-          <div
+          <span
             key={segment.id}
             className={`
-              border-l-4 pl-3 pr-2 py-1 my-1 block relative group cursor-pointer
+              border-l-4 pl-3 pr-2 py-1 my-1 relative group cursor-pointer
               ${
                 isActive
                   ? "bg-blue-100 border-blue-400"
@@ -209,50 +188,97 @@ export const TextDisplay = ({
             tabIndex={0}
             aria-label={`Section: ${segment.name}`}
           >
-            {isMarkdownEnabled ? (
-              <ReactMarkdown>{segmentText}</ReactMarkdown>
-            ) : (
-              segmentText
-            )}
-            <span className="absolute top-0 left-0 bg-yellow-400 text-xs px-2 py-0.5 rounded-br font-medium text-yellow-800 opacity-90">
-              {segment.name}
-            </span>
-          </div>
+            {segmentText}
+          </span>
         );
 
-        lastIndex = endIndex;
+        lastIndex = endIndex + 1;
       }
     }
 
     // Add remaining text
     if (lastIndex < text.length) {
       const remainingText = text.substring(lastIndex);
-      if (isMarkdownEnabled) {
-        textParts.push(
-          <div
-            className="markdown-content"
-            key={`text-${lastIndex}-${partCounter++}`}
-          >
-            <ReactMarkdown>{remainingText}</ReactMarkdown>
-          </div>
-        );
-      } else {
-        textParts.push(
-          <span key={`text-${lastIndex}-${partCounter++}`}>
-            {remainingText}
-          </span>
-        );
-      }
+      textParts.push(
+        <span key={`text-${lastIndex}-${partCounter++}`}>{remainingText}</span>
+      );
     }
 
     return <div className="whitespace-pre-wrap break-words">{textParts}</div>;
-  }, [text, segments, isMarkdownEnabled, activeSegmentId, setActiveSegmentId]);
+  }, [text, segments, activeSegmentId, setActiveSegmentId]);
+
+  const logTextParts = useCallback(() => {
+    console.log("=== Text Parts Debug ===");
+    console.log("Full text length:", text.length);
+
+    let lastIndex = 0;
+    const sortedSegments = [...segments]
+      .filter(
+        (
+          segment
+        ): segment is SegmentDataPoint & {
+          beginMatch: number[];
+          endMatch: number[];
+        } => {
+          return !!(segment.beginMatch && segment.endMatch);
+        }
+      )
+      .sort((a, b) => {
+        const aStart = a.beginMatch[0];
+        const bStart = b.beginMatch[0];
+        if (aStart === bStart) {
+          return b.endMatch[1] - a.endMatch[1];
+        }
+        return aStart - bStart;
+      });
+
+    for (const segment of sortedSegments) {
+      const startIndex = segment.beginMatch[0];
+      const endIndex = segment.endMatch[1];
+
+      // Log non-segment text before this segment
+      if (startIndex > lastIndex) {
+        const normalText = text.substring(lastIndex, startIndex);
+        console.log("Normal text:", {
+          start: lastIndex,
+          end: startIndex,
+          text: normalText,
+        });
+      }
+
+      // Log segment text
+      if (startIndex >= lastIndex && endIndex > startIndex) {
+        const segmentText = text.substring(startIndex, endIndex + 1);
+        console.log("Segment:", {
+          id: segment.id,
+          name: segment.name,
+          start: startIndex,
+          end: endIndex + 1,
+          text: segmentText,
+        });
+        lastIndex = endIndex + 1;
+      }
+    }
+
+    // Log remaining text
+    if (lastIndex < text.length) {
+      const remainingText = text.substring(lastIndex);
+      console.log("Remaining text:", {
+        start: lastIndex,
+        end: text.length,
+        text: remainingText,
+      });
+    }
+  }, [text, segments]);
 
   return (
     <ScrollArea className="h-screen w-full">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Text Segmentation</CardTitle>
+          <Button variant="outline" size="sm" onClick={logTextParts}>
+            Debug Text Parts
+          </Button>
         </CardHeader>
         <CardContent>
           <div
