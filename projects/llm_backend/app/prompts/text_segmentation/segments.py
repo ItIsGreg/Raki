@@ -45,6 +45,8 @@ class Text_Segmentation_Template_List:
     
     Do not add any additional information to the output, like explanations or comments.
     Do not use trailing commas in the JSON output.
+    Use exactly the names for the segments that were defined in the profile points.
+    Do not identify segments that were not asked for in the profile points.
     
     %EXAMPLE_TEXT:
     Patient was admitted on January 15, 2023 with complaints of chest pain and shortness of breath.
