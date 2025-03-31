@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import { SegmentDataPoint, AnnotatedText } from "@/lib/db/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -47,6 +47,22 @@ export const TextDisplay = ({
       [activeAnnotatedText]
     ) || [];
 
+  useEffect(() => {
+    if (activeSegmentId) {
+      // Find the element with the active segment ID
+      const activeElement = document.querySelector(
+        `[data-segment-id="${activeSegmentId}"]`
+      );
+      if (activeElement) {
+        // Scroll the element into view with smooth behavior
+        activeElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }
+  }, [activeSegmentId]);
+
   const handleTextSelection = useCallback(() => {
     console.log("Text selection event triggered");
     const selection = window.getSelection();
@@ -56,20 +72,13 @@ export const TextDisplay = ({
     }
 
     const selectedText = selection.toString().trim();
-    console.log("Selected text:", selectedText);
 
     // Get selection direction
     const range = selection.getRangeAt(0);
     const isForwardSelection = range.startOffset <= range.endOffset;
-    console.log("Selection direction:", {
-      isForward: isForwardSelection,
-      startOffset: range.startOffset,
-      endOffset: range.endOffset,
-    });
 
     // Find the position of the selected text in the source text
     const startIndex = text.indexOf(selectedText);
-    console.log("Found text at index:", startIndex);
 
     if (startIndex === -1) {
       console.log("Selected text not found in source text");
@@ -78,7 +87,6 @@ export const TextDisplay = ({
       return;
     }
     const endIndex = startIndex + selectedText.length;
-    console.log("Selection range:", { startIndex, endIndex });
 
     // First check if selection is completely within an existing segment
     const containingSegment = segments.find((segment) => {
@@ -86,19 +94,10 @@ export const TextDisplay = ({
       const segmentEnd = segment.endMatch?.[1] || 0;
       const isContained = startIndex >= segmentStart && endIndex <= segmentEnd;
 
-      console.log("Checking if selection is contained in segment:", {
-        segmentId: segment.id,
-        segmentName: segment.name,
-        segmentStart,
-        segmentEnd,
-        isContained,
-      });
-
       return isContained;
     });
 
     if (containingSegment && onUpdateSegment) {
-      console.log("Selection is within existing segment, updating segment");
       onUpdateSegment({
         ...containingSegment,
         beginMatch: [startIndex, endIndex],
@@ -117,14 +116,6 @@ export const TextDisplay = ({
         (startIndex <= segmentEnd && endIndex >= segmentStart) ||
         (segmentStart <= endIndex && segmentEnd >= startIndex);
 
-      console.log("Checking segment overlap:", {
-        segmentId: segment.id,
-        segmentName: segment.name,
-        segmentStart,
-        segmentEnd,
-        hasOverlap,
-      });
-
       return hasOverlap;
     });
 
@@ -134,9 +125,6 @@ export const TextDisplay = ({
       overlappingSegment.beginMatch &&
       overlappingSegment.endMatch
     ) {
-      console.log(
-        "Selection overlaps with segment, handling based on direction"
-      );
       const segmentStart = overlappingSegment.beginMatch[0];
       const segmentEnd = overlappingSegment.endMatch[1];
 
@@ -394,8 +382,19 @@ export const TextDisplay = ({
             </TooltipTrigger>
             <TooltipContent side="right" className="w-80">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Select Segment</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setSelectionInfo(null);
+                      window.getSelection()?.removeAllRanges();
+                    }}
+                    className="h-6 w-6"
+                  >
+                    ✕
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <Select onValueChange={handleSegmentSelect}>
