@@ -1,45 +1,89 @@
 import re
 import logging
 from fuzzywuzzy import process, fuzz
+from rich import print as rprint
+from rich.console import Console
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+console = Console()
 
 # There is some newline weirdness going on in the transcribed discharge summarie.
 # Need some regex magic to cope with it.
 def create_pattern(substring: str):
     # Escape special regex characters in the substring
     escaped_substring = substring.encode("unicode_escape").decode()
-    # escape parenthesis
-    # escaped_substring = escaped_substring.replace("(", r"\(")
-    # escaped_substring = escaped_substring.replace(")", r"\)")
-    # escaped_substring = escaped_substring.replace("$", r"\$")
-    # escape pipes
-    escaped_substring = escaped_substring.replace("|", r"\|")
-
-    # # Replace escaped newline characters with a pattern that allows optional whitespace
-    # pattern = escaped_substring.replace(r"\n", r"\s*?\n")
+    
+    # Escape common regex special characters
+    escaped_substring = escaped_substring.replace("*", r"\*")  # Fix markdown asterisks
+    escaped_substring = escaped_substring.replace("(", r"\(")  # Fix parentheses
+    escaped_substring = escaped_substring.replace(")", r"\)")
+    escaped_substring = escaped_substring.replace("[", r"\[")  # Fix square brackets
+    escaped_substring = escaped_substring.replace("]", r"\]")
+    escaped_substring = escaped_substring.replace(".", r"\.")  # Fix dots
+    escaped_substring = escaped_substring.replace("+", r"\+")  # Fix plus signs
+    escaped_substring = escaped_substring.replace("?", r"\?")  # Fix question marks
+    escaped_substring = escaped_substring.replace("|", r"\|")  # Fix pipes
+    escaped_substring = escaped_substring.replace("$", r"\$")  # Fix dollar signs
+    escaped_substring = escaped_substring.replace("^", r"\^")  # Fix carets
+    
     pattern = escaped_substring
-
     return pattern
 
 
-def fuzzy_matching(substring, main_string):
-    # Split the main string into words
-    words = main_string.split()
+def normalize_text(text: str) -> str:
+    # Normalize whitespace and newlines
+    text = ' '.join(text.split())
+    # Normalize unicode characters (like µ)
+    text = text.replace('µ', 'u')
+    return text
 
-    # Create a list of all possible substrings of the same length as the input substring
-    possible_matches = [
-        " ".join(words[i : i + len(substring.split())])
-        for i in range(len(words) - len(substring.split()) + 1)
-    ]
+
+def fuzzy_matching(substring, main_string):
+    # Normalize both strings for comparison
+    normalized_substring = normalize_text(substring)
+    normalized_main_string = normalize_text(main_string)
+    
+    # Split the main string into words
+    words = normalized_main_string.split()
+
+    # Create a list of all possible substrings with their positions
+    possible_matches = []
+    current_pos = 0
+    
+    for i in range(len(words) - len(normalized_substring.split()) + 1):
+        match_text = " ".join(words[i : i + len(normalized_substring.split())])
+        # Find position in original string
+        while current_pos < len(main_string):
+            # Look for the first word of our match
+            start_pos = main_string.find(words[i], current_pos)
+            if start_pos == -1:
+                break
+                
+            # Check if this position contains our full match
+            normalized_slice = normalize_text(main_string[start_pos:start_pos + len(match_text) + 10])
+            if normalized_slice.startswith(match_text):
+                possible_matches.append((match_text, start_pos))
+                current_pos = start_pos + 1
+                break
+            current_pos = start_pos + 1
 
     # Find the best match using fuzzywuzzy
-    best_match, score = process.extractOne(
-        substring, possible_matches, scorer=fuzz.ratio
-    )
-
-    return best_match, score
+    if possible_matches:
+        best_match, score = process.extractOne(
+            normalized_substring, 
+            [m[0] for m in possible_matches], 
+            scorer=fuzz.ratio
+        )
+        
+        # Get the position of our best match
+        match_index = [m[0] for m in possible_matches].index(best_match)
+        start_pos = possible_matches[match_index][1]
+        
+        return best_match, score, start_pos
+    
+    return None, 0, -1
 
 
 def get_matches(text: str, substring: str):
@@ -52,23 +96,38 @@ def get_matches(text: str, substring: str):
         re_matches = list(re.finditer(pattern, text, re.IGNORECASE))
         matches = [[match.start(), match.end()] for match in re_matches]
 
-        # add fuzzy matching if no matches are found
         if len(matches) == 0:
-            best_match, score = fuzzy_matching(substring, text)
+            rprint("[yellow]No exact matches found, trying fuzzy matching...[/yellow]")
+            # add fuzzy matching if no matches are found
+            best_match, score, start_pos = fuzzy_matching(substring, text)
             if score > 80:
-                start_index = text.find(best_match)
-                if start_index != -1:
-                    matches.append([start_index, start_index + len(best_match)])
+                if start_pos != -1:
+                    matches.append([start_pos, start_pos + len(best_match)])
+                else:
+                    rprint(f"[red]❌ Fuzzy match not found in text[/red]")
+                    rprint(f"  Text: [cyan]'{best_match}'[/cyan]")
+                    rprint(f"  Substring: [cyan]'{substring}'[/cyan]")
+                    rprint(f"  Score: [cyan]{score}[/cyan]")
+                    
+                    
+            else:
+                rprint(f"[red]❌ Fuzzy match score too low: {score}[/red]")
 
         return matches
     except re.error as e:
-        logger.warning(f"Regex error for pattern '{substring}': {str(e)}")
+        rprint(f"[red]⚠️ Regex error for pattern '{substring}':[/red] {str(e)}")
+        rprint("[yellow]Falling back to fuzzy matching...[/yellow]")
         # Fallback to fuzzy matching on regex error
-        best_match, score = fuzzy_matching(substring, text)
+        best_match, score, start_pos = fuzzy_matching(substring, text)
         if score > 80:
-            start_index = text.find(best_match)
-            if start_index != -1:
-                return [[start_index, start_index + len(best_match)]]
+            if start_pos != -1:
+                return [[start_pos, start_pos + len(best_match)]]
+        else:
+            rprint(f"[red]❌ No matches found after regex error[/red]")
+            rprint(f"  Text: [cyan]'{best_match}'[/cyan]")
+            rprint(f"  Substring: [cyan]'{substring}'[/cyan]")
+            rprint(f"  Score: [cyan]{score}[/cyan]")
+
         return []
 
 

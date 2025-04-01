@@ -1,5 +1,7 @@
 from typing import Callable, List
-import logging
+from rich import print as rprint
+from rich.console import Console
+from rich.panel import Panel
 
 from app.llm_calls import call_llm
 from app.prompts.text_segmentation.segments import Text_Segmentation_Prompt_List
@@ -13,6 +15,8 @@ from app.models.text_segmentation_models import (
 
 # Initialize prompt list
 prompt_list = Text_Segmentation_Prompt_List()
+
+console = Console()
 
 async def text_segmentation_service(
     req: TextSegmentationReq,
@@ -30,6 +34,7 @@ async def text_segmentation_service(
     Returns:
         List of TextSegmentationResult objects containing segment matches
     """
+
     # Select the appropriate prompt based on language
     lang_prompts = {
         "de": prompt_list.text_segmentation_prompt_german,
@@ -63,6 +68,7 @@ async def text_segmentation_service(
                 continue
                 
             # Find matches for begin and end substrings
+            
             begin_matches = get_matches(req.text, boundaries["begin"])
             end_matches = get_matches(req.text, boundaries["end"])
             
@@ -75,6 +81,7 @@ async def text_segmentation_service(
             
             segments_with_matches.append(segment_result)
         except Exception as e:
+            rprint(f"[red]❌ Error processing segment {segment_name}:[/red] {str(e)}")
             continue
     
     return segments_with_matches
