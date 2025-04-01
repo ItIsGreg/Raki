@@ -56,7 +56,7 @@ const CompactCard = ({
 
   if (tooltipContent) {
     return (
-      <TooltipProvider delayDuration={100}>
+      <TooltipProvider delayDuration={500}>
         <Tooltip>
           <TooltipTrigger asChild className="block">
             {card}
