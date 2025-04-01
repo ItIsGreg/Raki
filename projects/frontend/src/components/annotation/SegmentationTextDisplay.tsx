@@ -48,6 +48,9 @@ export const TextDisplay = ({
     existingSegmentId?: string;
   } | null>(null);
 
+  // Add state to track if Select should be open
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
+
   // Get segments from database
   const segments =
     useLiveQuery<SegmentDataPoint[]>(
@@ -82,106 +85,142 @@ export const TextDisplay = ({
     }
   }, [activeSegmentId]);
 
+  // Add useEffect for managing dropdown open state
+  useEffect(() => {
+    // Reset isSelectOpen when selectionInfo changes to null
+    if (selectionInfo === null) {
+      setIsSelectOpen(false);
+      return;
+    }
+
+    // Auto-open select dropdown for new segments (not for existing segments)
+    if (selectionInfo && !selectionInfo.existingSegmentId) {
+      // Short delay to ensure the select component is rendered
+      const timer = setTimeout(() => {
+        // Trigger a click on the select trigger to open it
+        const selectTrigger = document.querySelector(
+          "[data-cy='segment-select-trigger']"
+        );
+        if (selectTrigger && selectTrigger instanceof HTMLElement) {
+          selectTrigger.click();
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [selectionInfo]);
+
   const handleTextSelection = useCallback(() => {
     const selection = window.getSelection();
     if (!selection || selection.toString().trim().length === 0) {
       return;
     }
 
-    const selectedText = selection.toString().trim();
-    // Get selection direction using improved method
-    const isBackwardsSelection = isSelectionBackwards(selection);
+    // Clear any existing selection info and reset state first
+    setSelectionInfo(null);
+    setIsSelectOpen(false);
 
-    // Find the position of the selected text in the source text
-    const startIndex = text.indexOf(selectedText);
-    const endIndex = startIndex + selectedText.length;
+    // Short delay to ensure state is cleared before setting new values
+    setTimeout(() => {
+      const selectedText = selection.toString().trim();
+      // Get selection direction using improved method
+      const isBackwardsSelection = isSelectionBackwards(selection);
 
-    // First check if selection is completely within an existing segment
-    const containingSegment = segments.find((segment) => {
-      const segmentStart = segment.beginMatch?.[0] || 0;
-      const segmentEnd = segment.endMatch?.[1] || 0;
-      const isContained = startIndex >= segmentStart && endIndex <= segmentEnd;
+      // Find the position of the selected text in the source text
+      const startIndex = text.indexOf(selectedText);
+      const endIndex = startIndex + selectedText.length;
 
-      return isContained;
-    });
+      // First check if selection is completely within an existing segment
+      const containingSegment = segments.find((segment) => {
+        const segmentStart = segment.beginMatch?.[0] || 0;
+        const segmentEnd = segment.endMatch?.[1] || 0;
+        const isContained =
+          startIndex >= segmentStart && endIndex <= segmentEnd;
 
-    if (containingSegment && onUpdateSegment) {
-      onUpdateSegment({
-        ...containingSegment,
-        beginMatch: [startIndex, endIndex],
-        endMatch: [startIndex, endIndex],
+        return isContained;
       });
-      return;
-    }
 
-    // If not contained, check if selection overlaps with any segment
-    const overlappingSegment = segments.find((segment) => {
-      const segmentStart = segment.beginMatch?.[0] || 0;
-      const segmentEnd = segment.endMatch?.[1] || 0;
-
-      // Check if selection overlaps with segment
-      const hasOverlap =
-        (startIndex <= segmentEnd && endIndex >= segmentStart) ||
-        (segmentStart <= endIndex && segmentEnd >= startIndex);
-
-      return hasOverlap;
-    });
-
-    if (
-      overlappingSegment &&
-      onUpdateSegment &&
-      overlappingSegment.beginMatch &&
-      overlappingSegment.endMatch
-    ) {
-      const segmentStart = overlappingSegment.beginMatch[0];
-      const segmentEnd = overlappingSegment.endMatch[1];
-
-      if (!isBackwardsSelection) {
-        // Forward selection: expand the segment
-        const newStartIndex = Math.min(startIndex, segmentStart);
-        const newEndIndex = Math.max(endIndex, segmentEnd);
+      if (containingSegment && onUpdateSegment) {
         onUpdateSegment({
-          ...overlappingSegment,
-          beginMatch: [newStartIndex, newEndIndex],
-          endMatch: [newStartIndex, newEndIndex],
+          ...containingSegment,
+          beginMatch: [startIndex, endIndex],
+          endMatch: [startIndex, endIndex],
         });
-      } else {
-        // Backward selection: subtract the overlapping part
-        let newStartIndex = segmentStart;
-        let newEndIndex = segmentEnd;
+        return;
+      }
 
-        if (startIndex < segmentStart) {
-          newStartIndex = endIndex + 1;
-        } else if (endIndex > segmentEnd) {
-          newEndIndex = startIndex - 1;
-        } else {
-          const distanceToStart = startIndex - segmentStart;
-          const distanceToEnd = segmentEnd - endIndex;
+      // If not contained, check if selection overlaps with any segment
+      const overlappingSegment = segments.find((segment) => {
+        const segmentStart = segment.beginMatch?.[0] || 0;
+        const segmentEnd = segment.endMatch?.[1] || 0;
 
-          if (distanceToStart < distanceToEnd) {
-            newEndIndex = startIndex - 1;
-          } else {
-            newStartIndex = endIndex + 1;
-          }
-        }
+        // Check if selection overlaps with segment
+        const hasOverlap =
+          (startIndex <= segmentEnd && endIndex >= segmentStart) ||
+          (segmentStart <= endIndex && segmentEnd >= startIndex);
 
-        // Only update if the resulting segment is valid
-        if (newStartIndex < newEndIndex) {
+        return hasOverlap;
+      });
+
+      if (
+        overlappingSegment &&
+        onUpdateSegment &&
+        overlappingSegment.beginMatch &&
+        overlappingSegment.endMatch
+      ) {
+        const segmentStart = overlappingSegment.beginMatch[0];
+        const segmentEnd = overlappingSegment.endMatch[1];
+
+        if (!isBackwardsSelection) {
+          // Forward selection: expand the segment
+          const newStartIndex = Math.min(startIndex, segmentStart);
+          const newEndIndex = Math.max(endIndex, segmentEnd);
           onUpdateSegment({
             ...overlappingSegment,
             beginMatch: [newStartIndex, newEndIndex],
             endMatch: [newStartIndex, newEndIndex],
           });
-        }
-      }
-      return;
-    }
+        } else {
+          // Backward selection: subtract the overlapping part
+          let newStartIndex = segmentStart;
+          let newEndIndex = segmentEnd;
 
-    setSelectionInfo({
-      startIndex,
-      endIndex,
-      text: selectedText,
-    });
+          if (startIndex < segmentStart) {
+            newStartIndex = endIndex + 1;
+          } else if (endIndex > segmentEnd) {
+            newEndIndex = startIndex - 1;
+          } else {
+            const distanceToStart = startIndex - segmentStart;
+            const distanceToEnd = segmentEnd - endIndex;
+
+            if (distanceToStart < distanceToEnd) {
+              newEndIndex = startIndex - 1;
+            } else {
+              newStartIndex = endIndex + 1;
+            }
+          }
+
+          // Only update if the resulting segment is valid
+          if (newStartIndex < newEndIndex) {
+            onUpdateSegment({
+              ...overlappingSegment,
+              beginMatch: [newStartIndex, newEndIndex],
+              endMatch: [newStartIndex, newEndIndex],
+            });
+          }
+        }
+        return;
+      }
+
+      // Set selection info at the end
+      setSelectionInfo({
+        startIndex,
+        endIndex,
+        text: selectedText,
+      });
+
+      // Auto-open select dropdown for new segments
+      setIsSelectOpen(true);
+    }, 10);
   }, [text, segments, onUpdateSegment]);
 
   const handleContextMenu = useCallback(
@@ -239,6 +278,7 @@ export const TextDisplay = ({
         });
       }
 
+      setIsSelectOpen(false);
       setSelectionInfo(null);
     }
   };
@@ -255,6 +295,7 @@ export const TextDisplay = ({
           endMatch: undefined,
         });
       }
+      setIsSelectOpen(false);
       setSelectionInfo(null);
     }
   };
@@ -328,13 +369,23 @@ export const TextDisplay = ({
               e.stopPropagation();
               // Clear any existing selection
               window.getSelection()?.removeAllRanges();
-              setSelectionInfo({
-                startIndex,
-                endIndex,
-                text: segmentText,
-                position: { x: e.clientX, y: e.clientY },
-                existingSegmentId: segment.id,
-              });
+
+              // Reset state first
+              setSelectionInfo(null);
+              setIsSelectOpen(false);
+
+              // Add slight delay before setting new state
+              setTimeout(() => {
+                setSelectionInfo({
+                  startIndex,
+                  endIndex,
+                  text: segmentText,
+                  position: { x: e.clientX, y: e.clientY },
+                  existingSegmentId: segment.id,
+                });
+                // Don't auto-open select for existing segments
+                setIsSelectOpen(false);
+              }, 10);
             }}
             title={segment.name}
             data-segment-id={segment.id}
@@ -461,6 +512,7 @@ export const TextDisplay = ({
                     variant="ghost"
                     size="icon"
                     onClick={() => {
+                      setIsSelectOpen(false);
                       setSelectionInfo(null);
                       window.getSelection()?.removeAllRanges();
                     }}
@@ -472,8 +524,11 @@ export const TextDisplay = ({
                 <CardContent>
                   {activeProfilePoints && activeProfilePoints.length > 0 ? (
                     <>
-                      <Select onValueChange={handleSegmentSelect}>
-                        <SelectTrigger>
+                      <Select
+                        onValueChange={handleSegmentSelect}
+                        onOpenChange={setIsSelectOpen}
+                      >
+                        <SelectTrigger data-cy="segment-select-trigger">
                           <span>Choose a segment...</span>
                         </SelectTrigger>
                         <SelectContent>
