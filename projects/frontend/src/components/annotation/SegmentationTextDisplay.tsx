@@ -64,28 +64,17 @@ export const TextDisplay = ({
   }, [activeSegmentId]);
 
   const handleTextSelection = useCallback(() => {
-    console.log("Text selection event triggered");
     const selection = window.getSelection();
     if (!selection || selection.toString().trim().length === 0) {
-      console.log("No valid selection found");
       return;
     }
 
     const selectedText = selection.toString().trim();
-
-    // Get selection direction
-    const range = selection.getRangeAt(0);
-    const isForwardSelection = range.startOffset <= range.endOffset;
+    // Get selection direction using improved method
+    const isBackwardsSelection = isSelectionBackwards(selection);
 
     // Find the position of the selected text in the source text
     const startIndex = text.indexOf(selectedText);
-
-    if (startIndex === -1) {
-      console.log("Selected text not found in source text");
-      console.log("Source text length:", text.length);
-      console.log("Selected text length:", selectedText.length);
-      return;
-    }
     const endIndex = startIndex + selectedText.length;
 
     // First check if selection is completely within an existing segment
@@ -128,7 +117,7 @@ export const TextDisplay = ({
       const segmentStart = overlappingSegment.beginMatch[0];
       const segmentEnd = overlappingSegment.endMatch[1];
 
-      if (isForwardSelection) {
+      if (!isBackwardsSelection) {
         // Forward selection: expand the segment
         const newStartIndex = Math.min(startIndex, segmentStart);
         const newEndIndex = Math.max(endIndex, segmentEnd);
@@ -143,18 +132,16 @@ export const TextDisplay = ({
         let newEndIndex = segmentEnd;
 
         if (startIndex < segmentStart) {
-          // Selection starts before segment
           newStartIndex = endIndex + 1;
         } else if (endIndex > segmentEnd) {
-          // Selection ends after segment
           newEndIndex = startIndex - 1;
         } else {
-          // Selection is within segment
-          if (startIndex - segmentStart < segmentEnd - endIndex) {
-            // Selection is closer to start
+          const distanceToStart = startIndex - segmentStart;
+          const distanceToEnd = segmentEnd - endIndex;
+
+          if (distanceToStart < distanceToEnd) {
             newEndIndex = startIndex - 1;
           } else {
-            // Selection is closer to end
             newStartIndex = endIndex + 1;
           }
         }
@@ -166,8 +153,6 @@ export const TextDisplay = ({
             beginMatch: [newStartIndex, newEndIndex],
             endMatch: [newStartIndex, newEndIndex],
           });
-        } else {
-          console.log("Resulting segment would be invalid, skipping update");
         }
       }
       return;
@@ -191,11 +176,6 @@ export const TextDisplay = ({
         });
         setSelectionInfo(null);
       }
-    } else {
-      console.log("Missing required data for segment update:", {
-        hasSelectionInfo: !!selectionInfo,
-        hasOnUpdateSegment: !!onUpdateSegment,
-      });
     }
   };
 
@@ -283,9 +263,6 @@ export const TextDisplay = ({
   }, [text, segments, activeSegmentId, setActiveSegmentId]);
 
   const logTextParts = useCallback(() => {
-    console.log("=== Text Parts Debug ===");
-    console.log("Full text length:", text.length);
-
     let lastIndex = 0;
     const sortedSegments = [...segments]
       .filter(
@@ -311,40 +288,27 @@ export const TextDisplay = ({
       const startIndex = segment.beginMatch[0];
       const endIndex = segment.endMatch[1];
 
-      // Log non-segment text before this segment
-      if (startIndex > lastIndex) {
-        const normalText = text.substring(lastIndex, startIndex);
-        console.log("Normal text:", {
-          start: lastIndex,
-          end: startIndex,
-          text: normalText,
-        });
-      }
-
-      // Log segment text
       if (startIndex >= lastIndex && endIndex > startIndex) {
-        const segmentText = text.substring(startIndex, endIndex + 1);
-        console.log("Segment:", {
-          id: segment.id,
-          name: segment.name,
-          start: startIndex,
-          end: endIndex + 1,
-          text: segmentText,
-        });
         lastIndex = endIndex + 1;
       }
     }
-
-    // Log remaining text
-    if (lastIndex < text.length) {
-      const remainingText = text.substring(lastIndex);
-      console.log("Remaining text:", {
-        start: lastIndex,
-        end: text.length,
-        text: remainingText,
-      });
-    }
   }, [text, segments]);
+
+  // Helper function to determine if selection is backwards
+  const isSelectionBackwards = (selection: Selection): boolean => {
+    if (!selection.anchorNode || !selection.focusNode) {
+      return false;
+    }
+
+    if (selection.anchorNode === selection.focusNode) {
+      return selection.anchorOffset > selection.focusOffset;
+    } else {
+      const comparison = selection.anchorNode.compareDocumentPosition(
+        selection.focusNode
+      );
+      return !!(comparison & Node.DOCUMENT_POSITION_PRECEDING);
+    }
+  };
 
   return (
     <ScrollArea className="h-screen w-full">
