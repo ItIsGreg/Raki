@@ -70,7 +70,8 @@ async def text_segmentation_service(
             # Find matches for begin and end substrings
             
             begin_matches = get_matches(req.text, boundaries["begin"])
-            end_matches = get_matches(req.text, boundaries["end"])
+            offset_index = begin_matches[0][1] if begin_matches else 0
+            end_matches = get_matches(req.text, boundaries["end"], offset_index)
             
             # Create result object
             segment_result = TextSegmentationResult(

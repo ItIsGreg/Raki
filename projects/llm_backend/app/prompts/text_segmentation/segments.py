@@ -33,17 +33,18 @@ class Text_Segmentation_Template_List:
     
     {{
         "segment_name1": {{
+            "explanation": "short explanation of why this segment was identified (1-2 sentences)",
             "begin": "exact substring from text marking beginning",
             "end": "exact substring from text marking end"
         }},
         "segment_name2": {{
+            "explanation": "short explanation of why this segment was identified (1-2 sentences)",
             "begin": "exact substring from text marking beginning",
             "end": "exact substring from text marking end"
         }},
         ...
     }}
     
-    Do not add any additional information to the output, like explanations or comments.
     Do not use trailing commas in the JSON output.
     Use exactly the names for the segments that were defined in the profile points.
     Do not identify segments that were not asked for in the profile points.

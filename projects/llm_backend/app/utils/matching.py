@@ -40,17 +40,17 @@ def normalize_text(text: str) -> str:
     return text
 
 
-def fuzzy_matching(substring, main_string):
+def fuzzy_matching(substring, main_string, offset_index: int = 0):
     # Normalize both strings for comparison
     normalized_substring = normalize_text(substring)
-    normalized_main_string = normalize_text(main_string)
+    normalized_main_string = normalize_text(main_string[offset_index:])
     
     # Split the main string into words
     words = normalized_main_string.split()
 
     # Create a list of all possible substrings with their positions
     possible_matches = []
-    current_pos = 0
+    current_pos = offset_index
     
     for i in range(len(words) - len(normalized_substring.split()) + 1):
         match_text = " ".join(words[i : i + len(normalized_substring.split())])
@@ -86,48 +86,29 @@ def fuzzy_matching(substring, main_string):
     return None, 0, -1
 
 
-def get_matches(text: str, substring: str):
+def get_matches(text: str, substring: str, offset_index: int = 0):
     # filter out if substring is None or empty string
     if not substring or substring.strip() == "":
         return []
 
     try:
         pattern = create_pattern(substring)
-        re_matches = list(re.finditer(pattern, text, re.IGNORECASE))
-        matches = [[match.start(), match.end()] for match in re_matches]
+        re_matches = list(re.finditer(pattern, text[offset_index:], re.IGNORECASE))
+        # Adjust match positions to account for offset
+        matches = [[match.start() + offset_index, match.end() + offset_index] for match in re_matches]
 
         if len(matches) == 0:
-            rprint("[yellow]No exact matches found, trying fuzzy matching...[/yellow]")
-            # add fuzzy matching if no matches are found
-            best_match, score, start_pos = fuzzy_matching(substring, text)
-            if score > 80:
-                if start_pos != -1:
-                    matches.append([start_pos, start_pos + len(best_match)])
-                else:
-                    rprint(f"[red]❌ Fuzzy match not found in text[/red]")
-                    rprint(f"  Text: [cyan]'{best_match}'[/cyan]")
-                    rprint(f"  Substring: [cyan]'{substring}'[/cyan]")
-                    rprint(f"  Score: [cyan]{score}[/cyan]")
-                    
-                    
-            else:
-                rprint(f"[red]❌ Fuzzy match score too low: {score}[/red]")
+            # Pass offset to fuzzy matching
+            best_match, score, start_pos = fuzzy_matching(substring, text, offset_index)
+            if score > 80 and start_pos != -1:
+                matches.append([start_pos, start_pos + len(best_match)])
 
         return matches
     except re.error as e:
-        rprint(f"[red]⚠️ Regex error for pattern '{substring}':[/red] {str(e)}")
-        rprint("[yellow]Falling back to fuzzy matching...[/yellow]")
-        # Fallback to fuzzy matching on regex error
-        best_match, score, start_pos = fuzzy_matching(substring, text)
-        if score > 80:
-            if start_pos != -1:
-                return [[start_pos, start_pos + len(best_match)]]
-        else:
-            rprint(f"[red]❌ No matches found after regex error[/red]")
-            rprint(f"  Text: [cyan]'{best_match}'[/cyan]")
-            rprint(f"  Substring: [cyan]'{substring}'[/cyan]")
-            rprint(f"  Score: [cyan]{score}[/cyan]")
-
+        # Pass offset to fuzzy matching in error case too
+        best_match, score, start_pos = fuzzy_matching(substring, text, offset_index)
+        if score > 80 and start_pos != -1:
+            return [[start_pos, start_pos + len(best_match)]]
         return []
 
 
