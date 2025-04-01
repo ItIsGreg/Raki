@@ -3,6 +3,7 @@ import { SegmentDataPoint, AnnotatedText, AnnotatedDataset } from "@/lib/db/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Trash } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -21,6 +22,7 @@ import {
   readProfile,
   readSegmentationProfilePointsByProfile,
   readSegmentDataPointsByAnnotatedText,
+  deleteSegmentDataPoint,
 } from "@/lib/db/crud";
 
 interface TextDisplayProps {
@@ -93,8 +95,8 @@ export const TextDisplay = ({
       return;
     }
 
-    // Auto-open select dropdown for new segments (not for existing segments)
-    if (selectionInfo && !selectionInfo.existingSegmentId) {
+    // Auto-open select dropdown for all segments (both new and existing)
+    if (selectionInfo) {
       // Short delay to ensure the select component is rendered
       const timer = setTimeout(() => {
         // Trigger a click on the select trigger to open it
@@ -288,13 +290,33 @@ export const TextDisplay = ({
       const existingSegment = segments.find(
         (s) => s.id === selectionInfo.existingSegmentId
       );
+
       if (existingSegment) {
-        onUpdateSegment({
-          ...existingSegment,
-          beginMatch: undefined,
-          endMatch: undefined,
-        });
+        // Check if segment has a corresponding profile point
+        const hasCorrespondingProfilePoint = activeProfilePoints.some(
+          (point) => point.id === existingSegment.profilePointId
+        );
+
+        if (hasCorrespondingProfilePoint) {
+          // If it has a corresponding profile point, just empty the segment
+          onUpdateSegment({
+            ...existingSegment,
+            beginMatch: undefined,
+            endMatch: undefined,
+          });
+        } else {
+          // If no corresponding profile point exists, delete the segment completely
+          // using the deleteSegmentDataPoint function from crud
+          deleteSegmentDataPoint(existingSegment.id)
+            .then(() => {
+              console.log("Segment deleted successfully:", existingSegment.id);
+            })
+            .catch((error) => {
+              console.error("Error deleting segment:", error);
+            });
+        }
       }
+
       setIsSelectOpen(false);
       setSelectionInfo(null);
     }
@@ -383,8 +405,8 @@ export const TextDisplay = ({
                   position: { x: e.clientX, y: e.clientY },
                   existingSegmentId: segment.id,
                 });
-                // Don't auto-open select for existing segments
-                setIsSelectOpen(false);
+                // Always set to true to trigger opening the select dropdown
+                setIsSelectOpen(true);
               }, 10);
             }}
             title={segment.name}
@@ -524,40 +546,48 @@ export const TextDisplay = ({
                 <CardContent>
                   {activeProfilePoints && activeProfilePoints.length > 0 ? (
                     <>
-                      <Select
-                        onValueChange={handleSegmentSelect}
-                        onOpenChange={setIsSelectOpen}
-                      >
-                        <SelectTrigger data-cy="segment-select-trigger">
-                          <span>Choose a segment...</span>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {segments
-                              .filter((segment) =>
-                                activeProfilePoints.some(
-                                  (point) => point.id === segment.profilePointId
-                                )
-                              )
-                              .map((segment) => (
-                                <SelectItem key={segment.id} value={segment.id}>
-                                  {segment.name}
-                                </SelectItem>
-                              ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <Select
+                            onValueChange={handleSegmentSelect}
+                            onOpenChange={setIsSelectOpen}
+                          >
+                            <SelectTrigger data-cy="segment-select-trigger">
+                              <span>Choose a segment...</span>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                {segments
+                                  .filter((segment) =>
+                                    activeProfilePoints.some(
+                                      (point) =>
+                                        point.id === segment.profilePointId
+                                    )
+                                  )
+                                  .map((segment) => (
+                                    <SelectItem
+                                      key={segment.id}
+                                      value={segment.id}
+                                    >
+                                      {segment.name}
+                                    </SelectItem>
+                                  ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                      {selectionInfo.existingSegmentId && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="mt-2 w-full"
-                          onClick={handleDeleteSegment}
-                        >
-                          Delete Segment
-                        </Button>
-                      )}
+                        {selectionInfo.existingSegmentId && (
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={handleDeleteSegment}
+                            title="Delete Segment"
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </>
                   ) : (
                     <div className="text-center py-2 text-gray-500">
