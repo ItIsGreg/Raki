@@ -52,6 +52,7 @@ export default function AnnotationPage() {
             text={text?.text || ""}
             activeAnnotatedText={activeAnnotatedText}
             activeSegmentId={activeSegmentId}
+            activeAnnotatedDataset={activeAnnotatedDataset}
             setActiveSegmentId={setActiveSegmentId}
             onUpdateSegment={handleUpdateSegment}
           />

@@ -1,5 +1,5 @@
 import { useMemo, useCallback, useState, useEffect } from "react";
-import { SegmentDataPoint, AnnotatedText } from "@/lib/db/db";
+import { SegmentDataPoint, AnnotatedText, AnnotatedDataset } from "@/lib/db/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,16 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { useLiveQuery } from "dexie-react-hooks";
-import { readSegmentDataPointsByAnnotatedText } from "@/lib/db/crud";
+import {
+  readProfile,
+  readSegmentationProfilePointsByProfile,
+  readSegmentDataPointsByAnnotatedText,
+} from "@/lib/db/crud";
 
 interface TextDisplayProps {
   text: string;
   activeAnnotatedText?: AnnotatedText;
+  activeAnnotatedDataset?: AnnotatedDataset;
   activeSegmentId?: string;
   setActiveSegmentId: (id: string | undefined) => void;
   onUpdateSegment?: (segment: SegmentDataPoint) => void;
@@ -30,6 +35,7 @@ interface TextDisplayProps {
 export const TextDisplay = ({
   text,
   activeAnnotatedText,
+  activeAnnotatedDataset,
   activeSegmentId,
   setActiveSegmentId,
   onUpdateSegment,
@@ -38,6 +44,8 @@ export const TextDisplay = ({
     startIndex: number;
     endIndex: number;
     text: string;
+    position?: { x: number; y: number };
+    existingSegmentId?: string;
   } | null>(null);
 
   // Get segments from database
@@ -45,6 +53,17 @@ export const TextDisplay = ({
     useLiveQuery<SegmentDataPoint[]>(
       () => readSegmentDataPointsByAnnotatedText(activeAnnotatedText?.id),
       [activeAnnotatedText]
+    ) || [];
+
+  const activeProfile = useLiveQuery(
+    () => readProfile(activeAnnotatedDataset?.profileId),
+    [activeAnnotatedDataset]
+  );
+
+  const activeProfilePoints =
+    useLiveQuery(
+      () => readSegmentationProfilePointsByProfile(activeProfile?.id),
+      [activeProfile]
     ) || [];
 
   useEffect(() => {
@@ -165,17 +184,78 @@ export const TextDisplay = ({
     });
   }, [text, segments, onUpdateSegment]);
 
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+
+      // Get text selection
+      const selection = window.getSelection();
+      if (!selection || selection.toString().trim().length === 0) {
+        return;
+      }
+
+      const selectedText = selection.toString().trim();
+
+      // Find the position of the selected text in the source text
+      const startIndex = text.indexOf(selectedText);
+      const endIndex = startIndex + selectedText.length;
+
+      if (startIndex === -1) {
+        return;
+      }
+
+      // Set selection info with position data
+      setSelectionInfo({
+        startIndex,
+        endIndex,
+        text: selectedText,
+        position: { x: e.clientX, y: e.clientY },
+      });
+    },
+    [text]
+  );
+
   const handleSegmentSelect = (segmentId: string) => {
     if (selectionInfo && onUpdateSegment) {
       const selectedSegment = segments.find((s) => s.id === segmentId);
-      if (selectedSegment) {
+
+      if (selectionInfo.existingSegmentId) {
+        const existingSegment = segments.find(
+          (s) => s.id === selectionInfo.existingSegmentId
+        );
+
+        if (existingSegment) {
+          onUpdateSegment({
+            ...existingSegment,
+            profilePointId: selectedSegment?.profilePointId,
+            name: selectedSegment?.name || existingSegment.name,
+          });
+        }
+      } else if (selectedSegment) {
         onUpdateSegment({
           ...selectedSegment,
           beginMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
           endMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
         });
-        setSelectionInfo(null);
       }
+
+      setSelectionInfo(null);
+    }
+  };
+
+  const handleDeleteSegment = () => {
+    if (selectionInfo?.existingSegmentId && onUpdateSegment) {
+      const existingSegment = segments.find(
+        (s) => s.id === selectionInfo.existingSegmentId
+      );
+      if (existingSegment) {
+        onUpdateSegment({
+          ...existingSegment,
+          beginMatch: undefined,
+          endMatch: undefined,
+        });
+      }
+      setSelectionInfo(null);
     }
   };
 
@@ -237,6 +317,25 @@ export const TextDisplay = ({
             onClick={() =>
               setActiveSegmentId(isActive ? undefined : segment.id)
             }
+            onMouseDown={(e) => {
+              // Prevent text selection on right-click
+              if (e.button === 2) {
+                e.preventDefault();
+              }
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // Clear any existing selection
+              window.getSelection()?.removeAllRanges();
+              setSelectionInfo({
+                startIndex,
+                endIndex,
+                text: segmentText,
+                position: { x: e.clientX, y: e.clientY },
+                existingSegmentId: segment.id,
+              });
+            }}
             title={segment.name}
             data-segment-id={segment.id}
             role="button"
@@ -338,16 +437,26 @@ export const TextDisplay = ({
                 className="absolute"
                 style={{
                   position: "absolute",
-                  left: "50%",
-                  top: "50%",
-                  transform: "translate(-50%, -50%)",
+                  left: selectionInfo.position
+                    ? selectionInfo.position.x
+                    : "50%",
+                  top: selectionInfo.position
+                    ? selectionInfo.position.y
+                    : "50%",
+                  transform: selectionInfo.position
+                    ? "none"
+                    : "translate(-50%, -50%)",
                 }}
               />
             </TooltipTrigger>
             <TooltipContent side="right" className="w-80">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>Select Segment</CardTitle>
+                  <CardTitle>
+                    {selectionInfo.existingSegmentId
+                      ? "Update Segment"
+                      : "Select Segment"}
+                  </CardTitle>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -361,20 +470,45 @@ export const TextDisplay = ({
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <Select onValueChange={handleSegmentSelect}>
-                    <SelectTrigger>
-                      <span>Choose a segment...</span>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {segments.map((segment) => (
-                          <SelectItem key={segment.id} value={segment.id}>
-                            {segment.name}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  {activeProfilePoints && activeProfilePoints.length > 0 ? (
+                    <>
+                      <Select onValueChange={handleSegmentSelect}>
+                        <SelectTrigger>
+                          <span>Choose a segment...</span>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {segments
+                              .filter((segment) =>
+                                activeProfilePoints.some(
+                                  (point) => point.id === segment.profilePointId
+                                )
+                              )
+                              .map((segment) => (
+                                <SelectItem key={segment.id} value={segment.id}>
+                                  {segment.name}
+                                </SelectItem>
+                              ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+
+                      {selectionInfo.existingSegmentId && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="mt-2 w-full"
+                          onClick={handleDeleteSegment}
+                        >
+                          Delete Segment
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center py-2 text-gray-500">
+                      No profile points available
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TooltipContent>
