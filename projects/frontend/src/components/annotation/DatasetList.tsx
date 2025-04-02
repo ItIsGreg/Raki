@@ -51,12 +51,8 @@ const DatasetList = (props: DatasetListProps) => {
     annotatedDataset: AnnotatedDataset,
     format: "csv" | "xlsx"
   ) => {
-    console.log(
-      `Download initiated for dataset: ${annotatedDataset.name} in ${format} format`
-    );
-
     // collect data for csv export
-    const activeProfile = await readProfile(activeAnnotatedDataset?.profileId);
+    const activeProfile = await readProfile(annotatedDataset.profileId);
 
     const profilePoints =
       mode === TASK_MODE.DATAPOINT_EXTRACTION
@@ -66,6 +62,7 @@ const DatasetList = (props: DatasetListProps) => {
     const annotatedTexts = await readAnnotatedTextsByAnnotatedDataset(
       annotatedDataset.id
     );
+
     // bring data into shape that is easy to work with
     const annotatedTextDatapoints: AnnotatedTextDatapointsHolder[] = [];
     for (const annotatedText of annotatedTexts) {
@@ -73,6 +70,7 @@ const DatasetList = (props: DatasetListProps) => {
         mode === TASK_MODE.DATAPOINT_EXTRACTION
           ? await readDataPointsByAnnotatedText(annotatedText.id)
           : await readSegmentDataPointsByAnnotatedText(annotatedText.id);
+
       const text = await readText(annotatedText.textId);
       if (text) {
         annotatedTextDatapoints.push({
@@ -147,6 +145,7 @@ const DatasetList = (props: DatasetListProps) => {
       firstHeader,
       ...profilePoints.map((pp) => pp.name.replace(/"/g, '""')),
     ];
+
     const rows = annotatedTextDatapoints.map((atd) => {
       const row = [atd.filename];
       for (const pp of profilePoints) {
@@ -177,12 +176,14 @@ const DatasetList = (props: DatasetListProps) => {
       firstHeader,
       ...profilePoints.map((pp) => pp.name.replace(/"/g, '""')),
     ];
+
     const rows = annotatedTextDatapoints.map((atd) => {
       const row = [atd.filename];
       for (const pp of profilePoints) {
         const segmentPoint = atd.datapoints.find(
           (dp) => dp.profilePointId === pp.id
         );
+
         if (segmentPoint) {
           row.push(
             `${segmentPoint.begin}...${segmentPoint.end}`.replace(/"/g, '""')
@@ -212,6 +213,7 @@ const DatasetList = (props: DatasetListProps) => {
         const dataPoint = atd.datapoints.find(
           (dp) => dp.profilePointId === pp.id
         );
+
         row.push(dataPoint?.value ?? "");
       }
       return row;
@@ -221,7 +223,8 @@ const DatasetList = (props: DatasetListProps) => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Annotations");
 
-    return XLSX.write(workbook, { type: "array", bookType: "xlsx" });
+    const xlsxData = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
+    return xlsxData;
   };
 
   const generateSegmentationXlsx = (
@@ -251,7 +254,8 @@ const DatasetList = (props: DatasetListProps) => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Annotations");
 
-    return XLSX.write(workbook, { type: "array", bookType: "xlsx" });
+    const xlsxData = XLSX.write(workbook, { type: "array", bookType: "xlsx" });
+    return xlsxData;
   };
 
   const downloadFile = (blob: Blob, filename: string) => {
