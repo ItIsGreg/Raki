@@ -260,24 +260,101 @@ export const TextDisplay = ({
     if (selectionInfo && onUpdateSegment) {
       const selectedSegment = segments.find((s) => s.id === segmentId);
 
+      // If we don't have a selected segment, exit early
+      if (!selectedSegment) return;
+
       if (selectionInfo.existingSegmentId) {
+        // We're updating an existing segment
         const existingSegment = segments.find(
           (s) => s.id === selectionInfo.existingSegmentId
         );
 
         if (existingSegment) {
+          // First, check if there's already a segment with the same profilePointId
+          const existingSegmentWithSameProfilePoint = segments.find(
+            (s) =>
+              s.id !== existingSegment.id &&
+              s.profilePointId === selectedSegment.profilePointId
+          );
+
+          if (existingSegmentWithSameProfilePoint) {
+            // Update the existing segment with the same profile point instead of creating a new one
+            console.log(
+              "Updating existing segment with same profile point:",
+              existingSegmentWithSameProfilePoint.id
+            );
+
+            // Update the existing segment with new position
+            onUpdateSegment({
+              ...existingSegmentWithSameProfilePoint,
+              beginMatch: [
+                selectionInfo.startIndex,
+                selectionInfo.endIndex - 1,
+              ],
+              endMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
+            });
+
+            // Clear the original segment that was right-clicked
+            if (
+              existingSegment.profilePointId !== selectedSegment.profilePointId
+            ) {
+              // Only if the profile points are different
+              if (
+                activeProfilePoints.some(
+                  (point) => point.id === existingSegment.profilePointId
+                )
+              ) {
+                // If original segment has a corresponding profile point, just empty it
+                onUpdateSegment({
+                  ...existingSegment,
+                  beginMatch: undefined,
+                  endMatch: undefined,
+                });
+              } else {
+                // If no corresponding profile point exists, delete it completely
+                deleteSegmentDataPoint(existingSegment.id)
+                  .then(() => {
+                    console.log(
+                      "Original segment deleted:",
+                      existingSegment.id
+                    );
+                  })
+                  .catch((error) => {
+                    console.error("Error deleting original segment:", error);
+                  });
+              }
+            }
+          } else {
+            // No existing segment with same profile point, update the current one
+            onUpdateSegment({
+              ...existingSegment,
+              profilePointId: selectedSegment.profilePointId,
+              name: selectedSegment.name,
+            });
+          }
+        }
+      } else {
+        // We're creating a new segment or modifying selection
+        // Check if there's already a segment with this profile point
+        const existingSegmentForProfilePoint = segments.find(
+          (s) => s.profilePointId === selectedSegment.profilePointId
+        );
+
+        if (existingSegmentForProfilePoint) {
+          // Update existing segment instead of creating a new one
           onUpdateSegment({
-            ...existingSegment,
-            profilePointId: selectedSegment?.profilePointId,
-            name: selectedSegment?.name || existingSegment.name,
+            ...existingSegmentForProfilePoint,
+            beginMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
+            endMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
+          });
+        } else {
+          // Create new segment as before
+          onUpdateSegment({
+            ...selectedSegment,
+            beginMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
+            endMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
           });
         }
-      } else if (selectedSegment) {
-        onUpdateSegment({
-          ...selectedSegment,
-          beginMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
-          endMatch: [selectionInfo.startIndex, selectionInfo.endIndex - 1],
-        });
       }
 
       setIsSelectOpen(false);
