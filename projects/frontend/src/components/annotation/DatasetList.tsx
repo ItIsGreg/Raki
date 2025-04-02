@@ -45,6 +45,7 @@ const DatasetList = (props: DatasetListProps) => {
     annotatedTextId: string;
     filename: string;
     datapoints: DataPoint[] | SegmentDataPoint[];
+    text: string;
   }
 
   const downLoadAnnotatedDataset = async (
@@ -77,6 +78,7 @@ const DatasetList = (props: DatasetListProps) => {
           annotatedTextId: annotatedText.id,
           filename: text.filename,
           datapoints,
+          text: text.text,
         });
       }
     }
@@ -90,6 +92,7 @@ const DatasetList = (props: DatasetListProps) => {
                 annotatedTextId: string;
                 filename: string;
                 datapoints: DataPoint[];
+                text: string;
               }[],
               profilePoints as ProfilePoint[]
             )
@@ -98,6 +101,7 @@ const DatasetList = (props: DatasetListProps) => {
                 annotatedTextId: string;
                 filename: string;
                 datapoints: SegmentDataPoint[];
+                text: string;
               }[],
               profilePoints as SegmentationProfilePoint[]
             );
@@ -114,6 +118,7 @@ const DatasetList = (props: DatasetListProps) => {
                 annotatedTextId: string;
                 filename: string;
                 datapoints: DataPoint[];
+                text: string;
               }[],
               profilePoints as ProfilePoint[]
             )
@@ -122,6 +127,7 @@ const DatasetList = (props: DatasetListProps) => {
                 annotatedTextId: string;
                 filename: string;
                 datapoints: SegmentDataPoint[];
+                text: string;
               }[],
               profilePoints as SegmentationProfilePoint[]
             );
@@ -137,6 +143,7 @@ const DatasetList = (props: DatasetListProps) => {
       annotatedTextId: string;
       filename: string;
       datapoints: DataPoint[];
+      text: string;
     }[],
     profilePoints: ProfilePoint[]
   ) => {
@@ -168,6 +175,7 @@ const DatasetList = (props: DatasetListProps) => {
       annotatedTextId: string;
       filename: string;
       datapoints: SegmentDataPoint[];
+      text: string;
     }[],
     profilePoints: SegmentationProfilePoint[]
   ) => {
@@ -184,10 +192,12 @@ const DatasetList = (props: DatasetListProps) => {
           (dp) => dp.profilePointId === pp.id
         );
 
-        if (segmentPoint) {
-          row.push(
-            `${segmentPoint.begin}...${segmentPoint.end}`.replace(/"/g, '""')
-          );
+        if (segmentPoint && segmentPoint.beginMatch && segmentPoint.endMatch) {
+          // Get the first match (assuming we want the first occurrence)
+          const begin = segmentPoint.beginMatch[0];
+          const end = segmentPoint.endMatch[1]; // Use endMatch[1] for inclusive end
+          const segmentText = atd.text.substring(begin, end);
+          row.push(segmentText.replace(/"/g, '""'));
         } else {
           row.push("");
         }
@@ -202,6 +212,7 @@ const DatasetList = (props: DatasetListProps) => {
       annotatedTextId: string;
       filename: string;
       datapoints: DataPoint[];
+      text: string;
     }[],
     profilePoints: ProfilePoint[]
   ) => {
@@ -232,6 +243,7 @@ const DatasetList = (props: DatasetListProps) => {
       annotatedTextId: string;
       filename: string;
       datapoints: SegmentDataPoint[];
+      text: string;
     }[],
     profilePoints: SegmentationProfilePoint[]
   ) => {
@@ -243,9 +255,16 @@ const DatasetList = (props: DatasetListProps) => {
         const segmentPoint = atd.datapoints.find(
           (dp) => dp.profilePointId === pp.id
         );
-        row.push(
-          segmentPoint ? `${segmentPoint.begin}...${segmentPoint.end}` : ""
-        );
+
+        if (segmentPoint && segmentPoint.beginMatch && segmentPoint.endMatch) {
+          // Get the first match (assuming we want the first occurrence)
+          const begin = segmentPoint.beginMatch[0];
+          const end = segmentPoint.endMatch[1]; // Use endMatch[1] for inclusive end
+          const segmentText = atd.text.substring(begin, end);
+          row.push(segmentText);
+        } else {
+          row.push("");
+        }
       }
       return row;
     });
