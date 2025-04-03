@@ -8,7 +8,8 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   const routes: NavRoute[] = [
-    { path: "/", label: "Home" },
+    { path: "/", label: "Task Selection" },
+    { path: "/dataPointExtraction", label: "Home" },
     { path: "/dataPointExtraction/profiles", label: "Profiles" },
     { path: "/dataPointExtraction/datasets", label: "Datasets" },
     { path: "/dataPointExtraction/aiAnnotation", label: "AI-Annotation" },

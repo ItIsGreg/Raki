@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, ArrowLeft } from "lucide-react";
 
 // Define the route interface
 export interface Route {
@@ -23,6 +23,13 @@ export default function RouteCardGrid({
 }: RouteCardGridProps) {
   return (
     <div className="flex justify-center w-full">
+      <div
+        className="self-center mr-4 cursor-pointer transform transition-all duration-200 hover:scale-110 hover:shadow-lg rounded-full p-2"
+        onClick={() => (window.location.href = "/")}
+        data-cy="back-arrow"
+      >
+        <ArrowLeft size={96} />
+      </div>
       <div className={`flex flex-col w-full ${maxWidth}`}>
         {routes.map((route) => (
           <RouteCard key={route.path} route={route} />
