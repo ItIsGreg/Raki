@@ -1,5 +1,5 @@
 // Helper function to run the test suite with a specific provider
-function runTestSuiteWithProvider(providerType: 'OpenAI' | 'Custom') {
+function runSegmentationTestSuiteWithProvider(providerType: 'OpenAI' | 'Custom') {
   describe(`Profile Chat Feature (${providerType})`, () => {
     beforeEach(() => {
       // Clear IndexedDB (Dexie) before each test
@@ -199,5 +199,5 @@ function runTestSuiteWithProvider(providerType: 'OpenAI' | 'Custom') {
 }
 
 // Run the test suite with both providers
-runTestSuiteWithProvider("OpenAI");
-runTestSuiteWithProvider("Custom");
+runSegmentationTestSuiteWithProvider("OpenAI");
+runSegmentationTestSuiteWithProvider("Custom");

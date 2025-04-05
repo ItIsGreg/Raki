@@ -1,5 +1,7 @@
 // Helper function to run the test suite with a specific provider
-function runTestSuiteWithProvider(providerType) {
+type ProviderType = 'OpenAI' | 'Custom';
+
+function runTestSuiteWithProvider(providerType: ProviderType) {
   describe(`Profile Chat Feature (${providerType})`, () => {
     beforeEach(() => {
       // Clear IndexedDB (Dexie) before each test
