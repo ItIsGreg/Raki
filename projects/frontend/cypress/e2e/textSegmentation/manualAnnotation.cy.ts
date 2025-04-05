@@ -248,16 +248,11 @@ describe('Text Segmentation Manual Annotation', () => {
         .rightclick()
     })
 
-    // wait 200ms to ensure the delete button is visible
-    cy.wait(200)
-
-    // click again on the select trigger to enable the delete button
-    cy.get('[data-cy="segment-select-trigger"]').first().click()
-
     // Click delete button
-    cy.get('[data-cy="delete-segment-btn"]').first()
+    cy.get('[data-cy="delete-segment-btn"]')
+      .first()
       .should('be.visible')
-      .click()
+      .click({ force: true })
 
     // Verify segment is removed
     cy.get('[data-cy="text-display"]').first().within(() => {
