@@ -102,3 +102,5 @@ cypress/downloads/
 cypress/results/
 .cypress/
 cypress.env.json
+
+projects/frontend/cypress/fixtures/segmentation_texts/

@@ -564,7 +564,12 @@ export const TextDisplay = ({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Text Segmentation</CardTitle>
-          <Button variant="outline" size="sm" onClick={logTextParts}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={logTextParts}
+            data-cy="debug-text-parts-btn"
+          >
             Debug Text Parts
           </Button>
         </CardHeader>
@@ -585,6 +590,7 @@ export const TextDisplay = ({
             <TooltipTrigger asChild>
               <div
                 className="absolute"
+                data-cy="segment-tooltip-trigger"
                 style={{
                   position: "absolute",
                   left: selectionInfo.position
@@ -616,6 +622,7 @@ export const TextDisplay = ({
                       window.getSelection()?.removeAllRanges();
                     }}
                     className="h-6 w-6"
+                    data-cy="close-segment-dialog-btn"
                   >
                     ✕
                   </Button>
@@ -628,11 +635,12 @@ export const TextDisplay = ({
                           <Select
                             onValueChange={handleSegmentSelect}
                             onOpenChange={setIsSelectOpen}
+                            data-cy="segment-select"
                           >
                             <SelectTrigger data-cy="segment-select-trigger">
                               <span>Choose a segment...</span>
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent data-cy="segment-select-content">
                               <SelectGroup>
                                 {segments
                                   .filter((segment) =>
@@ -645,6 +653,7 @@ export const TextDisplay = ({
                                     <SelectItem
                                       key={segment.id}
                                       value={segment.id}
+                                      data-cy={`segment-select-item-${segment.id}`}
                                     >
                                       {segment.name}
                                     </SelectItem>
@@ -660,6 +669,7 @@ export const TextDisplay = ({
                             size="icon"
                             onClick={handleDeleteSegment}
                             title="Delete Segment"
+                            data-cy="delete-segment-btn"
                           >
                             <Trash className="h-4 w-4" />
                           </Button>
@@ -667,7 +677,10 @@ export const TextDisplay = ({
                       </div>
                     </>
                   ) : (
-                    <div className="text-center py-2 text-gray-500">
+                    <div
+                      className="text-center py-2 text-gray-500"
+                      data-cy="no-profile-points-message"
+                    >
                       No profile points available
                     </div>
                   )}
