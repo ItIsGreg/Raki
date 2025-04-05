@@ -91,8 +91,6 @@ const DataPointList = (props: GenericDataPointListProps) => {
           ...dataPoint,
           beginMatch: undefined,
           endMatch: undefined,
-          begin: "",
-          end: "",
         });
       }
     }
