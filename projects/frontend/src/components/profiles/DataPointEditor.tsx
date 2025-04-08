@@ -348,9 +348,6 @@ export function DataPointEditor(props: DataPointEditorProps) {
                       <SelectItem value="number" data-cy="datatype-number">
                         Number
                       </SelectItem>
-                      <SelectItem value="boolean" data-cy="datatype-boolean">
-                        True/False
-                      </SelectItem>
                       <SelectItem value="text" data-cy="datatype-text">
                         Text
                       </SelectItem>

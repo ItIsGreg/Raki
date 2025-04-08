@@ -12,7 +12,7 @@ class ProfileChatTemplateList:
       "name": string,
       "explanation": string,
       "synonyms": string[],
-      "datatype": "valueset" | "number" | "boolean" | "text",
+      "datatype": "valueset" | "number" | "text",
       "valueset": string[] | undefined,
       "unit": string | undefined,
     }}
@@ -31,6 +31,7 @@ class ProfileChatTemplateList:
     4. Choose the appropriate "datatype" from the options provided.
     5. If the datatype is "valueset", provide the possible values in the "valueset" array.
     6. If the datatype is "number", you may specify a "unit" if applicable.
+    7. If you want to create a boolean profile point, set the "datatype" to "valueset" and provide True and False as possible values.
 
     Please keep the following general guidelines in mind:
     1. Be polite and professional in your responses.
