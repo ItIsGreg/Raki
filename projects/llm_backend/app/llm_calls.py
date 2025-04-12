@@ -106,17 +106,23 @@ async def call_self_hosted_model(
     chain = prompt | llm_model | output_parser
 
     try:
+        # Get raw response from LLM
         result_structured = await chain.ainvoke(prompt_parameters)
 
+        # Handle JSON prefix
         result_structured = handle_json_prefix(result_structured)
+
+        # Clean response
         result_structured = clean_llm_response(result_structured)
 
+        # Parse JSON
         result_structured_list = json.loads(result_structured)
+
 
         return result_structured_list
 
     except Exception as e:
-        logger.error(f"Error in call_self_hosted_model: {e}")
+        print(f"[red]Error in call_self_hosted_model:[/red] {e}")
         return None
 
 
