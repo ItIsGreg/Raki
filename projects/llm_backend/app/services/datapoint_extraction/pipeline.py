@@ -6,9 +6,11 @@ from app.models.datapoint_extraction_models import (
     ExtractValuesReqDatapoint,
     PipelineReq,
     PipelineResDatapoint,
+    DoubleCheckReq,
 )
 from app.services.datapoint_extraction.substrings import extract_datapoint_substrings_and_match_service
 from app.services.datapoint_extraction.values import extract_values_service
+from app.services.datapoint_extraction.double_check import double_check_service
 
 
 def get_text_excerpt(text: str, match: tuple[int, int], overlap: int = 25) -> str:
@@ -40,6 +42,72 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             max_tokens=req.max_tokens,
         )
     )
+
+    # Identify unmatched substrings and used profile points
+    unmatched_substrings = {}
+    used_profile_points = set()
+    unmatched_substrings_with_context = {}
+    
+    for substring in substring_res:
+        corresponding_profile_point = get_corresponding_profile_point(
+            req.datapoints, substring.name
+        )
+        if corresponding_profile_point is None:
+            unmatched_substrings[substring.name] = substring.substring
+            # Get context around the substring if we have a match
+            if substring.match is not None:
+                text_excerpt = get_text_excerpt(req.text, substring.match, overlap=50)
+                unmatched_substrings_with_context[substring.name] = {
+                    "substring": substring.substring,
+                    "text": text_excerpt
+                }
+            else:
+                unmatched_substrings_with_context[substring.name] = {
+                    "substring": substring.substring,
+                    "text": req.text  # Fallback to full text if no match
+                }
+        else:
+            used_profile_points.add(substring.name)
+
+    # Get remaining profile points
+    remaining_profile_points = {
+        point.name: {
+            "name": point.name,
+            "explanation": point.explanation,
+            "synonyms": point.synonyms
+        }
+        for point in req.datapoints
+        if point.name not in used_profile_points
+    }
+
+    # Double check unmatched substrings if any exist
+    if unmatched_substrings:
+        double_check_res = await double_check_service(
+            DoubleCheckReq(
+                extracted_substrings=unmatched_substrings_with_context,
+                profile_point_list=remaining_profile_points,
+                api_key=req.api_key,
+                llm_provider=req.llm_provider,
+                model=req.model,
+                llm_url=req.llm_url,
+                max_tokens=req.max_tokens
+            )
+        )
+
+
+        # Update substring_res with corrections and filter out unmatched
+        updated_substring_res = []
+        for substring in substring_res:
+            if substring.name in double_check_res:
+                correction = double_check_res[substring.name]
+                if correction["correction"] != "NO_CORRESPONDING_PROFILE_POINT":
+                    substring.name = correction["correction"]
+                    updated_substring_res.append(substring)
+            else:
+                updated_substring_res.append(substring)
+        
+        substring_res = updated_substring_res
+
     # get text excerpts
     extract_values_datapoints: list[ExtractValuesReqDatapoint] = []
     for substring in substring_res:

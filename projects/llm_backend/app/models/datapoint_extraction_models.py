@@ -63,3 +63,8 @@ class SelectSubstringReq(BaseRequest):
 class ProfileChatRequest(BaseRequest):
     messages: List[dict]
     stream: Optional[bool] = False
+
+
+class DoubleCheckReq(BaseRequest):
+    extracted_substrings: dict[str, dict[str, str]]
+    profile_point_list: dict[str, dict[str, str | list[str]]]

@@ -140,10 +140,14 @@ async def select_substring_service(
         "de": prompt_list.select_substring_german,
         "en": prompt_list.select_substring,
     }
+    
+    # Handle case where datapoint is None
+    datapoint_data = req.datapoint.model_dump() if req.datapoint else None
+    
     result = await call_llm_function(
         lang_prompts[lang],
         {
-            "datapoint": req.datapoint.model_dump(),  # Convert to JSON
+            "datapoint": datapoint_data,  # Convert to JSON or None
             "substrings": req.substrings,
         },
         llm_provider=req.llm_provider,
