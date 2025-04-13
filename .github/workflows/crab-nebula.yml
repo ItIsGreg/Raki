@@ -164,8 +164,8 @@ jobs:
           yarn tauri build --target x86_64-apple-darwin --verbose
           yarn tauri build --target aarch64-apple-darwin --verbose
 
-          # Get version from tauri.conf.json
-          VERSION=$(node -p "require('src-tauri/tauri.conf.json').package.version")
+          # Get version from tauri.conf.json using jq
+          VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
 
           # Codesign and notarize the app bundles for both architectures
           cd src-tauri/target/release/bundle
@@ -173,11 +173,8 @@ jobs:
             # Codesign the app bundle
             codesign --force --deep --timestamp --options runtime --sign "$CERT_ID" "macos/Raki.app"
             
-            # Create DMG for this architecture
+            # Notarize the DMG that Tauri created
             cd dmg
-            ./bundle_dmg.sh
-            
-            # Notarize the DMG using App Store Connect API key
             xcrun notarytool submit "Raki_${VERSION}_${arch}.dmg" \
               --key "$MANUAL_APPLE_API_KEY" \
               --key-id "$MANUAL_APPLE_API_KEY" \
