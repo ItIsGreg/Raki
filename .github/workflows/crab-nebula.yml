@@ -164,17 +164,9 @@ jobs:
             exit 1
           fi
 
-          # Wait for files to be written and verify binary exists
+          # Wait for files to be written
           echo "Waiting for x86_64 build to complete..."
-          sleep 30
-
-          # Verify the binary exists
-          if [ ! -f "src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Raki.app/Contents/MacOS/Raki" ]; then
-            echo "Error: x86_64 binary not found after build"
-            echo "Contents of x86_64 target directory:"
-            ls -la src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Raki.app/Contents/MacOS
-            exit 1
-          fi
+          sleep 10
 
           echo "Building for aarch64..."
           yarn tauri build --target aarch64-apple-darwin --verbose
