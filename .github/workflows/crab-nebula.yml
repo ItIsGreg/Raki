@@ -109,8 +109,8 @@ jobs:
           MANUAL_APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           MANUAL_APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
           MANUAL_APPLE_NOTARIZATION_API_PRIVATE_KEY: ${{ secrets.APPLE_NOTARIZATION_API_PRIVATE_KEY }}
-          MANUAL_TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          MANUAL_TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           # Create a directory for the API key and decode it there
           mkdir -p ~/private_keys
