@@ -164,16 +164,11 @@ jobs:
           yarn tauri build --target x86_64-apple-darwin --verbose
           yarn tauri build --target aarch64-apple-darwin --verbose
 
-      - name: Manual codesign and notarize
-        if: matrix.os == 'macos-latest'
-        run: |
-          # Navigate to the bundle directory
-          cd src-tauri/target/release/bundle
-
           # Get version from tauri.conf.json
-          VERSION=$(node -p "require('../../../../frontend/src-tauri/tauri.conf.json').package.version")
+          VERSION=$(node -p "require('src-tauri/tauri.conf.json').package.version")
 
-          # Codesign the app bundles for both architectures
+          # Codesign and notarize the app bundles for both architectures
+          cd src-tauri/target/release/bundle
           for arch in x86_64 aarch64; do
             # Codesign the app bundle
             codesign --force --deep --timestamp --options runtime --sign "$CERT_ID" "macos/Raki.app"
