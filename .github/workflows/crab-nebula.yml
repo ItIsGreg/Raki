@@ -161,8 +161,19 @@ jobs:
           hdiutil info
 
           # Build the app for each architecture
+          echo "Building for x86_64..."
           yarn tauri build --target x86_64-apple-darwin --verbose
+          if [ $? -ne 0 ]; then
+            echo "Error: x86_64 build failed"
+            exit 1
+          fi
+
+          echo "Building for aarch64..."
           yarn tauri build --target aarch64-apple-darwin --verbose
+          if [ $? -ne 0 ]; then
+            echo "Error: aarch64 build failed"
+            exit 1
+          fi
 
           # Get version from tauri.conf.json using jq
           VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
@@ -170,6 +181,12 @@ jobs:
 
           # Wait a moment to ensure all files are written
           sleep 5
+
+          # List the contents of both target directories
+          echo "Contents of x86_64 target directory:"
+          ls -la src-tauri/target/x86_64-apple-darwin/release/bundle
+          echo "Contents of aarch64 target directory:"
+          ls -la src-tauri/target/aarch64-apple-darwin/release/bundle
 
           # Codesign and notarize the app bundles for both architectures
           for arch in x86_64 aarch64; do
@@ -195,6 +212,10 @@ jobs:
               echo "Error: App bundle not found at ${TARGET_DIR}/macos/Raki.app"
               exit 1
             fi
+            
+            # List contents of the app bundle
+            echo "Contents of app bundle:"
+            ls -la "${TARGET_DIR}/macos/Raki.app"
             
             # Codesign the app bundle
             echo "Codesigning app bundle..."
