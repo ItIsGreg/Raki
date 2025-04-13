@@ -168,13 +168,15 @@ jobs:
           VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
 
           # Codesign and notarize the app bundles for both architectures
-          cd src-tauri/target/release/bundle
           for arch in x86_64 aarch64; do
+            # Set the target directory based on architecture
+            TARGET_DIR="src-tauri/target/${arch}-apple-darwin/release/bundle"
+            
             # Codesign the app bundle
-            codesign --force --deep --timestamp --options runtime --sign "$CERT_ID" "macos/Raki.app"
+            codesign --force --deep --timestamp --options runtime --sign "$CERT_ID" "${TARGET_DIR}/macos/Raki.app"
             
             # Notarize the DMG that Tauri created
-            cd dmg
+            cd "${TARGET_DIR}/dmg"
             xcrun notarytool submit "Raki_${VERSION}_${arch}.dmg" \
               --key "$MANUAL_APPLE_API_KEY" \
               --key-id "$MANUAL_APPLE_API_KEY" \
@@ -184,7 +186,7 @@ jobs:
             # Staple the notarization ticket
             xcrun stapler staple "Raki_${VERSION}_${arch}.dmg"
             
-            cd ..
+            cd ../../../../..
           done
 
       - name: upload assets
