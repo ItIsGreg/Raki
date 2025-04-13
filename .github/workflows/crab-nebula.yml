@@ -164,9 +164,17 @@ jobs:
             exit 1
           fi
 
-          # Wait for files to be written
+          # Wait for files to be written and verify binary exists
           echo "Waiting for x86_64 build to complete..."
-          sleep 10
+          sleep 30
+
+          # Verify the binary exists
+          if [ ! -f "src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Raki.app/Contents/MacOS/Raki" ]; then
+            echo "Error: x86_64 binary not found after build"
+            echo "Contents of x86_64 target directory:"
+            ls -la src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Raki.app/Contents/MacOS
+            exit 1
+          fi
 
           echo "Building for aarch64..."
           yarn tauri build --target aarch64-apple-darwin --verbose
@@ -219,12 +227,6 @@ jobs:
             ls -la "${TARGET_DIR}/macos/Raki.app"
             echo "Contents of app bundle Contents directory:"
             ls -la "${TARGET_DIR}/macos/Raki.app/Contents"
-            
-            # Check if the app bundle is properly built
-            if [ ! -f "${TARGET_DIR}/macos/Raki.app/Contents/MacOS/Raki" ]; then
-              echo "Error: App binary not found in bundle"
-              exit 1
-            fi
             
             # Codesign the app bundle
             echo "Codesigning app bundle..."
