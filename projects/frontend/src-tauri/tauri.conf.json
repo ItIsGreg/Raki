@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Raki",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "identifier": "Raki",
   "build": {
     "frontendDist": "../out",
@@ -29,7 +29,10 @@
     "active": true,
     "targets": "all",
     "icon": ["icons/RakiLogoTransparent.png", "icons/RakiLogoTransparent.ico"],
-    "externalBin": ["../../llm_backend/app/dist/main"]
+    "externalBin": ["../../llm_backend/app/dist/main"],
+    "macOS": {
+      "entitlements": "entitlements.plist"
+    }
   },
   "plugins": {
     "updater": {

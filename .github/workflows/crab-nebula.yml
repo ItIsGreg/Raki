@@ -99,32 +99,32 @@ jobs:
       - name: build backend and Tauri binaries for mac
         if: matrix.os == 'macos-latest'
         env:
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
-          APPLE_NOTARIZATION_API_PRIVATE_KEY: ${{ secrets.APPLE_NOTARIZATION_API_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          MANUAL_APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          MANUAL_APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          MANUAL_KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          MANUAL_APPLE_ID: ${{ secrets.APPLE_ID }}
+          MANUAL_APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          MANUAL_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          MANUAL_APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          MANUAL_APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          MANUAL_APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
+          MANUAL_APPLE_NOTARIZATION_API_PRIVATE_KEY: ${{ secrets.APPLE_NOTARIZATION_API_PRIVATE_KEY }}
+          MANUAL_TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          MANUAL_TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           # Create a directory for the API key and decode it there
           mkdir -p ~/private_keys
-          echo $APPLE_NOTARIZATION_API_PRIVATE_KEY | base64 --decode > ~/private_keys/AuthKey.p8
-          echo $APPLE_CERTIFICATE | base64 --decode > certificate.p12
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          echo $MANUAL_APPLE_NOTARIZATION_API_PRIVATE_KEY | base64 --decode > ~/private_keys/AuthKey.p8
+          echo $MANUAL_APPLE_CERTIFICATE | base64 --decode > certificate.p12
+          security create-keychain -p "$MANUAL_KEYCHAIN_PASSWORD" build.keychain
 
           security default-keychain -s build.keychain
 
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security unlock-keychain -p "$MANUAL_KEYCHAIN_PASSWORD" build.keychain
 
-          security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security import certificate.p12 -k build.keychain -P "$MANUAL_APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
 
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MANUAL_KEYCHAIN_PASSWORD" build.keychain
 
           # Store certificate ID
           security find-identity -v -p codesigning build.keychain
@@ -163,6 +163,37 @@ jobs:
           # Build the app for each architecture
           yarn tauri build --target x86_64-apple-darwin --verbose
           yarn tauri build --target aarch64-apple-darwin --verbose
+
+      - name: Manual codesign and notarize
+        if: matrix.os == 'macos-latest'
+        run: |
+          # Navigate to the bundle directory
+          cd src-tauri/target/release/bundle
+
+          # Get version from tauri.conf.json
+          VERSION=$(node -p "require('../../../../frontend/src-tauri/tauri.conf.json').package.version")
+
+          # Codesign the app bundles for both architectures
+          for arch in x86_64 aarch64; do
+            # Codesign the app bundle
+            codesign --force --deep --timestamp --options runtime --sign "$CERT_ID" "macos/Raki.app"
+            
+            # Create DMG for this architecture
+            cd dmg
+            ./bundle_dmg.sh
+            
+            # Notarize the DMG using App Store Connect API key
+            xcrun notarytool submit "Raki_${VERSION}_${arch}.dmg" \
+              --key "$MANUAL_APPLE_API_KEY" \
+              --key-id "$MANUAL_APPLE_API_KEY" \
+              --issuer "$MANUAL_APPLE_API_ISSUER" \
+              --wait
+            
+            # Staple the notarization ticket
+            xcrun stapler staple "Raki_${VERSION}_${arch}.dmg"
+            
+            cd ..
+          done
 
       - name: upload assets
         uses: crabnebula-dev/cloud-release@v0
