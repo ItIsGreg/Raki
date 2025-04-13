@@ -145,10 +145,6 @@ jobs:
           cd app
           pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
 
-          # Code sign the binary
-          codesign --force --deep --timestamp --verify --verbose=4 --options runtime --entitlements src-tauri/entitlements.plist --sign "$CERT_ID" dist/main
-
-          # Create architecture-specific copies after signing
           cp dist/main dist/main-aarch64-apple-darwin
           cp dist/main dist/main-x86_64-apple-darwin
 
@@ -232,7 +228,7 @@ jobs:
             
             # Codesign the app bundle
             echo "Codesigning app bundle..."
-            codesign --force --deep --timestamp --verify --verbose=4 --options runtime --entitlements src-tauri/entitlements.plist --sign "$CERT_ID" "${TARGET_DIR}/macos/Raki.app"
+            codesign --force --deep --timestamp --verify --verbose=4 --options runtime --entitlements "$(pwd)/projects/frontend/src-tauri/entitlements.plist" --sign "$CERT_ID" "${TARGET_DIR}/macos/Raki.app"
             if [ $? -ne 0 ]; then
               echo "Error: Codesigning failed"
               exit 1
