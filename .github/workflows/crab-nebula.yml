@@ -146,7 +146,7 @@ jobs:
           pyinstaller -F main.py --clean --hidden-import=pydantic --hidden-import=pydantic-core --hidden-import=pydantic.deprecated.decorator
 
           # Code sign the binary
-          codesign --force --deep --timestamp --options runtime --sign "$CERT_ID" dist/main
+          codesign --force --deep --timestamp --verify --verbose=4 --options runtime --entitlements src-tauri/entitlements.plist --sign "$CERT_ID" dist/main
 
           # Create architecture-specific copies after signing
           cp dist/main dist/main-aarch64-apple-darwin
@@ -168,6 +168,10 @@ jobs:
             exit 1
           fi
 
+          # Wait for files to be written
+          echo "Waiting for x86_64 build to complete..."
+          sleep 10
+
           echo "Building for aarch64..."
           yarn tauri build --target aarch64-apple-darwin --verbose
           if [ $? -ne 0 ]; then
@@ -175,12 +179,13 @@ jobs:
             exit 1
           fi
 
+          # Wait for files to be written
+          echo "Waiting for aarch64 build to complete..."
+          sleep 10
+
           # Get version from tauri.conf.json using jq
           VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
           echo "Found version: ${VERSION}"
-
-          # Wait a moment to ensure all files are written
-          sleep 5
 
           # List the contents of both target directories
           echo "Contents of x86_64 target directory:"
@@ -207,19 +212,27 @@ jobs:
               exit 1
             fi
             
-            # Verify the app bundle exists
+            # Verify the app bundle exists and has contents
             if [ ! -d "${TARGET_DIR}/macos/Raki.app" ]; then
               echo "Error: App bundle not found at ${TARGET_DIR}/macos/Raki.app"
               exit 1
             fi
             
-            # List contents of the app bundle
+            # Check app bundle contents
             echo "Contents of app bundle:"
             ls -la "${TARGET_DIR}/macos/Raki.app"
+            echo "Contents of app bundle Contents directory:"
+            ls -la "${TARGET_DIR}/macos/Raki.app/Contents"
+            
+            # Check if the app bundle is properly built
+            if [ ! -f "${TARGET_DIR}/macos/Raki.app/Contents/MacOS/Raki" ]; then
+              echo "Error: App binary not found in bundle"
+              exit 1
+            fi
             
             # Codesign the app bundle
             echo "Codesigning app bundle..."
-            codesign --force --deep --timestamp --options runtime --sign "$CERT_ID" "${TARGET_DIR}/macos/Raki.app" --verbose
+            codesign --force --deep --timestamp --verify --verbose=4 --options runtime --entitlements src-tauri/entitlements.plist --sign "$CERT_ID" "${TARGET_DIR}/macos/Raki.app"
             if [ $? -ne 0 ]; then
               echo "Error: Codesigning failed"
               exit 1
