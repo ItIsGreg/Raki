@@ -166,27 +166,58 @@ jobs:
 
           # Get version from tauri.conf.json using jq
           VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
+          echo "Found version: ${VERSION}"
 
           # Codesign and notarize the app bundles for both architectures
           for arch in x86_64 aarch64; do
+            echo "Processing architecture: ${arch}"
+            
             # Set the target directory based on architecture
             TARGET_DIR="src-tauri/target/${arch}-apple-darwin/release/bundle"
+            echo "Target directory: ${TARGET_DIR}"
+            
+            # Check if files exist
+            if [ ! -d "${TARGET_DIR}/macos" ]; then
+              echo "Error: ${TARGET_DIR}/macos directory not found"
+              exit 1
+            fi
+            
+            if [ ! -d "${TARGET_DIR}/dmg" ]; then
+              echo "Error: ${TARGET_DIR}/dmg directory not found"
+              exit 1
+            fi
             
             # Codesign the app bundle
+            echo "Codesigning app bundle..."
             codesign --force --deep --timestamp --options runtime --sign "$CERT_ID" "${TARGET_DIR}/macos/Raki.app"
+            if [ $? -ne 0 ]; then
+              echo "Error: Codesigning failed"
+              exit 1
+            fi
             
             # Notarize the DMG that Tauri created
+            echo "Notarizing DMG..."
             cd "${TARGET_DIR}/dmg"
             xcrun notarytool submit "Raki_${VERSION}_${arch}.dmg" \
               --key "$MANUAL_APPLE_API_KEY" \
               --key-id "$MANUAL_APPLE_API_KEY" \
               --issuer "$MANUAL_APPLE_API_ISSUER" \
               --wait
+            if [ $? -ne 0 ]; then
+              echo "Error: Notarization failed"
+              exit 1
+            fi
             
             # Staple the notarization ticket
+            echo "Stapling notarization ticket..."
             xcrun stapler staple "Raki_${VERSION}_${arch}.dmg"
+            if [ $? -ne 0 ]; then
+              echo "Error: Stapling failed"
+              exit 1
+            fi
             
             cd ../../../../..
+            echo "Completed processing for ${arch}"
           done
 
       - name: upload assets
