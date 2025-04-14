@@ -108,6 +108,7 @@ jobs:
           MANUAL_APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           MANUAL_APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           MANUAL_APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           MANUAL_APPLE_NOTARIZATION_API_PRIVATE_KEY: ${{ secrets.APPLE_NOTARIZATION_API_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -240,9 +241,9 @@ jobs:
             echo "Notarizing DMG..."
             cd "${TARGET_DIR}/dmg"
             xcrun notarytool submit "Raki_${VERSION}_${arch}.dmg" \
-              --key "$MANUAL_APPLE_API_KEY" \
-              --key-id "$MANUAL_APPLE_API_KEY" \
-              --issuer "$MANUAL_APPLE_API_ISSUER" \
+              --apple-id "$MANUAL_APPLE_ID" \
+              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+              --team-id "$MANUAL_APPLE_TEAM_ID" \
               --wait
             if [ $? -ne 0 ]; then
               echo "Error: Notarization failed"
