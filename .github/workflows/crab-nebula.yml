@@ -177,6 +177,40 @@ jobs:
             exit 1
           fi
 
+          # Create new DMG with signed app bundle
+          echo "Creating new DMG with signed app bundle..."
+          cd "src-tauri/target/x86_64-apple-darwin/release/bundle/dmg"
+          # Delete existing DMG
+          rm -f "Raki_${VERSION}_x64.dmg"
+          # Create new DMG with same name
+          hdiutil create -volname "Raki" -srcfolder "../macos/Raki.app" -ov -format UDZO "Raki_${VERSION}_x64.dmg"
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to create new DMG"
+            exit 1
+          fi
+
+          # Notarize x86_64 build
+          echo "Notarizing x86_64 DMG..."
+          xcrun notarytool submit "Raki_${VERSION}_x64.dmg" \
+            --apple-id "$MANUAL_APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --team-id "$MANUAL_APPLE_TEAM_ID" \
+            --wait
+          if [ $? -ne 0 ]; then
+            echo "Error: x86_64 notarization failed"
+            exit 1
+          fi
+
+          # Staple x86_64 notarization
+          echo "Stapling x86_64 notarization ticket..."
+          xcrun stapler staple "Raki_${VERSION}_x64.dmg"
+          if [ $? -ne 0 ]; then
+            echo "Error: x86_64 stapling failed"
+            exit 1
+          fi
+
+          cd ../../../../..
+
           echo "Building for aarch64..."
           yarn tauri build --target aarch64-apple-darwin --verbose
           if [ $? -ne 0 ]; then
@@ -196,6 +230,40 @@ jobs:
             exit 1
           fi
 
+          # Create new DMG with signed app bundle
+          echo "Creating new DMG with signed app bundle..."
+          cd "src-tauri/target/aarch64-apple-darwin/release/bundle/dmg"
+          # Delete existing DMG
+          rm -f "Raki_${VERSION}_aarch64.dmg"
+          # Create new DMG with same name
+          hdiutil create -volname "Raki" -srcfolder "../macos/Raki.app" -ov -format UDZO "Raki_${VERSION}_aarch64.dmg"
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to create new DMG"
+            exit 1
+          fi
+
+          # Notarize aarch64 build
+          echo "Notarizing aarch64 DMG..."
+          xcrun notarytool submit "Raki_${VERSION}_aarch64.dmg" \
+            --apple-id "$MANUAL_APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --team-id "$MANUAL_APPLE_TEAM_ID" \
+            --wait
+          if [ $? -ne 0 ]; then
+            echo "Error: aarch64 notarization failed"
+            exit 1
+          fi
+
+          # Staple aarch64 notarization
+          echo "Stapling aarch64 notarization ticket..."
+          xcrun stapler staple "Raki_${VERSION}_aarch64.dmg"
+          if [ $? -ne 0 ]; then
+            echo "Error: aarch64 stapling failed"
+            exit 1
+          fi
+
+          cd ../../../../..
+
           # Get version from tauri.conf.json using jq
           VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
           echo "Found version: ${VERSION}"
@@ -205,68 +273,6 @@ jobs:
           ls -la src-tauri/target/x86_64-apple-darwin/release/bundle
           echo "Contents of aarch64 target directory:"
           ls -la src-tauri/target/aarch64-apple-darwin/release/bundle
-
-          # Notarize the DMGs for both architectures
-          for arch in x86_64 aarch64; do
-            echo "Processing architecture: ${arch}"
-            
-            # Set the target directory based on architecture
-            TARGET_DIR="src-tauri/target/${arch}-apple-darwin/release/bundle"
-            echo "Target directory: ${TARGET_DIR}"
-            
-            # Check if files exist
-            if [ ! -d "${TARGET_DIR}/macos" ]; then
-              echo "Error: ${TARGET_DIR}/macos directory not found"
-              exit 1
-            fi
-            
-            if [ ! -d "${TARGET_DIR}/dmg" ]; then
-              echo "Error: ${TARGET_DIR}/dmg directory not found"
-              exit 1
-            fi
-            
-            # Verify the app bundle exists and has contents
-            if [ ! -d "${TARGET_DIR}/macos/Raki.app" ]; then
-              echo "Error: App bundle not found at ${TARGET_DIR}/macos/Raki.app"
-              exit 1
-            fi
-            
-            # Check app bundle contents
-            echo "Contents of app bundle:"
-            ls -la "${TARGET_DIR}/macos/Raki.app"
-            echo "Contents of app bundle Contents directory:"
-            ls -la "${TARGET_DIR}/macos/Raki.app/Contents"
-            
-            # Notarize the DMG that Tauri created
-            echo "Notarizing DMG..."
-            cd "${TARGET_DIR}/dmg"
-            if [ "$arch" = "x86_64" ]; then
-              DMG_NAME="Raki_${VERSION}_x64.dmg"
-            else
-              DMG_NAME="Raki_${VERSION}_${arch}.dmg"
-            fi
-            
-            xcrun notarytool submit "$DMG_NAME" \
-              --apple-id "$MANUAL_APPLE_ID" \
-              --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-              --team-id "$MANUAL_APPLE_TEAM_ID" \
-              --wait
-            if [ $? -ne 0 ]; then
-              echo "Error: Notarization failed"
-              exit 1
-            fi
-            
-            # Staple the notarization ticket
-            echo "Stapling notarization ticket..."
-            xcrun stapler staple "$DMG_NAME"
-            if [ $? -ne 0 ]; then
-              echo "Error: Stapling failed"
-              exit 1
-            fi
-            
-            cd ../../../../..
-            echo "Completed processing for ${arch}"
-          done
 
       - name: upload assets
         uses: crabnebula-dev/cloud-release@v0
