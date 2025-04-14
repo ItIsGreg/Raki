@@ -209,7 +209,7 @@ jobs:
             exit 1
           fi
 
-          cd ../../../../..
+          cd ../../../../../..
 
           echo "Building for aarch64..."
           yarn tauri build --target aarch64-apple-darwin --verbose
