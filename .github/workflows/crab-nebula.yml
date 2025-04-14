@@ -240,7 +240,13 @@ jobs:
             # Notarize the DMG that Tauri created
             echo "Notarizing DMG..."
             cd "${TARGET_DIR}/dmg"
-            xcrun notarytool submit "Raki_${VERSION}_${arch}.dmg" \
+            if [ "$arch" = "x86_64" ]; then
+              DMG_NAME="Raki_${VERSION}_x64.dmg"
+            else
+              DMG_NAME="Raki_${VERSION}_${arch}.dmg"
+            fi
+            
+            xcrun notarytool submit "$DMG_NAME" \
               --apple-id "$MANUAL_APPLE_ID" \
               --password "$APPLE_APP_SPECIFIC_PASSWORD" \
               --team-id "$MANUAL_APPLE_TEAM_ID" \
@@ -252,7 +258,7 @@ jobs:
             
             # Staple the notarization ticket
             echo "Stapling notarization ticket..."
-            xcrun stapler staple "Raki_${VERSION}_${arch}.dmg"
+            xcrun stapler staple "$DMG_NAME"
             if [ $? -ne 0 ]; then
               echo "Error: Stapling failed"
               exit 1
