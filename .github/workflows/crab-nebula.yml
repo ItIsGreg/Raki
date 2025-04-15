@@ -157,28 +157,53 @@ jobs:
           # Check the contents of the dist directory, debugging step
           hdiutil info
 
-          # Build both architectures first
-          echo "Building for x86_64..."
-          yarn tauri build --target x86_64-apple-darwin --verbose
-          if [ $? -ne 0 ]; then
-            echo "Error: x86_64 build failed"
-            exit 1
-          fi
-
-          echo "Building for aarch64..."
-          yarn tauri build --target aarch64-apple-darwin --verbose
-          if [ $? -ne 0 ]; then
-            echo "Error: aarch64 build failed"
-            exit 1
-          fi
-
-          # Wait for files to be written
-          echo "Waiting for builds to complete..."
-          sleep 10
-
           # Get version from tauri.conf.json using jq
           VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
           echo "Found version: ${VERSION}"
+
+          # Process aarch64 build first
+          echo "Processing aarch64 build..."
+          # Codesign aarch64 build
+          echo "Codesigning aarch64 app bundle..."
+          codesign --force --deep --timestamp --verify --verbose=4 --options runtime --entitlements "src-tauri/entitlements.plist" --sign "$CERT_ID" "src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Raki.app"
+          if [ $? -ne 0 ]; then
+            echo "Error: aarch64 codesigning failed"
+            exit 1
+          fi
+
+          # Create new DMG with signed app bundle
+          echo "Creating new DMG with signed app bundle..."
+          cd "src-tauri/target/aarch64-apple-darwin/release/bundle/dmg"
+          # Delete existing DMG
+          rm -f "Raki_${VERSION}_aarch64.dmg"
+          # Create new DMG with same name
+          hdiutil create -volname "Raki" -srcfolder "../macos/Raki.app" -ov -format UDZO "Raki_${VERSION}_aarch64.dmg"
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to create new DMG"
+            exit 1
+          fi
+
+          # Notarize aarch64 build
+          echo "Notarizing aarch64 DMG..."
+          xcrun notarytool submit "Raki_${VERSION}_aarch64.dmg" \
+            --apple-id "$MANUAL_APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
+            --team-id "$MANUAL_APPLE_TEAM_ID" \
+            --wait
+          if [ $? -ne 0 ]; then
+            echo "Error: aarch64 notarization failed"
+            exit 1
+          fi
+
+          # Staple aarch64 notarization
+          echo "Stapling aarch64 notarization ticket..."
+          xcrun stapler staple "Raki_${VERSION}_aarch64.dmg"
+          if [ $? -ne 0 ]; then
+            echo "Error: aarch64 stapling failed"
+            exit 1
+          fi
+
+          cd ../../../../..
 
           # Process x86_64 build
           echo "Processing x86_64 build..."
@@ -223,56 +248,6 @@ jobs:
           fi
 
           cd ../../../../..
-
-          # Process aarch64 build
-          echo "Processing aarch64 build..."
-          # Codesign aarch64 build
-          echo "Codesigning aarch64 app bundle..."
-          codesign --force --deep --timestamp --verify --verbose=4 --options runtime --entitlements "src-tauri/entitlements.plist" --sign "$CERT_ID" "src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Raki.app"
-          if [ $? -ne 0 ]; then
-            echo "Error: aarch64 codesigning failed"
-            exit 1
-          fi
-
-          # Create new DMG with signed app bundle
-          echo "Creating new DMG with signed app bundle..."
-          cd "src-tauri/target/aarch64-apple-darwin/release/bundle/dmg"
-          # Delete existing DMG
-          rm -f "Raki_${VERSION}_aarch64.dmg"
-          # Create new DMG with same name
-          hdiutil create -volname "Raki" -srcfolder "../macos/Raki.app" -ov -format UDZO "Raki_${VERSION}_aarch64.dmg"
-          if [ $? -ne 0 ]; then
-            echo "Error: Failed to create new DMG"
-            exit 1
-          fi
-
-          # Notarize aarch64 build
-          echo "Notarizing aarch64 DMG..."
-          xcrun notarytool submit "Raki_${VERSION}_aarch64.dmg" \
-            --apple-id "$MANUAL_APPLE_ID" \
-            --password "$APPLE_APP_SPECIFIC_PASSWORD" \
-            --team-id "$MANUAL_APPLE_TEAM_ID" \
-            --wait
-          if [ $? -ne 0 ]; then
-            echo "Error: aarch64 notarization failed"
-            exit 1
-          fi
-
-          # Staple aarch64 notarization
-          echo "Stapling aarch64 notarization ticket..."
-          xcrun stapler staple "Raki_${VERSION}_aarch64.dmg"
-          if [ $? -ne 0 ]; then
-            echo "Error: aarch64 stapling failed"
-            exit 1
-          fi
-
-          cd ../../../../..
-
-          # List the contents of both target directories
-          echo "Contents of x86_64 target directory:"
-          ls -la src-tauri/target/x86_64-apple-darwin/release/bundle
-          echo "Contents of aarch64 target directory:"
-          ls -la src-tauri/target/aarch64-apple-darwin/release/bundle
 
       - name: upload assets
         uses: crabnebula-dev/cloud-release@v0
