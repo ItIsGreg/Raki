@@ -157,6 +157,25 @@ jobs:
           # Check the contents of the dist directory, debugging step
           hdiutil info
 
+          # Build both architectures first
+          echo "Building for x86_64..."
+          yarn tauri build --target x86_64-apple-darwin --verbose
+          if [ $? -ne 0 ]; then
+            echo "Error: x86_64 build failed"
+            exit 1
+          fi
+
+          echo "Building for aarch64..."
+          yarn tauri build --target aarch64-apple-darwin --verbose
+          if [ $? -ne 0 ]; then
+            echo "Error: aarch64 build failed"
+            exit 1
+          fi
+
+          # Wait for files to be written
+          echo "Waiting for builds to complete..."
+          sleep 10
+
           # Get version from tauri.conf.json using jq
           VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
           echo "Found version: ${VERSION}"
@@ -248,6 +267,12 @@ jobs:
           fi
 
           cd ../../../../..
+
+          # List the contents of both target directories
+          echo "Contents of x86_64 target directory:"
+          ls -la src-tauri/target/x86_64-apple-darwin/release/bundle
+          echo "Contents of aarch64 target directory:"
+          ls -la src-tauri/target/aarch64-apple-darwin/release/bundle
 
       - name: upload assets
         uses: crabnebula-dev/cloud-release@v0
