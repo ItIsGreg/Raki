@@ -157,7 +157,7 @@ jobs:
           # Check the contents of the dist directory, debugging step
           hdiutil info
 
-          # Build the app for each architecture
+          # Build both architectures first
           echo "Building for x86_64..."
           yarn tauri build --target x86_64-apple-darwin --verbose
           if [ $? -ne 0 ]; then
@@ -165,10 +165,23 @@ jobs:
             exit 1
           fi
 
+          echo "Building for aarch64..."
+          yarn tauri build --target aarch64-apple-darwin --verbose
+          if [ $? -ne 0 ]; then
+            echo "Error: aarch64 build failed"
+            exit 1
+          fi
+
           # Wait for files to be written
-          echo "Waiting for x86_64 build to complete..."
+          echo "Waiting for builds to complete..."
           sleep 10
 
+          # Get version from tauri.conf.json using jq
+          VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
+          echo "Found version: ${VERSION}"
+
+          # Process x86_64 build
+          echo "Processing x86_64 build..."
           # Codesign x86_64 build
           echo "Codesigning x86_64 app bundle..."
           codesign --force --deep --timestamp --verify --verbose=4 --options runtime --entitlements "src-tauri/entitlements.plist" --sign "$CERT_ID" "src-tauri/target/x86_64-apple-darwin/release/bundle/macos/Raki.app"
@@ -211,17 +224,8 @@ jobs:
 
           cd ../../../../..
 
-          echo "Building for aarch64..."
-          yarn tauri build --target aarch64-apple-darwin --verbose
-          if [ $? -ne 0 ]; then
-            echo "Error: aarch64 build failed"
-            exit 1
-          fi
-
-          # Wait for files to be written
-          echo "Waiting for aarch64 build to complete..."
-          sleep 10
-
+          # Process aarch64 build
+          echo "Processing aarch64 build..."
           # Codesign aarch64 build
           echo "Codesigning aarch64 app bundle..."
           codesign --force --deep --timestamp --verify --verbose=4 --options runtime --entitlements "src-tauri/entitlements.plist" --sign "$CERT_ID" "src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Raki.app"
@@ -263,10 +267,6 @@ jobs:
           fi
 
           cd ../../../../..
-
-          # Get version from tauri.conf.json using jq
-          VERSION=$(jq -r '.version' src-tauri/tauri.conf.json)
-          echo "Found version: ${VERSION}"
 
           # List the contents of both target directories
           echo "Contents of x86_64 target directory:"
