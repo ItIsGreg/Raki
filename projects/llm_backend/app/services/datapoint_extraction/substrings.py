@@ -103,14 +103,24 @@ async def extract_datapoint_substrings_and_match_service(
                 )
             )
             try:
+                # Handle case where index is just a number
+                if isinstance(index, int):
+                    selected_index = index
+                # Handle case where index is a dict with "index" key
+                elif isinstance(index, dict) and "index" in index:
+                    selected_index = index["index"]
+                else:
+                    print(f"[red]Invalid index format: {index}[/red]")
+                    selected_index = 0  # Default to first match if format is invalid
+
                 datapoint_w_match = DataPointSubstringMatch(
                     name=datapoint.name,
                     substring=datapoint.substring,
-                    match=matches[int(index["index"])],
+                    match=matches[selected_index],
                 )
                 datapoints_w_matches.append(datapoint_w_match)
-            except Error as e:
-                print(e)
+            except (IndexError, TypeError) as e:
+                print(f"[red]Error selecting match: {e}[/red]")
                 datapoints_w_matches.append(
                     DataPointSubstringMatch(
                         name=datapoint.name,
