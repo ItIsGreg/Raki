@@ -47,13 +47,11 @@ async def call_openai(
     chain = prompt | llm_model | output_parser
     try:
         result_structured = await chain.ainvoke(prompt_parameters)
-        print(f"[green]Raw LLM output: {result_structured}[/green]")
         
         result_structured = handle_json_prefix(result_structured)
         result_structured_list = json.loads(result_structured)
         return result_structured_list
     except Exception as e:
-        print(f"[red]Error in call_openai: {e}[/red]")
         logger.error(f"Error in call_openai: {e}")
         return None
 
