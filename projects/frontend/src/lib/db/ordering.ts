@@ -4,7 +4,13 @@ import { ProfilePoint, SegmentationProfilePoint } from "./db";
 const ORDER_GAP = 1000;
 const MIN_GAP = 10;
 
-type Point = ProfilePoint | SegmentationProfilePoint;
+type Point = {
+  id: string;
+  profileId: string;
+  order?: number;
+  previousPointId?: string | null;
+  nextPointId?: string | null;
+};
 
 export async function getNextOrderNumber(profileId: string, isSegmentation: boolean): Promise<number> {
   const table = isSegmentation ? db.segmentationProfilePoints : db.profilePoints;
@@ -41,7 +47,15 @@ export async function renumberPoints(
   // Save all points
   await db.transaction('rw', table, async () => {
     for (const point of sortedPoints) {
-      await table.put(point);
+      const existingPoint = await table.get(point.id);
+      if (existingPoint) {
+        await table.put({
+          ...existingPoint,
+          order: point.order,
+          previousPointId: point.previousPointId,
+          nextPointId: point.nextPointId,
+        });
+      }
     }
   });
 }
@@ -54,20 +68,23 @@ export async function reorderPoint(
 ): Promise<void> {
   const table = isSegmentation ? db.segmentationProfilePoints : db.profilePoints;
   
-  // Update linked list pointers
-  movedPoint.previousPointId = newPrevPoint?.id ?? null;
-  movedPoint.nextPointId = newNextPoint?.id ?? null;
+  // Get the existing points
+  const existingMovedPoint = await table.get(movedPoint.id);
+  const existingPrevPoint = newPrevPoint ? await table.get(newPrevPoint.id) : null;
+  const existingNextPoint = newNextPoint ? await table.get(newNextPoint.id) : null;
   
-  if (newPrevPoint) {
-    newPrevPoint.nextPointId = movedPoint.id;
-  }
-  if (newNextPoint) {
-    newNextPoint.previousPointId = movedPoint.id;
-  }
+  if (!existingMovedPoint) return;
+  
+  // Update linked list pointers
+  const updatedMovedPoint = {
+    ...existingMovedPoint,
+    previousPointId: newPrevPoint?.id ?? null,
+    nextPointId: newNextPoint?.id ?? null,
+  };
   
   // Calculate new order number
-  const prevOrder = newPrevPoint?.order ?? 0;
-  const nextOrder = newNextPoint?.order ?? Number.MAX_SAFE_INTEGER;
+  const prevOrder = existingPrevPoint?.order ?? 0;
+  const nextOrder = existingNextPoint?.order ?? Number.MAX_SAFE_INTEGER;
   
   if (needsRenumbering(prevOrder, nextOrder)) {
     // Get all points in the affected range
@@ -77,16 +94,39 @@ export async function reorderPoint(
       .and(point => (point.order || 0) >= prevOrder && (point.order || 0) <= nextOrder)
       .toArray();
     
+    // Add the moved point to the points array if it's not already there
+    if (!points.find(p => p.id === movedPoint.id)) {
+      points.push(existingMovedPoint);
+    }
+    
     await renumberPoints(points, isSegmentation);
   } else {
-    movedPoint.order = Math.floor((prevOrder + nextOrder) / 2);
+    updatedMovedPoint.order = Math.floor((prevOrder + nextOrder) / 2);
   }
   
-  // Save all changes
-  const pointsToSave = [movedPoint, newPrevPoint, newNextPoint].filter(Boolean) as Point[];
+  // Update the previous point's next pointer
+  if (existingPrevPoint) {
+    existingPrevPoint.nextPointId = movedPoint.id;
+  }
+  
+  // Update the next point's previous pointer
+  if (existingNextPoint) {
+    existingNextPoint.previousPointId = movedPoint.id;
+  }
+  
+  // Save all changes in a transaction
   await db.transaction('rw', table, async () => {
-    for (const point of pointsToSave) {
-      await table.put(point);
+    // Save the moved point
+    await table.put(updatedMovedPoint);
+    
+    // Save the previous point if it exists
+    if (existingPrevPoint) {
+      await table.put(existingPrevPoint);
+    }
+    
+    // Save the next point if it exists
+    if (existingNextPoint) {
+      await table.put(existingNextPoint);
     }
   });
 }
