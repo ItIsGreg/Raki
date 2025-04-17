@@ -23,6 +23,7 @@ import {
   SegmentDataPoint,
 } from "./db";
 import { TaskMode } from "@/app/constants";
+import { getNextOrderNumber } from "./ordering";
 
 // The CRUD operations for the ProfilePoint table
 export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
@@ -32,7 +33,18 @@ export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
     if (!profile) {
       throw new Error("Profile not found");
     }
-    const newProfilePoint = { ...profilePoint, id };
+    
+    // Get the next order number
+    const order = await getNextOrderNumber(profilePoint.profileId, false);
+    
+    const newProfilePoint = { 
+      ...profilePoint, 
+      id,
+      order,
+      previousPointId: null,
+      nextPointId: null
+    };
+    
     await db.profilePoints.add(newProfilePoint);
     return newProfilePoint;
   } catch (error) {
@@ -435,7 +447,18 @@ export const createSegmentationProfilePoint = async (profilePoint: SegmentationP
     if (!profile) {
       throw new Error("Profile not found");
     }
-    const newProfilePoint = { ...profilePoint, id };
+    
+    // Get the next order number
+    const order = await getNextOrderNumber(profilePoint.profileId, true);
+    
+    const newProfilePoint = { 
+      ...profilePoint, 
+      id,
+      order,
+      previousPointId: null,
+      nextPointId: null
+    };
+    
     await db.segmentationProfilePoints.add(newProfilePoint);
     return newProfilePoint;
   } catch (error) {

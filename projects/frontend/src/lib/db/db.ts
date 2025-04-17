@@ -11,6 +11,9 @@ export interface ProfilePointCreate {
   valueset: string[] | undefined;
   unit: string | undefined;
   profileId: string;
+  order?: number;
+  previousPointId?: string | null;
+  nextPointId?: string | null;
 }
 
 export interface ProfilePoint extends ProfilePointCreate {
@@ -22,6 +25,9 @@ export interface SegmentationProfilePointCreate {
   explanation: string;
   synonyms: string[];
   profileId: string;
+  order?: number;
+  previousPointId?: string | null;
+  nextPointId?: string | null;
 }
 
 export interface SegmentationProfilePoint extends SegmentationProfilePointCreate {
@@ -225,6 +231,48 @@ export class MySubClassedDexie extends Dexie {
     // Add version 12 to add SegmentDataPoints
     this.version(12).stores({
       SegmentDataPoints: "++id, annotatedTextId, name",
+    });
+
+    // Add version 13 to add ordering fields
+    this.version(13).stores({
+      profilePoints: "++id, name, profileId, order, previousPointId, nextPointId",
+      segmentationProfilePoints: "++id, name, profileId, order, previousPointId, nextPointId"
+    }).upgrade(async tx => {
+      // Get all profile points and assign initial order
+      const profilePoints = await tx.table("profilePoints").toArray();
+      const segmentationProfilePoints = await tx.table("segmentationProfilePoints").toArray();
+      
+      // Helper function to assign order to points
+      const assignOrder = async (points: any[], table: any) => {
+        const pointsByProfile = points.reduce((acc, point) => {
+          if (!acc[point.profileId]) {
+            acc[point.profileId] = [];
+          }
+          acc[point.profileId].push(point);
+          return acc;
+        }, {});
+
+        for (const [profileId, profilePoints] of Object.entries(pointsByProfile)) {
+          const sortedPoints = (profilePoints as any[]).sort((a, b) => 
+            a.id.localeCompare(b.id) // Sort by ID to maintain consistent initial order
+          );
+
+          // Assign order numbers with gaps
+          sortedPoints.forEach((point, index) => {
+            point.order = (index + 1) * 1000;
+            point.previousPointId = index > 0 ? sortedPoints[index - 1].id : null;
+            point.nextPointId = index < sortedPoints.length - 1 ? sortedPoints[index + 1].id : null;
+          });
+
+          // Save all points for this profile
+          for (const point of sortedPoints) {
+            await table.put(point);
+          }
+        }
+      };
+
+      await assignOrder(profilePoints, tx.table("profilePoints"));
+      await assignOrder(segmentationProfilePoints, tx.table("segmentationProfilePoints"));
     });
 
     // Add hooks to populate default values
