@@ -1,7 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import DataPointCard from "./DataPointCard";
-import { useEffect } from "react";
 
 interface SortableDataPointCardProps<T> {
   dataPoint: T;
@@ -31,7 +30,13 @@ const SortableDataPointCard = <T extends { id: string }>(
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: dataPoint.id });
+  } = useSortable({
+    id: dataPoint.id,
+    data: {
+      type: "card",
+      dataPoint,
+    },
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),

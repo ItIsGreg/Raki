@@ -80,6 +80,29 @@ export const updateProfilePoint = async (profilePoint: ProfilePoint) => {
 };
 
 export const deleteProfilePoint = async (id: string) => {
+  const point = await db.profilePoints.get(id);
+  if (!point) return;
+
+  // Update the previous point's nextPointId
+  if (point.previousPointId) {
+    const prevPoint = await db.profilePoints.get(point.previousPointId);
+    if (prevPoint) {
+      await db.profilePoints.update(prevPoint.id, {
+        nextPointId: point.nextPointId,
+      });
+    }
+  }
+
+  // Update the next point's previousPointId
+  if (point.nextPointId) {
+    const nextPoint = await db.profilePoints.get(point.nextPointId);
+    if (nextPoint) {
+      await db.profilePoints.update(nextPoint.id, {
+        previousPointId: point.previousPointId,
+      });
+    }
+  }
+
   return db.profilePoints.delete(id);
 };
 
@@ -494,6 +517,29 @@ export const updateSegmentationProfilePoint = async (profilePoint: SegmentationP
 };
 
 export const deleteSegmentationProfilePoint = async (id: string) => {
+  const point = await db.segmentationProfilePoints.get(id);
+  if (!point) return;
+
+  // Update the previous point's nextPointId
+  if (point.previousPointId) {
+    const prevPoint = await db.segmentationProfilePoints.get(point.previousPointId);
+    if (prevPoint) {
+      await db.segmentationProfilePoints.update(prevPoint.id, {
+        nextPointId: point.nextPointId,
+      });
+    }
+  }
+
+  // Update the next point's previousPointId
+  if (point.nextPointId) {
+    const nextPoint = await db.segmentationProfilePoints.get(point.nextPointId);
+    if (nextPoint) {
+      await db.segmentationProfilePoints.update(nextPoint.id, {
+        previousPointId: point.previousPointId,
+      });
+    }
+  }
+
   return db.segmentationProfilePoints.delete(id);
 };
 

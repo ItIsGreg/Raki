@@ -35,9 +35,11 @@ const DataPointCard = <T extends { id: string }>(
         activeDataPoint?.id === dataPoint.id &&
         "bg-gray-100 shadow-lg border-black border-2"
       } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
-      onClick={() => {
-        setActiveDataPoint(dataPoint);
-        setCreatingNewDataPoint(false);
+      onClick={(e) => {
+        if (!(e.target as HTMLElement).closest(".delete-button")) {
+          setActiveDataPoint(dataPoint);
+          setCreatingNewDataPoint(false);
+        }
       }}
       data-cy={dataCy}
     >
@@ -47,11 +49,14 @@ const DataPointCard = <T extends { id: string }>(
         </CardTitle>
         <div className="flex-grow"></div>
         <TiDeleteOutline
-          className="hover:text-red-500 cursor-pointer"
+          className="delete-button hover:text-red-500 cursor-pointer"
           size={24}
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
-            deleteDataPoint(dataPoint.id);
+            deleteDataPoint(dataPoint.id).catch((error) => {
+              console.error("Error deleting data point:", error);
+            });
           }}
         />
       </CardHeader>

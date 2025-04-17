@@ -60,7 +60,11 @@ const DataPointList = <T extends { id: string; profileId: string }>(
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px of movement before starting drag
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -169,16 +173,22 @@ const DataPointList = <T extends { id: string; profileId: string }>(
   };
 
   const handleDeleteDataPoint = async (id: string) => {
-    if (!activeProfile) return;
-
-    if (activeProfile.mode === TASK_MODE.TEXT_SEGMENTATION) {
-      await deleteSegmentationProfilePoint(id);
-    } else {
-      await deleteProfilePoint(id);
+    if (!activeProfile) {
+      return;
     }
 
-    if (activeDataPoint && activeDataPoint.id === id) {
-      setActiveDataPoint(undefined);
+    try {
+      if (activeProfile.mode === TASK_MODE.TEXT_SEGMENTATION) {
+        await deleteSegmentationProfilePoint(id);
+      } else {
+        await deleteProfilePoint(id);
+      }
+
+      if (activeDataPoint && activeDataPoint.id === id) {
+        setActiveDataPoint(undefined);
+      }
+    } catch (error) {
+      console.error("Error in handleDeleteDataPoint:", error);
     }
   };
 
