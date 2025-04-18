@@ -80,7 +80,7 @@ export const runTestSuiteWithProvider = (providerType: 'OpenAI' | 'Custom') => {
       // Upload segmentation rules from fixture
       cy.get('[data-cy="upload-datapoints-button"]').click()
       cy.get('[data-cy="upload-datapoints-input"]')
-        .selectFile('cypress/fixtures/upload_test/uploadProfileRules.json', { force: true })
+        .selectFile('cypress/fixtures/upload_test/uploadSegmentationProfilePoints.json', { force: true })
       
       // Verify the segmentation rules are loaded
       cy.get('[data-cy="datapoints-container"]')

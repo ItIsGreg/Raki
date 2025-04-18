@@ -37,3 +37,11 @@ import 'cypress-file-upload';
 //     }
 //   }
 // }
+
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      dragTo(target: string): Chainable<JQuery<HTMLElement>>
+    }
+  }
+}
