@@ -36,7 +36,9 @@ const DataPointSlice = (props: DataPointSliceProps) => {
   } = props;
 
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -53,6 +55,16 @@ const DataPointSlice = (props: DataPointSliceProps) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [activeDataPointId, dataPoint.id, setActiveDataPointId]);
+
+  // Handle focus when tooltip opens
+  useEffect(() => {
+    if (activeDataPointId === dataPoint.id) {
+      // Only focus input for number and text values, not for valueset
+      if (inputRef.current && activeProfilePoint?.datatype !== "valueset") {
+        inputRef.current.focus();
+      }
+    }
+  }, [activeDataPointId, dataPoint.id, activeProfilePoint?.datatype]);
 
   return (
     <TooltipProvider>
@@ -162,7 +174,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                       });
                     }}
                   >
-                    <SelectTrigger data-cy="valueset-trigger" autoFocus>
+                    <SelectTrigger data-cy="valueset-trigger">
                       {dataPoint.value?.toString() ?? "Value"}
                     </SelectTrigger>
                     <SelectContent data-cy="valueset-content">
@@ -193,11 +205,11 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                   data-cy="value-input-container"
                 >
                   <Input
+                    ref={inputRef}
                     data-cy="value-input"
                     value={activeDataPointValue}
                     onChange={(e) => setActiveDataPointValue(e.target.value)}
                     placeholder={dataPoint.value?.toString() ?? "Value"}
-                    autoFocus
                   />
                   <div className="flex flex-row gap-1">
                     <Button
