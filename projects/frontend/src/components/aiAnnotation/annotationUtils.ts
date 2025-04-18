@@ -216,14 +216,16 @@ async function createDataPointsForAnnotatedText(
 const getReqProfilePoints = (
   activeProfilePoints: ProfilePoint[]
 ): ReqProfilePoint[] => {
-  return activeProfilePoints.map((profilePoint) => ({
-    name: profilePoint.name,
-    explanation: profilePoint.explanation,
-    synonyms: profilePoint.synonyms,
-    datatype: profilePoint.datatype,
-    valueset: profilePoint.valueset,
-    unit: profilePoint.unit,
-  }));
+  return activeProfilePoints
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
+    .map((profilePoint) => ({
+      name: profilePoint.name,
+      explanation: profilePoint.explanation,
+      synonyms: profilePoint.synonyms,
+      datatype: profilePoint.datatype,
+      valueset: profilePoint.valueset,
+      unit: profilePoint.unit,
+    }));
 };
 
 const complementMissingDatapoints = (

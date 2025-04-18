@@ -180,11 +180,13 @@ async function callSegmentationAPI(
       llm_url: config.url,
       api_key: config.apiKey,
       text: text.text,
-      profile_points: activeProfilePoints.map((point) => ({
-        name: point.name,
-        explanation: point.explanation,
-        synonyms: point.synonyms,
-      })),
+      profile_points: activeProfilePoints
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map((point) => ({
+          name: point.name,
+          explanation: point.explanation,
+          synonyms: point.synonyms,
+        })),
       max_tokens: config.maxTokens || undefined,
     };
 
