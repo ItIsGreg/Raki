@@ -69,6 +69,9 @@ export const useKeyboardNavigation = ({
             arrowRight();
           }
           break;
+        case "Escape":
+          setActiveDataPointId(undefined);
+          break;
         default:
           break;
       }
