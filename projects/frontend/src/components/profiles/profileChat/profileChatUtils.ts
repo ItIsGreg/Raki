@@ -114,10 +114,11 @@ export const adoptAllProfilePoints = async (
     throw new Error("No active profile ID provided");
   }
 
-  return Promise.all(
-    profilePoints.map((point) => {
-      const completePoint = completeProfilePoint(point, profileId);
-      return createProfilePointFn(completePoint);
-    })
-  );
+  const results = [];
+  for (const point of profilePoints) {
+    const completePoint = completeProfilePoint(point, profileId);
+    const result = await createProfilePointFn(completePoint);
+    results.push(result);
+  }
+  return results;
 };

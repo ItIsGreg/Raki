@@ -108,10 +108,11 @@ export const adoptAllSegmentationProfilePoints = async (
     throw new Error("No active profile ID provided");
   }
 
-  return Promise.all(
-    profilePoints.map((point) => {
-      const completePoint = completeSegmentationProfilePoint(point, profileId);
-      return createSegmentationProfilePointFn(completePoint);
-    })
-  );
+  const results = [];
+  for (const point of profilePoints) {
+    const completePoint = completeSegmentationProfilePoint(point, profileId);
+    const result = await createSegmentationProfilePointFn(completePoint);
+    results.push(result);
+  }
+  return results;
 };
