@@ -20,6 +20,7 @@ import { deleteDataPoint, updateDataPoint } from "@/lib/db/crud";
 import { DataPoint, ProfilePoint } from "@/lib/db/db";
 import { FaCheck } from "react-icons/fa6";
 import { TiDeleteOutline } from "react-icons/ti";
+import { useEffect, useRef } from "react";
 
 const DataPointSlice = (props: DataPointSliceProps) => {
   const {
@@ -33,6 +34,25 @@ const DataPointSlice = (props: DataPointSliceProps) => {
     activeDataPointValue,
     setActiveDataPointValue,
   } = props;
+
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        activeDataPointId === dataPoint.id &&
+        tooltipRef.current &&
+        !tooltipRef.current.contains(event.target as Node)
+      ) {
+        setActiveDataPointId(undefined);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeDataPointId, dataPoint.id, setActiveDataPointId]);
 
   return (
     <TooltipProvider>
@@ -50,7 +70,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
             {text.slice(dataPoint.match![0], dataPoint.match![1])}
           </Badge>
         </TooltipTrigger>
-        <TooltipContent side="bottom">
+        <TooltipContent side="bottom" ref={tooltipRef}>
           <Card data-cy="text-datapoint-card">
             <CardHeader className="flex flex-row gap-2">
               <CardTitle data-cy="datapoint-title">{dataPoint.name}</CardTitle>
