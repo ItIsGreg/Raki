@@ -1,11 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { TiDeleteOutline } from "react-icons/ti";
+import CompactCard from "@/components/CompactCard";
 
 export interface GenericDataPointCardProps<T> {
   dataPoint: T;
@@ -28,29 +22,22 @@ const DataPointCard = <T extends { id: string }>(
     "data-cy": dataCy,
   } = props;
 
+  const handleClick = () => {
+    setActiveDataPoint(dataPoint);
+    setCreatingNewDataPoint(false);
+  };
+
   return (
-    <Card
+    <CompactCard
       key={dataPoint.id}
-      className={`${
-        activeDataPoint?.id === dataPoint.id &&
-        "bg-gray-100 shadow-lg border-black border-2"
-      } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
-      onClick={(e) => {
-        if (!(e.target as HTMLElement).closest(".delete-button")) {
-          setActiveDataPoint(dataPoint);
-          setCreatingNewDataPoint(false);
-        }
-      }}
-      data-cy={dataCy}
-    >
-      <CardHeader className="flex flex-row">
-        <CardTitle className="truncate">
-          {(dataPoint as any).name || "Unnamed"}
-        </CardTitle>
-        <div className="flex-grow"></div>
+      title={(dataPoint as any).name || "Unnamed"}
+      isActive={activeDataPoint?.id === dataPoint.id}
+      tooltipContent={(dataPoint as any).name || "Unnamed"}
+      onClick={handleClick}
+      rightIcon={
         <TiDeleteOutline
           className="delete-button hover:text-red-500 cursor-pointer"
-          size={24}
+          size={20}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -59,13 +46,9 @@ const DataPointCard = <T extends { id: string }>(
             });
           }}
         />
-      </CardHeader>
-      <CardContent>
-        <CardDescription>
-          {(dataPoint as any).explanation || ""}
-        </CardDescription>
-      </CardContent>
-    </Card>
+      }
+      data-cy={dataCy}
+    />
   );
 };
 
