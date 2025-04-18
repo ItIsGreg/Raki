@@ -11,6 +11,8 @@ from app.models.datapoint_extraction_models import (
 from app.services.datapoint_extraction.substrings import extract_datapoint_substrings_and_match_service
 from app.services.datapoint_extraction.values import extract_values_service
 from app.services.datapoint_extraction.double_check import double_check_service
+from typing import List
+import math
 
 
 def get_text_excerpt(text: str, match: tuple[int, int], overlap: int = 25) -> str:
@@ -20,35 +22,48 @@ def get_text_excerpt(text: str, match: tuple[int, int], overlap: int = 25) -> st
     return text[start:end]
 
 
+def batch_list(items: List, batch_size: int) -> List[List]:
+    """Split a list into batches of specified size."""
+    return [items[i:i + batch_size] for i in range(0, len(items), batch_size)]
+
+
 async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
-    # extract substrings and match
-    substring_req_datapoints: list[BaseDataPoint] = []
-    for datapoint in req.datapoints:
-        substring_req_datapoints.append(
-            BaseDataPoint(
-                name=datapoint.name,
-                explanation=datapoint.explanation,
-                synonyms=datapoint.synonyms,
+    # Process datapoints in batches of 10
+    batch_size = 10
+    datapoint_batches = batch_list(req.datapoints, batch_size)
+    all_substring_res = []
+
+    # Process each batch for substring extraction
+    for batch in datapoint_batches:
+        substring_req_datapoints: list[BaseDataPoint] = []
+        for datapoint in batch:
+            substring_req_datapoints.append(
+                BaseDataPoint(
+                    name=datapoint.name,
+                    explanation=datapoint.explanation,
+                    synonyms=datapoint.synonyms,
+                )
+            )
+        
+        batch_substring_res = await extract_datapoint_substrings_and_match_service(
+            ExtractDatapointSubstringsReq(
+                api_key=req.api_key,
+                llm_provider=req.llm_provider,
+                model=req.model,
+                llm_url=req.llm_url,
+                datapoints=substring_req_datapoints,
+                text=req.text,
+                max_tokens=req.max_tokens,
             )
         )
-    substring_res = await extract_datapoint_substrings_and_match_service(
-        ExtractDatapointSubstringsReq(
-            api_key=req.api_key,
-            llm_provider=req.llm_provider,
-            model=req.model,
-            llm_url=req.llm_url,
-            datapoints=substring_req_datapoints,
-            text=req.text,
-            max_tokens=req.max_tokens,
-        )
-    )
+        all_substring_res.extend(batch_substring_res)
 
     # Identify unmatched substrings and used profile points
     unmatched_substrings = {}
     used_profile_points = set()
     unmatched_substrings_with_context = {}
     
-    for substring in substring_res:
+    for substring in all_substring_res:
         corresponding_profile_point = get_corresponding_profile_point(
             req.datapoints, substring.name
         )
@@ -94,10 +109,9 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             )
         )
 
-
         # Update substring_res with corrections and filter out unmatched
         updated_substring_res = []
-        for substring in substring_res:
+        for substring in all_substring_res:
             if substring.name in double_check_res:
                 correction = double_check_res[substring.name]
                 if correction["correction"] != "NO_CORRESPONDING_PROFILE_POINT":
@@ -106,11 +120,11 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             else:
                 updated_substring_res.append(substring)
         
-        substring_res = updated_substring_res
+        all_substring_res = updated_substring_res
 
-    # get text excerpts
+    # get text excerpts and prepare for value extraction
     extract_values_datapoints: list[ExtractValuesReqDatapoint] = []
-    for substring in substring_res:
+    for substring in all_substring_res:
         corresponding_profile_point = get_corresponding_profile_point(
             req.datapoints, substring.name
         )
@@ -129,23 +143,28 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
                 )
             )
 
-    # extract values
-    extract_values_res = await extract_values_service(
-        ExtractValuesReq(
-            api_key=req.api_key,
-            llm_provider=req.llm_provider,
-            model=req.model,
-            llm_url=req.llm_url,
-            datapoints=extract_values_datapoints,
-            max_tokens=req.max_tokens,
+    # Process value extraction in batches
+    value_batches = batch_list(extract_values_datapoints, batch_size)
+    all_extract_values_res = {}
+
+    for batch in value_batches:
+        batch_extract_values_res = await extract_values_service(
+            ExtractValuesReq(
+                api_key=req.api_key,
+                llm_provider=req.llm_provider,
+                model=req.model,
+                llm_url=req.llm_url,
+                datapoints=batch,
+                max_tokens=req.max_tokens,
+            )
         )
-    )
+        all_extract_values_res.update(batch_extract_values_res)
 
     # merge results
     pipeline_res_datapoints: list[PipelineResDatapoint] = []
-    for substring in substring_res:
+    for substring in all_substring_res:
         corresponding_value = get_corresponding_value_point(
-            extract_values_res, substring.name
+            all_extract_values_res, substring.name
         )
         pipeline_res_datapoints.append(
             PipelineResDatapoint(
