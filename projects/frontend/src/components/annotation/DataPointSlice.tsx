@@ -46,6 +46,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
         tooltipRef.current &&
         !tooltipRef.current.contains(event.target as Node)
       ) {
+        console.log("Tooltip closing for data point:", dataPoint.id);
         setActiveDataPointId(undefined);
       }
     };
@@ -60,8 +61,19 @@ const DataPointSlice = (props: DataPointSliceProps) => {
   useEffect(() => {
     if (activeDataPointId === dataPoint.id) {
       // Only focus input for number and text values, not for valueset
-      if (inputRef.current && activeProfilePoint?.datatype !== "valueset") {
-        inputRef.current.focus();
+      if (activeProfilePoint?.datatype !== "valueset") {
+        // If ref is not immediately available, try again after a short delay
+        if (!inputRef.current) {
+          const retryFocus = () => {
+            if (inputRef.current) {
+              inputRef.current.focus();
+            }
+          };
+          // Use requestAnimationFrame to wait for the next render
+          requestAnimationFrame(retryFocus);
+        } else {
+          inputRef.current.focus();
+        }
       }
     }
   }, [activeDataPointId, dataPoint.id, activeProfilePoint?.datatype]);
