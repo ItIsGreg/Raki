@@ -4,6 +4,9 @@ import { useAnnotationData } from "./hooks/useAnnotationData";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 import { generateHighlightedText } from "./utils/textAnnotationUtils";
 import { TextAnnotationProps } from "@/app/types";
+import { Button } from "@/components/ui/button";
+import { updateProfile, readProfile } from "@/lib/db/crud";
+import { Profile } from "@/lib/db/db";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -29,6 +32,37 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     activeAnnotatedText,
     activeDataPointId,
   });
+
+  const handleSaveAsExample = async () => {
+    if (!activeAnnotatedText || !activeAnnotatedDataset || !dataPoints) return;
+
+    const currentText = texts?.find(
+      (text) => text.id === activeAnnotatedText.textId
+    );
+    if (!currentText) return;
+
+    const exampleOutput: Record<string, string> = {};
+    dataPoints.forEach((dp) => {
+      if (dp.match) {
+        // Extract the substring from the text using the match indices
+        const [start, end] = dp.match;
+        exampleOutput[dp.name] = currentText.text.slice(start, end);
+      }
+    });
+
+    const profile = await readProfile(activeAnnotatedDataset.profileId);
+    if (!profile) return;
+
+    const updatedProfile: Profile = {
+      ...profile,
+      example: {
+        text: currentText.text,
+        output: exampleOutput,
+      },
+    };
+
+    await updateProfile(updatedProfile);
+  };
 
   // Handle keyboard navigation between texts
   useEffect(() => {
@@ -112,8 +146,17 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       data-cy="text-annotation-container"
     >
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle data-cy="text-annotation-title">Annotation</CardTitle>
+          <Button
+            onClick={handleSaveAsExample}
+            variant="outline"
+            disabled={
+              !activeAnnotatedText || !activeAnnotatedDataset || !dataPoints
+            }
+          >
+            Save as Example
+          </Button>
         </CardHeader>
         <CardContent
           className="whitespace-pre-wrap"

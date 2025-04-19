@@ -38,6 +38,10 @@ export interface ProfileCreate {
   name: string;
   description: string;
   mode: TaskMode;
+  example?: {
+    text: string;
+    output: Record<string, string>;
+  };
 }
 
 export interface Profile extends ProfileCreate {
@@ -300,6 +304,13 @@ export class MySubClassedDexie extends Dexie {
         id: v4(),
         value: undefined,
       });
+    });
+
+    // Add version 14 to add example field to Profiles
+    this.version(14).stores({
+      Profiles: "++id, name, mode"
+    }).upgrade(tx => {
+      // No upgrade needed as the field is optional
     });
   }
 }
