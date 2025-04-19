@@ -44,7 +44,9 @@ const DataPointSlice = (props: DataPointSliceProps) => {
       if (
         activeDataPointId === dataPoint.id &&
         tooltipRef.current &&
-        !tooltipRef.current.contains(event.target as Node)
+        !tooltipRef.current.contains(event.target as Node) &&
+        // Don't close if clicking on a select dropdown
+        !(event.target as Element).closest('[role="listbox"]')
       ) {
         setActiveDataPointId(undefined);
       }
