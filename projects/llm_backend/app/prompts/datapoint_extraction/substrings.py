@@ -37,37 +37,7 @@ class Extract_Datapoint_Substrings_Template_List:
     Die Ausgabe sollte gültiges JSON sein. Fügen Sie keine zusätzlichen Informationen zur Ausgabe hinzu, wie eine Erklärung der Datapoints oder des Textes.
     Verwenden Sie keine abschließenden Kommas in der JSON-Ausgabe.
 
-    
-    %EXAMPLE_TEXT:
-    Dilatierter, nicht hypertrophierter (IVSD: 12.2 mm, LVPWD: 10.0 mm) linker Ventrikel mit einer mittlelgradig eingeschränkten systolischen Funktion (EF n. Simpson - 35 %).
-    Hinweis für erhöhte Füllungsdrücke (E/E': 25.5 1). Linker Vorhof erweitert (LAVI: 59.3 ml/m²).
-    Diastolische Dysfunktion Grad III: AoWurzel und Aorta ascendens normal weit.
-    Rechter Ventrikel dilatiert (RVEDD: 4.2 cm). RA dilatiert (RAA: 21.3 cm²). Eingeschränkte RV Funktion (TAPSE: 1.4 cm, S´: 0,07 m/s).
-    Mitralklappe mit Zust.n. 2x MK-Clip : gering sklerosiert, ausreichend öffnend,
-    Insuffizienz III Trikuspidalklappe: gering sklerosiert, gut öffnend, Insuffizienz I,  mit einem RVSP von 36 mmHg + ZVD.
-    Aortenklappe: Trikuspid, gut öffnend, Insuffizienz I Kein PE erkennbar, VCI: 19 mm,  NB: Pleuraergüsse beidseits!
-
-    %EXAMPLE_DATOINTS:
-    [{{
-        'name': 'IVSD',
-        'explanation': '',
-        'synonyms': ['Interventrikuläres Septum diastolisch']}},
-    {{
-        'name': 'LVPWD',
-        'explanation': '',
-        'synonyms': []}},
-    {{
-        'name': 'LVEF',
-        'explanation': 'Linksventrikuläre Ejektionsfraktion',
-        'synonyms': ['Linksventrikuläre Ejektionsfraktion', 'EF n. Simpson']
-    }}]
-
-    %EXAMPLE_OUTPUT:
-    {{
-        "IVSD": "IVSD: 12.2 mm",
-        "LVPWD": "LVPWD: 10.0 mm",
-        "LVEF": "EF n. Simpson - 35 %"
-    }}
+    {example_section}
 
     JSON_OUTPUT:
 """
@@ -108,7 +78,13 @@ class Extract_Datapoint_Substrings_Template_List:
     The output should be valid JSON. Do not add any additional information to the output, like an explanation of the datapoints or the text.
     Do not use trailing commas in the JSON output.
 
-    %EXAMPLE_TEXT:
+    {example_section}
+
+    JSON_OUTPUT:
+"""
+
+        # Default examples
+        self.default_example_text = """
     Dilatierter, nicht hypertrophierter (IVSD: 12.2 mm, LVPWD: 10.0 mm) linker Ventrikel mit einer mittlelgradig eingeschränkten systolischen Funktion (EF n. Simpson - 35 %).
     Hinweis für erhöhte Füllungsdrücke (E/E': 25.5 1). Linker Vorhof erweitert (LAVI: 59.3 ml/m²).
     Diastolische Dysfunktion Grad III: AoWurzel und Aorta ascendens normal weit.
@@ -116,34 +92,31 @@ class Extract_Datapoint_Substrings_Template_List:
     Mitralklappe mit Zust.n. 2x MK-Clip : gering sklerosiert, ausreichend öffnend,
     Insuffizienz III Trikuspidalklappe: gering sklerosiert, gut öffnend, Insuffizienz I,  mit einem RVSP von 36 mmHg + ZVD.
     Aortenklappe: Trikuspid, gut öffnend, Insuffizienz I Kein PE erkennbar, VCI: 19 mm,  NB: Pleuraergüsse beidseits!
+    """
 
-    %EXAMPLE_DATOINTS:
-    [{{
-        'name': 'IVSD',
-        'explanation': '',
-        'synonyms': ['Interventrikuläres Septum diastolisch']}},
-    {{
-        'name': 'LVPWD',
-        'explanation': '',
-        'synonyms': []}},
-    {{
-        'name': 'LVEF',
-        'explanation': 'Linksventrikuläre Ejektionsfraktion',
-        'synonyms': ['Linksventrikuläre Ejektionsfraktion', 'EF n. Simpson']
-    }}]
+        self.default_example_datapoints = [
+            {
+                'name': 'IVSD',
+                'explanation': '',
+                'synonyms': ['Interventrikuläres Septum diastolisch']
+            },
+            {
+                'name': 'LVPWD',
+                'explanation': '',
+                'synonyms': []
+            },
+            {
+                'name': 'LVEF',
+                'explanation': 'Linksventrikuläre Ejektionsfraktion',
+                'synonyms': ['Linksventrikuläre Ejektionsfraktion', 'EF n. Simpson']
+            }
+        ]
 
-    %EXAMPLE_OUTPUT:
-    {{
-        "IVSD": "IVSD: 12.2 mm",
-        "LVPWD": "LVPWD: 10.0 mm",
-        "LVEF": "EF n. Simpson - 35 %"
-    }}
-    
-
-
-
-    JSON_OUTPUT:
-"""
+        self.default_example_output = {
+            "IVSD": "IVSD: 12.2 mm",
+            "LVPWD": "LVPWD: 10.0 mm",
+            "LVEF": "EF n. Simpson - 35 %"
+        }
 
         self.select_substring_german = """
 
@@ -234,17 +207,43 @@ class Extract_Datapoint_Substrings_Template_List:
 class Extract_Datapoint_Substrings_Prompt_List:
     def __init__(self):
         template_list = Extract_Datapoint_Substrings_Template_List()
+        
+        def create_example_section(example_text=None, example_datapoints=None, example_output=None):
+            if example_text is None:
+                example_text = template_list.default_example_text
+            if example_datapoints is None:
+                example_datapoints = template_list.default_example_datapoints
+            if example_output is None:
+                example_output = template_list.default_example_output
+                
+            return f"""
+    %EXAMPLE_TEXT:
+    {example_text}
+
+    %EXAMPLE_DATOINTS:
+    {example_datapoints}
+
+    %EXAMPLE_OUTPUT:
+    {example_output}
+    """
+
         self.extract_datapoint_substrings = PromptTemplate(
-            input_variables=["datapoints", "text"],
+            input_variables=["datapoints", "text", "example_text", "example_datapoints", "example_output"],
             template=template_list.extract_datapoint_substrings,
+            partial_variables={
+                "example_section": create_example_section()
+            }
         )
         self.select_substring = PromptTemplate(
             input_variables=["datapoint", "substrings"],
             template=template_list.select_substring,
         )
         self.extract_datapoint_substrings_german = PromptTemplate(
-            input_variables=["datapoints", "text"],
+            input_variables=["datapoints", "text", "example_text", "example_datapoints", "example_output"],
             template=template_list.extract_datapoint_substrings_german,
+            partial_variables={
+                "example_section": create_example_section()
+            }
         )
         self.select_substring_german = PromptTemplate(
             input_variables=["datapoint", "substrings"],

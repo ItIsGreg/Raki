@@ -25,6 +25,9 @@ class DataPoint(BaseDataPoint):
 class ExtractDatapointSubstringsReq(BaseRequest):
     datapoints: list[BaseDataPoint]
     text: str
+    example_text: str | None = None
+    example_datapoints: list[BaseDataPoint] | None = None
+    example_output: dict[str, str] | None = None
 
 
 class DataPointSubstring(BaseModel):
