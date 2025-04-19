@@ -34,6 +34,7 @@ const Annotation = () => {
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         setActiveDataPointId={setActiveDataPointId}
         activeAnnotatedText={activeAnnotatedText}
+        setActiveAnnotatedText={setActiveAnnotatedText}
       />
       <DataPointList
         data-cy="data-point-list"

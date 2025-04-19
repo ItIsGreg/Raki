@@ -6,6 +6,7 @@ import {
   readProfilePoint,
   readProfilePointsByProfile,
   readTextsByDataset,
+  readAnnotatedTextsByAnnotatedDataset,
 } from "@/lib/db/crud";
 import {
   AnnotatedDataset,
@@ -29,6 +30,7 @@ interface AnnotationData {
   activeDataPoint: DataPoint | undefined;
   activeProfilePoints: ProfilePoint[] | undefined;
   activeProfilePoint: ProfilePoint | undefined;
+  annotatedTexts: AnnotatedText[] | undefined;
 }
 
 export const useAnnotationData = ({
@@ -38,6 +40,11 @@ export const useAnnotationData = ({
 }: UseAnnotationDataProps): AnnotationData => {
   const texts = useLiveQuery(
     () => readTextsByDataset(activeAnnotatedDataset?.datasetId),
+    [activeAnnotatedDataset]
+  );
+
+  const annotatedTexts = useLiveQuery(
+    () => readAnnotatedTextsByAnnotatedDataset(activeAnnotatedDataset?.id),
     [activeAnnotatedDataset]
   );
 
@@ -82,5 +89,6 @@ export const useAnnotationData = ({
     activeDataPoint,
     activeProfilePoints,
     activeProfilePoint,
+    annotatedTexts,
   };
 };

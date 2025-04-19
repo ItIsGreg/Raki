@@ -1,9 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAnnotationData } from "./hooks/useAnnotationData";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 import { generateHighlightedText } from "./utils/textAnnotationUtils";
 import { TextAnnotationProps } from "@/app/types";
+
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
     activeAnnotatedDataset,
@@ -11,6 +12,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     activeDataPointId,
     setActiveDataPointId,
     activeAnnotatedText,
+    setActiveAnnotatedText,
   } = props;
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
@@ -21,11 +23,53 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     activeDataPoint,
     activeProfilePoints,
     activeProfilePoint,
+    annotatedTexts,
   } = useAnnotationData({
     activeAnnotatedDataset,
     activeAnnotatedText,
     activeDataPointId,
   });
+
+  // Handle keyboard navigation between texts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!texts || !activeAnnotatedText || !annotatedTexts) return;
+
+      // Sort annotated texts alphabetically by filename, matching AnnotatedTextList's order
+      const sortedAnnotatedTexts = annotatedTexts
+        .map((annotatedText) => ({
+          ...annotatedText,
+          filename:
+            texts.find((text) => text.id === annotatedText.textId)?.filename ||
+            "",
+        }))
+        .sort((a, b) =>
+          a.filename.localeCompare(b.filename, undefined, {
+            sensitivity: "base",
+          })
+        );
+
+      const currentIndex = sortedAnnotatedTexts.findIndex(
+        (at) => at.id === activeAnnotatedText.id
+      );
+
+      if (event.key === "ArrowUp" && currentIndex > 0) {
+        event.preventDefault();
+        setActiveAnnotatedText(sortedAnnotatedTexts[currentIndex - 1]);
+      } else if (
+        event.key === "ArrowDown" &&
+        currentIndex < sortedAnnotatedTexts.length - 1
+      ) {
+        event.preventDefault();
+        setActiveAnnotatedText(sortedAnnotatedTexts[currentIndex + 1]);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [texts, activeAnnotatedText, annotatedTexts, setActiveAnnotatedText]);
 
   useKeyboardNavigation({
     dataPoints,

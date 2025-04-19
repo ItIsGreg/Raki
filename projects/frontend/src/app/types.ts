@@ -91,13 +91,12 @@ export interface ResDataPoint {
 }
 
 export interface TextAnnotationProps {
-  activeAnnotatedDataset: AnnotatedDataset | undefined;
-  setActiveAnnotatedDataset: (
-    annotatedDataset: AnnotatedDataset | undefined
-  ) => void;
-  activeDataPointId: string | undefined;
-  setActiveDataPointId: (dataPointId: string | undefined) => void;
-  activeAnnotatedText: AnnotatedText | undefined;
+  activeAnnotatedDataset?: AnnotatedDataset;
+  setActiveAnnotatedDataset: (dataset: AnnotatedDataset | undefined) => void;
+  activeDataPointId?: string;
+  setActiveDataPointId: (id: string | undefined) => void;
+  activeAnnotatedText?: AnnotatedText;
+  setActiveAnnotatedText: (text: AnnotatedText | undefined) => void;
 }
 
 export interface AnnotationDataPointListProps {
