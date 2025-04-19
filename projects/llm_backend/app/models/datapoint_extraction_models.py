@@ -22,12 +22,15 @@ class DataPoint(BaseDataPoint):
     unit: str
 
 
+class Example(BaseModel):
+    text: str
+    output: dict[str, str]
+
+
 class ExtractDatapointSubstringsReq(BaseRequest):
     datapoints: list[BaseDataPoint]
     text: str
-    example_text: str | None = None
-    example_datapoints: list[BaseDataPoint] | None = None
-    example_output: dict[str, str] | None = None
+    example: Example | None = None
 
 
 class DataPointSubstring(BaseModel):
@@ -50,6 +53,7 @@ class ExtractValuesReq(BaseRequest):
 class PipelineReq(BaseRequest):
     text: str
     datapoints: list[DataPoint]
+    example: Example | None = None
 
 
 class PipelineResDatapoint(BaseModel):

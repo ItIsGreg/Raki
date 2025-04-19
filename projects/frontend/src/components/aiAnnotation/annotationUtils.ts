@@ -158,20 +158,10 @@ async function callAnnotationAPI(
   try {
     // Get the profile to access its example
     const profileId = activeProfilePoints[0]?.profileId;
-    console.log("Attempting to get profile with ID:", profileId);
-    
     const profile = await db.Profiles.get(profileId);
     if (!profile) {
-      console.error("Profile not found for ID:", profileId);
       throw new Error("Profile not found");
     }
-    
-    console.log("Retrieved profile:", {
-      id: profile.id,
-      name: profile.name,
-      hasExample: !!profile.example,
-      example: profile.example
-    });
 
     const body = {
       llm_provider: config.provider,
@@ -184,16 +174,6 @@ async function callAnnotationAPI(
       example: profile.example || undefined,
     };
 
-    console.log("Sending request to backend with body:", {
-      ...body,
-      api_key: body.api_key ? "[REDACTED]" : undefined, // Don't log the actual API key
-      text: body.text.substring(0, 100) + "...", // Only log first 100 chars of text
-      example: body.example ? {
-        text: body.example.text.substring(0, 100) + "...",
-        output: body.example.output
-      } : undefined
-    });
-
     const request = {
       method: "POST",
       mode: "cors" as const,
@@ -203,20 +183,13 @@ async function callAnnotationAPI(
       body: JSON.stringify(body),
     };
 
-    console.log("Complete request object:", {
-      ...request,
-      body: JSON.parse(request.body) // Log the parsed body for better readability
-    });
-
     const response = await fetch(`${backendURL}/datapoint-extraction/pipeline/pipeline`, request);
     if (!response.ok) {
-      console.error("Network response was not ok. Status:", response.status);
       return { data: [], aiFaulty: true };
     }
     const data = await response.json();
     return { data, aiFaulty: false };
   } catch (error) {
-    console.error("Error in callAnnotationAPI:", error);
     return { data: [], aiFaulty: true };
   }
 }

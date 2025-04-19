@@ -54,6 +54,7 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
                 datapoints=substring_req_datapoints,
                 text=req.text,
                 max_tokens=req.max_tokens,
+                example=req.example,
             )
         )
         all_substring_res.extend(batch_substring_res)

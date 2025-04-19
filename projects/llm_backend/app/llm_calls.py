@@ -14,6 +14,7 @@ from langchain_community.chat_models.azureml_endpoint import (
 
 from app.utils.utils import handle_json_prefix
 from rich import print
+from rich.panel import Panel
 
 import logging
 
@@ -228,7 +229,6 @@ async def call_llm(
     max_tokens: int,
     stream: bool = False,
 ):
-
     if llm_provider == "openai":
         if stream:
             return await call_openai_stream(

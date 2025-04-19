@@ -1,9 +1,9 @@
 from langchain.prompts import PromptTemplate
+from rich.panel import Panel
 
 
 class Extract_Datapoint_Substrings_Template_List:
     def __init__(self) -> None:
-
         self.extract_datapoint_substrings_german = """
     Sie sind Assistent eines Forschers, der Datapoint-Teilstrings aus einem Text extrahiert.
     Sie erhalten eine Liste von Datapoints, die extrahiert werden sollen, und den Text, aus dem sie extrahiert werden sollen.
@@ -119,7 +119,6 @@ class Extract_Datapoint_Substrings_Template_List:
         }
 
         self.select_substring_german = """
-
     Sie sind Assistent eines Forschers, der Datapoint-Teilstrings aus einem Text extrahiert.
     Sie erhalten eine Datapoint-Definition und eine Liste von Textausschnitten aus einem Text.
     Im Textausschnitt wird ein Teilstring markiert, der angeblich die Informationen für den Datapoint enthält.
@@ -208,44 +207,45 @@ class Extract_Datapoint_Substrings_Prompt_List:
     def __init__(self):
         template_list = Extract_Datapoint_Substrings_Template_List()
         
-        def create_example_section(example_text=None, example_datapoints=None, example_output=None):
-            if example_text is None:
-                example_text = template_list.default_example_text
-            if example_datapoints is None:
-                example_datapoints = template_list.default_example_datapoints
-            if example_output is None:
-                example_output = template_list.default_example_output
-                
-            return f"""
-    %EXAMPLE_TEXT:
-    {example_text}
-
-    %EXAMPLE_DATOINTS:
-    {example_datapoints}
-
-    %EXAMPLE_OUTPUT:
-    {example_output}
-    """
-
         self.extract_datapoint_substrings = PromptTemplate(
-            input_variables=["datapoints", "text", "example_text", "example_datapoints", "example_output"],
-            template=template_list.extract_datapoint_substrings,
-            partial_variables={
-                "example_section": create_example_section()
-            }
+            input_variables=["datapoints", "text", "example", "example_section"],
+            template=template_list.extract_datapoint_substrings
         )
+
+        self.extract_datapoint_substrings_german = PromptTemplate(
+            input_variables=["datapoints", "text", "example", "example_section"],
+            template=template_list.extract_datapoint_substrings_german
+        )
+
         self.select_substring = PromptTemplate(
             input_variables=["datapoint", "substrings"],
             template=template_list.select_substring,
         )
-        self.extract_datapoint_substrings_german = PromptTemplate(
-            input_variables=["datapoints", "text", "example_text", "example_datapoints", "example_output"],
-            template=template_list.extract_datapoint_substrings_german,
-            partial_variables={
-                "example_section": create_example_section()
-            }
-        )
+
         self.select_substring_german = PromptTemplate(
             input_variables=["datapoint", "substrings"],
             template=template_list.select_substring_german,
         )
+
+        self.template_list = template_list
+
+    def create_example_section(self, example=None):
+        if example is None:
+            return f"""
+    %EXAMPLE_TEXT:
+    {self.template_list.default_example_text}
+
+    %EXAMPLE_DATAPOINTS:
+    {self.template_list.default_example_datapoints}
+
+    %EXAMPLE_OUTPUT:
+    {self.template_list.default_example_output}
+    """
+        else:
+            return f"""
+    %EXAMPLE_TEXT:
+    {example.text}
+
+    %EXAMPLE_OUTPUT:
+    {example.output}
+    """
