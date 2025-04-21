@@ -54,6 +54,9 @@ export function DataPointEditor(props: DataPointEditorProps) {
         valueset,
         unit,
         profileId: activeProfile!.id,
+        order: activeDataPoint.order,
+        previousPointId: activeDataPoint.previousPointId,
+        nextPointId: activeDataPoint.nextPointId,
         ...updates,
       });
     }

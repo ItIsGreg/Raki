@@ -72,8 +72,11 @@ export async function reorderPoint(
   const existingMovedPoint = await table.get(movedPoint.id);
   const existingPrevPoint = newPrevPoint ? await table.get(newPrevPoint.id) : null;
   const existingNextPoint = newNextPoint ? await table.get(newNextPoint.id) : null;
-  
-  if (!existingMovedPoint) return;
+
+  if (!existingMovedPoint) {
+    console.error('Moved point not found in database');
+    return;
+  }
   
   // Update linked list pointers
   const updatedMovedPoint = {
@@ -85,7 +88,7 @@ export async function reorderPoint(
   // Calculate new order number
   const prevOrder = existingPrevPoint?.order ?? 0;
   const nextOrder = existingNextPoint?.order ?? Number.MAX_SAFE_INTEGER;
-  
+
   if (needsRenumbering(prevOrder, nextOrder)) {
     // Get all points in the affected range
     const points = await table
@@ -101,7 +104,8 @@ export async function reorderPoint(
     
     await renumberPoints(points, isSegmentation);
   } else {
-    updatedMovedPoint.order = Math.floor((prevOrder + nextOrder) / 2);
+    const newOrder = Math.floor((prevOrder + nextOrder) / 2);
+    updatedMovedPoint.order = newOrder;
   }
   
   // Update the previous point's next pointer

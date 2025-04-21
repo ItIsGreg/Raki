@@ -29,13 +29,21 @@ import { getNextOrderNumber } from "./ordering";
 export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
   const id = v4();
   try {
+    console.log('Creating new profile point:', {
+      id,
+      profileId: profilePoint.profileId,
+      name: profilePoint.name
+    });
+
     const profile = await db.Profiles.get(profilePoint.profileId);
     if (!profile) {
+      console.error('Profile not found for point creation:', profilePoint.profileId);
       throw new Error("Profile not found");
     }
     
     // Get the next order number
     const order = await getNextOrderNumber(profilePoint.profileId, false);
+    console.log('Assigned order number:', order);
     
     const newProfilePoint = { 
       ...profilePoint, 
@@ -46,8 +54,14 @@ export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
     };
     
     await db.profilePoints.add(newProfilePoint);
+    console.log('Successfully created profile point:', {
+      id,
+      order,
+      name: newProfilePoint.name
+    });
     return newProfilePoint;
   } catch (error) {
+    console.error('Failed to create profile point:', error);
     throw new Error(
       "Failed to create profile point: " + (error as Error).message
     );
