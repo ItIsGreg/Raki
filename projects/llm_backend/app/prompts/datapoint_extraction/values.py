@@ -8,11 +8,8 @@ class Extract_Values_Template_List:
         Sie sind Assistent eines Forschers, der Datenpunkte aus einem Text extrahiert.
         Sie erhalten eine Liste von Datenpunkten mit einer Spezifikation zu ihrem Datentyp, Einheit und Wertebereich.
         Für jeden Datenpunkt erhalten Sie einen Textauszug, der den Datenpunkt enthalten sollte.
-
         Ihre Aufgabe ist es, den Wert des Datenpunkts aus dem Text zu extrahieren und im angegebenen Format bereitzustellen.
-        Wenn der Datenpunkt nicht im Text enthalten ist, lassen Sie ihn einfach im Ausgabewert aus.
         Wenn der Datenpunkt im Text enthalten ist, der Wert jedoch nicht vorhanden ist, fügen Sie einfach einen leeren String ein.
-        Wenn der Datenpunkt im Text enthalten ist, der Wert jedoch nicht im angegebenen Wertebereich liegt, fügen Sie einfach einen leeren String ein.
 
         
         %DATAPOINTS:
@@ -21,13 +18,12 @@ class Extract_Values_Template_List:
         Die Ausgabe sollte so aussehen:
 
         {{
-            "datapoint_name_1": "value1",
-            "datapoint_name_2": "value2",
+            "datapoint_name_1": {{"explanation": "explanation1", "value": "value1"}},
+            "datapoint_name_2": {{"explanation": "explanation2", "value": "value2"}},
             ...
         }}
 
         Die Ausgabe sollte gültiges JSON sein und nur gültiges JSON.
-        Fügen Sie keine zusätzlichen Informationen zur Ausgabe hinzu, wie eine Erklärung der Datenpunkte oder wie Sie die Datenpunkte verarbeitet haben.
         Verwenden Sie keine abschließenden Kommas in der JSON-Ausgabe.
 
         %EXAMPLE_DATAPOINTS:
@@ -53,8 +49,8 @@ class Extract_Values_Template_List:
 
         %EXAMPLE_OUTPUT:
         {{
-            "IVSD": "8.5",
-            "LVPWD": "10.3"
+            "IVSD": {{"explanation": "The IVSD is present in the text and is shown with a value of 8.5 mm.", "value": "8.5"}},
+            "LVPWD": {{"explanation": "The LVPWD is present in the text and is shown with a value of 10.3 mm.", "value": "10.3"}}
         }}
 
         JSON_OUTPUT:
@@ -66,9 +62,8 @@ class Extract_Values_Template_List:
         For each datapoint you will be provided with a text excerpt, that should contain the datapoint.
 
         Your task is to extract the value of the datapoint from the text and provide it in the specified format.
-        If the datapoint is not present in the text, just leave it out in the output.
-        If the datapoint is present in the text, but the value is not present, just insert an empty string.
-        If the datapoint is present in the text, but the value is not in the specified valueset, just insert an empty string.
+        Provide a short explanation for each value. Why did you chose this value? After that provide the value
+        Always adhere to the json schema defined below.
 
         %DATAPOINTS:
         {datapoints}
@@ -76,13 +71,12 @@ class Extract_Values_Template_List:
         The output should look like this:
 
         {{
-            "datapoint_name_1": "value1",
-            "datapoint_name_2": "value2",
+            "datapoint_name_1": {{"explanation": "explanation1", "value": "value1"}},
+            "datapoint_name_2": {{"explanation": "explanation2", "value": "value2"}},
             ...
         }}
 
         The output should be valid JSON and only valid JSON.
-        Do not add any additional information to the output, like an explanation of the datapoints or how you processed the datapoints.
         Do not use trailing commas in the JSON output. Do not attempt to write code to solve the problem.
         Do not attempt to attempt to use some tool or function calling to solve the problem.
 
@@ -110,8 +104,8 @@ class Extract_Values_Template_List:
 
         %EXAMPLE_OUTPUT:
         {{
-            "IVSD": "8.5",
-            "LVPWD": "10.3"
+            "IVSD": {{"explanation": "The IVSD is present in the text and is shown with a value of 8.5 mm.", "value": "8.5"}},
+            "LVPWD": {{"explanation": "The LVPWD is present in the text and is shown with a value of 10.3 mm.", "value": "10.3"}}
         }}
 
         JSON_OUTPUT:

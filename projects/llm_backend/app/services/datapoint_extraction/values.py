@@ -12,7 +12,7 @@ async def extract_values_service(
     req: ExtractValuesReq,
     lang: str = prompt_language,
     call_llm_function: Callable = call_llm,
-):
+) -> dict:
 
     lang_prompts = {
         "de": prompt_list.extract_values_german,
@@ -32,5 +32,13 @@ async def extract_values_service(
         llm_url=req.llm_url,
         max_tokens=req.max_tokens,
     )
+
+    def convert_result(result: dict) -> dict:
+        return {
+            key: value["value"]
+            for key, value in result.items()
+        }
+
+    result = convert_result(result)
 
     return result
