@@ -53,6 +53,9 @@ export const LLMProviderSelect = () => {
           <SelectItem value="custom" data-cy="llm-provider-custom">
             Custom Provider
           </SelectItem>
+          <SelectItem value="azure_openai" data-cy="llm-provider-azure-openai">
+            Azure OpenAI
+          </SelectItem>
         </SelectContent>
       </Select>
     </div>
