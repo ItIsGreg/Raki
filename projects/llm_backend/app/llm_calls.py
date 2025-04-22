@@ -1,6 +1,8 @@
 import json
 from typing import Any
 import re
+import asyncio
+import logging
 
 from langchain_core.prompts.base import BasePromptTemplate
 
@@ -10,20 +12,25 @@ from langchain_community.chat_models.azureml_endpoint import (
     AzureMLChatOnlineEndpoint,
     AzureMLEndpointApiType,
     LlamaChatContentFormatter,
+    CustomOpenAIChatContentFormatter,
 )
+from azure.ai.inference import ChatCompletionsClient
+from azure.ai.inference.models import SystemMessage, UserMessage
+from azure.core.credentials import AzureKeyCredential
 
 from app.utils.utils import handle_json_prefix
 from rich import print
 from rich.panel import Panel
 
-import logging
+# Disable Azure SDK's HTTP logging
+logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.WARNING)
 
 # openai.api_key = ***REMOVED***
 # openai.base_url = (
 #     ***REMOVED***  # Replace with your local server's address
 # )
 
-logging.basicConfig(level=logging.ERROR)  # Changed to ERROR level
+logging.basicConfig(level=logging.INFO)  # Changed to INFO level
 logger = logging.getLogger(__name__)
 
 
@@ -171,22 +178,48 @@ async def call_azure_stream(
     llm_url: str,
     max_tokens: int,
 ):
+    try:
+        client = ChatCompletionsClient(
+            endpoint=llm_url,
+            credential=AzureKeyCredential(api_key),
+        )
 
-    llm_model = AzureMLChatOnlineEndpoint(
-        endpoint_url=llm_url,
-        endpoint_api_type=AzureMLEndpointApiType.serverless,
-        endpoint_api_key=api_key,
-        content_formatter=LlamaChatContentFormatter(),
-    )
-    output_parser = StrOutputParser()
+        # Convert the prompt template to messages
+        messages = []
+        if "system_message" in prompt_parameters:
+            messages.append(SystemMessage(content=prompt_parameters["system_message"]))
+        
+        if "user_message" in prompt_parameters:
+            messages.append(UserMessage(content=prompt_parameters["user_message"]))
+        else:
+            formatted_prompt = prompt.format(**prompt_parameters)
+            messages.append(UserMessage(content=formatted_prompt))
 
-    chain = prompt | llm_model | output_parser
+        async def async_generator():
+            try:
+                response = client.complete(
+                    stream=True,
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=0,
+                    top_p=0.1,
+                    presence_penalty=0.0,
+                    frequency_penalty=0.0,
+                    model=model
+                )
 
-    async def async_generator():
-        async for chunk in chain.astream(prompt_parameters):
-            yield chunk
+                for update in response:
+                    if update.choices:
+                        chunk = update.choices[0].delta.content or ""
+                        if chunk:
+                            yield chunk
+                    await asyncio.sleep(0.01)
+            finally:
+                client.close()
 
-    return async_generator()
+        return async_generator()
+    except Exception as e:
+        raise
 
 
 async def call_self_hosted_model_stream(
