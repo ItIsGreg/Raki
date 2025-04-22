@@ -453,7 +453,11 @@ async def call_llm(
 
 
 def clean_llm_response(text):
-    # find json in llm response that could contain prose
+    # If the response is already a number or simple string, return it as is
+    if isinstance(text, (int, float)) or (isinstance(text, str) and text.strip().isdigit()):
+        return text
+    
+    # Try to find JSON in the response
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if match:
         json_str = match.group(0)
@@ -463,8 +467,6 @@ def clean_llm_response(text):
             # Convert back to a formatted JSON string
             return json.dumps(json_obj, indent=2)
         except json.JSONDecodeError:
-            logger.error("Failed to parse JSON in clean_llm_response: %s", text)
-            return "Error: Invalid JSON found in the text"
+            return text  # Return original text if JSON parsing fails
     else:
-        logger.error("No JSON object found in text: %s", text)
-        return "Error: No JSON object found in the text"
+        return text  # Return original text if no JSON found
