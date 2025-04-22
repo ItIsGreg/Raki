@@ -1,4 +1,4 @@
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Dict, Any
 from pydantic import BaseModel
 
 
@@ -75,3 +75,13 @@ class ProfileChatRequest(BaseRequest):
 class DoubleCheckReq(BaseRequest):
     extracted_substrings: dict[str, dict[str, str]]
     profile_point_list: dict[str, dict[str, str | list[str]]]
+
+
+class ExtractSubstringsReq(BaseModel):
+    datapoints: List[DataPoint]
+    text: str
+    llm_provider: str
+    api_key: str
+    model: str
+    llm_url: str
+    max_tokens: int

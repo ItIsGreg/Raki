@@ -56,8 +56,10 @@ class Extract_Datapoint_Substrings_Template_List:
     For each datapoint, you are supposed to extract the substring from the text, containing the information for the datapoint.
     Try to extract a substring that contains the main point of the datapoint. The substring ideally should be 2 words long.
     If the substring is representing a medication, only extract the name of the medication, not the dosage or frequency.
-    If the datapoint is not present in the text, you should leave out the datapoint in the response.
-    Do not provide any explanations or additional information in the response. Do not attempt to write code to solve the problem.
+    For each datapoint provide a short explanation (1-2 sentences) about whether and why the datapoint is present in the text or not.
+    Like for example which synonyms are present in the text. If the datapoint is not present, just say that it is not present.
+    If the datapoint is not present then return an empty string for the substring.
+    Do not attempt to write code to solve the problem.
     Do not attempt to attempt to use some tool or function calling to solve the problem.
 
     %DATAPOINTS:
@@ -69,13 +71,13 @@ class Extract_Datapoint_Substrings_Template_List:
     The output should look like this:
 
     {{
-        "datapoint1": "substring_from_text1",
-        "datapoint2": "substring_from_text2",
-        "datapoint3": "substring_from_text3",
+        "datapoint1": {{"explanation": "explanation1", "substring": "substring_from_text1"}},
+        "datapoint2": {{"explanation": "explanation2", "substring": ""}},
+        "datapoint3": {{"explanation": "explanation3", "substring": "substring_from_text3"}},
         ...
     }}
 
-    The output should be valid JSON. Do not add any additional information to the output, like an explanation of the datapoints or the text.
+    The output should be valid JSON.
     Do not use trailing commas in the JSON output.
 
     {example_section}
@@ -113,9 +115,9 @@ class Extract_Datapoint_Substrings_Template_List:
         ]
 
         self.default_example_output = {
-            "IVSD": "IVSD: 12.2 mm",
-            "LVPWD": "LVPWD: 10.0 mm",
-            "LVEF": "EF n. Simpson - 35 %"
+            "IVSD": {"explanation": {"explanation": "The IVSD is present in the text.", "substring": "IVSD: 12.2 mm"}},
+            "LVPWD": {"explanation": "The LVPWD is not present in the text.", "substring": ""},
+            "LVEF": {"explanation": "The LVEF is present in the text.", "substring": "EF n. Simpson - 35 %"}
         }
 
         self.select_substring_german = """

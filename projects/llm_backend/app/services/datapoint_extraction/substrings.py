@@ -54,7 +54,7 @@ async def extract_datapoint_substrings_service(
 
     def convert_result(result: dict) -> list[DataPointSubstring]:
         return [
-            DataPointSubstring(name=key, substring=value)
+            DataPointSubstring(name=key, substring=value["substring"])
             for key, value in result.items()
         ]
 
