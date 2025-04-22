@@ -166,6 +166,9 @@ export function DataPointEditor(props: DataPointEditorProps) {
               valueset: valueset,
               unit: unit,
               profileId: activeProfile!.id,
+              order: activeDataPoint.order,
+              previousPointId: activeDataPoint.previousPointId,
+              nextPointId: activeDataPoint.nextPointId,
             });
             resetEditor();
           }
@@ -205,6 +208,9 @@ export function DataPointEditor(props: DataPointEditorProps) {
           valueset: data.valueset,
           unit: data.unit,
           profileId: activeProfile!.id,
+          order: activeDataPoint.order,
+          previousPointId: activeDataPoint.previousPointId,
+          nextPointId: activeDataPoint.nextPointId,
         });
       }
     }, 1000),
