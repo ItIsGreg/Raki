@@ -180,7 +180,7 @@ const DataPointList = (props: GenericDataPointListProps) => {
                     {mode === TASK_MODE.DATAPOINT_EXTRACTION && (
                       <div className="w-24 flex-shrink-0">
                         <span className="text-sm text-gray-500 truncate block">
-                          {value || "No value"}
+                          {value}
                         </span>
                       </div>
                     )}
