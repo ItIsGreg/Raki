@@ -4,6 +4,7 @@ from app.models.datapoint_extraction_models import DoubleCheckReq
 from app.prompts.datapoint_extraction.double_check import DoubleCheckTemplateList
 from app.config.environment import prompt_language
 from langchain.prompts import PromptTemplate
+import json
 
 
 prompt_list = DoubleCheckTemplateList()
@@ -42,5 +43,13 @@ async def double_check_service(
         llm_url=req.llm_url,
         max_tokens=req.max_tokens,
     )
+
+    # Handle case where result is a string
+    if isinstance(result, str):
+        try:
+            result = json.loads(result)
+        except json.JSONDecodeError:
+            print(f"[ERROR] Failed to parse double check result as JSON: {result}")
+            return {}
 
     return result
