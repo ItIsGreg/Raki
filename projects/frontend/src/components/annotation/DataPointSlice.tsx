@@ -155,6 +155,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                             }) === undefined
                           );
                         })
+                        .sort((a, b) => (a.order || 0) - (b.order || 0))
                         .map((profilePoint) => (
                           <SelectItem
                             key={profilePoint.id}
