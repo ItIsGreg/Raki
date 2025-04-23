@@ -8,7 +8,7 @@ import {
 import { ReactNode } from "react";
 
 interface CompactCardProps {
-  title: string;
+  title: string | ReactNode;
   description?: string;
   onClick?: () => void;
   isActive?: boolean;

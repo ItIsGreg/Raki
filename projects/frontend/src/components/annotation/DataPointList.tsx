@@ -165,29 +165,49 @@ const DataPointList = (props: GenericDataPointListProps) => {
           className="flex flex-col gap-1"
           data-cy="datapoint-list-content"
         >
-          {dataPoints?.map((dataPoint) => (
-            <CompactCard
-              key={dataPoint.id}
-              data-cy={`datapoint-card-${dataPoint.id}`}
-              title={dataPoint.name}
-              onClick={() =>
-                setActiveDataPointId(
-                  activeDataPointId === dataPoint.id ? undefined : dataPoint.id
-                )
-              }
-              isActive={activeDataPointId === dataPoint.id}
-              tooltipContent={dataPoint.name}
-              className={getCardClassName(dataPoint)}
-              rightIcon={
-                <TiDeleteOutline
-                  className="hover:text-red-500 cursor-pointer"
-                  data-cy={`datapoint-delete-${dataPoint.id}`}
-                  size={20}
-                  onClick={(e) => handleDelete(dataPoint, e)}
-                />
-              }
-            />
-          ))}
+          {dataPoints?.map((dataPoint) => {
+            const value =
+              mode === TASK_MODE.DATAPOINT_EXTRACTION
+                ? (dataPoint as DataPoint).value?.toString()
+                : undefined;
+
+            return (
+              <CompactCard
+                key={dataPoint.id}
+                data-cy={`datapoint-card-${dataPoint.id}`}
+                title={
+                  <div className="flex items-center gap-2 w-full">
+                    {mode === TASK_MODE.DATAPOINT_EXTRACTION && (
+                      <div className="w-24 flex-shrink-0">
+                        <span className="text-sm text-gray-500 truncate block">
+                          {value || "No value"}
+                        </span>
+                      </div>
+                    )}
+                    <span className="truncate flex-1">{dataPoint.name}</span>
+                  </div>
+                }
+                onClick={() =>
+                  setActiveDataPointId(
+                    activeDataPointId === dataPoint.id
+                      ? undefined
+                      : dataPoint.id
+                  )
+                }
+                isActive={activeDataPointId === dataPoint.id}
+                tooltipContent={dataPoint.name}
+                className={getCardClassName(dataPoint)}
+                rightIcon={
+                  <TiDeleteOutline
+                    className="hover:text-red-500 cursor-pointer"
+                    data-cy={`datapoint-delete-${dataPoint.id}`}
+                    size={20}
+                    onClick={(e) => handleDelete(dataPoint, e)}
+                  />
+                }
+              />
+            );
+          })}
         </CardContent>
       </Card>
     </div>
