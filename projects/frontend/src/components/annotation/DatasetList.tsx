@@ -28,6 +28,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import * as XLSX from "xlsx";
 import { TASK_MODE, TaskMode } from "@/app/constants";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
+import { useState } from "react";
 
 interface DatasetListProps extends AnnotationDatasetListProps {
   mode: TaskMode;
@@ -35,6 +39,7 @@ interface DatasetListProps extends AnnotationDatasetListProps {
 
 const DatasetList = (props: DatasetListProps) => {
   const { activeAnnotatedDataset, setActiveAnnotatedDataset, mode } = props;
+  const [isOpen, setIsOpen] = useState(true);
 
   const annotatedDatasets = useLiveQuery(
     () => readAllAnnotatedDatasets(),
@@ -293,73 +298,89 @@ const DatasetList = (props: DatasetListProps) => {
   };
 
   return (
-    <div
-      className="col-span-1 overflow-y-scroll"
-      data-cy="manual-dataset-list-container"
-    >
-      <Card>
-        <CardHeader>
-          <CardTitle data-cy="manual-dataset-list-title">
-            {mode === TASK_MODE.DATAPOINT_EXTRACTION
-              ? "Annotated Datasets"
-              : "Segmentation Datasets"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent data-cy="manual-dataset-list-content">
-          {annotatedDatasets?.map((annotatedDataset) => (
-            <CompactCard
-              key={annotatedDataset.id}
-              data-cy="manual-annotated-dataset-card"
-              title={annotatedDataset.name}
-              description={annotatedDataset.description}
-              onClick={() =>
-                setActiveAnnotatedDataset(
-                  activeAnnotatedDataset === annotatedDataset
-                    ? undefined
-                    : annotatedDataset
-                )
-              }
-              isActive={activeAnnotatedDataset?.id === annotatedDataset.id}
-              tooltipContent={annotatedDataset.name}
-              rightIcon={
-                <DropdownMenu>
-                  <DropdownMenuTrigger
-                    asChild
-                    onClick={(e) => e.stopPropagation()}
-                    data-cy="manual-dataset-download-trigger"
-                  >
-                    <div className="cursor-pointer">
-                      <TiDownloadOutline
-                        size={20}
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
+          data-cy="toggle-dataset-list"
+        >
+          <ChevronLeft
+            className={`h-4 w-4 transition-transform ${
+              isOpen ? "rotate-180" : "rotate-0"
+            }`}
+          />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="p-0 w-[300px]">
+        <div className="h-full overflow-y-auto">
+          <Card className="h-full border-0 rounded-none">
+            <CardHeader>
+              <CardTitle data-cy="manual-dataset-list-title">
+                {mode === TASK_MODE.DATAPOINT_EXTRACTION
+                  ? "Annotated Datasets"
+                  : "Segmentation Datasets"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent data-cy="manual-dataset-list-content">
+              {annotatedDatasets?.map((annotatedDataset) => (
+                <CompactCard
+                  key={annotatedDataset.id}
+                  data-cy="manual-annotated-dataset-card"
+                  title={annotatedDataset.name}
+                  description={annotatedDataset.description}
+                  onClick={() => {
+                    setActiveAnnotatedDataset(
+                      activeAnnotatedDataset === annotatedDataset
+                        ? undefined
+                        : annotatedDataset
+                    );
+                    setIsOpen(false);
+                  }}
+                  isActive={activeAnnotatedDataset?.id === annotatedDataset.id}
+                  tooltipContent={annotatedDataset.name}
+                  rightIcon={
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        asChild
                         onClick={(e) => e.stopPropagation()}
-                      />
-                    </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenuItem
-                      data-cy="manual-dataset-download-csv"
-                      onClick={() =>
-                        downLoadAnnotatedDataset(annotatedDataset, "csv")
-                      }
-                    >
-                      Download as CSV
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      data-cy="manual-dataset-download-xlsx"
-                      onClick={() =>
-                        downLoadAnnotatedDataset(annotatedDataset, "xlsx")
-                      }
-                    >
-                      Download as XLSX
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              }
-            />
-          ))}
-        </CardContent>
-      </Card>
-    </div>
+                        data-cy="manual-dataset-download-trigger"
+                      >
+                        <div className="cursor-pointer">
+                          <TiDownloadOutline
+                            size={20}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuItem
+                          data-cy="manual-dataset-download-csv"
+                          onClick={() =>
+                            downLoadAnnotatedDataset(annotatedDataset, "csv")
+                          }
+                        >
+                          Download as CSV
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          data-cy="manual-dataset-download-xlsx"
+                          onClick={() =>
+                            downLoadAnnotatedDataset(annotatedDataset, "xlsx")
+                          }
+                        >
+                          Download as XLSX
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  }
+                />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
