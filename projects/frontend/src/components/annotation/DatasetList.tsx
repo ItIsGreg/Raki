@@ -35,11 +35,18 @@ import { useState } from "react";
 
 interface DatasetListProps extends AnnotationDatasetListProps {
   mode: TaskMode;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
 }
 
 const DatasetList = (props: DatasetListProps) => {
-  const { activeAnnotatedDataset, setActiveAnnotatedDataset, mode } = props;
-  const [isOpen, setIsOpen] = useState(true);
+  const {
+    activeAnnotatedDataset,
+    setActiveAnnotatedDataset,
+    mode,
+    isOpen,
+    setIsOpen,
+  } = props;
 
   const annotatedDatasets = useLiveQuery(
     () => readAllAnnotatedDatasets(),

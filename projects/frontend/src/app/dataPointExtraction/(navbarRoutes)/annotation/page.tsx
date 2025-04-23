@@ -18,6 +18,7 @@ const Annotation = () => {
   const [activeDataPointId, setActiveDataPointId] = useState<
     string | undefined
   >(undefined);
+  const [isDatasetListOpen, setIsDatasetListOpen] = useState(true);
 
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
   const mode = TASK_MODE.DATAPOINT_EXTRACTION;
@@ -44,6 +45,7 @@ const Annotation = () => {
         setActiveDataPointId={setActiveDataPointId}
         activeAnnotatedText={activeAnnotatedText}
         mode={mode}
+        isDatasetListOpen={isDatasetListOpen}
       />
       <AnnotatedTextList
         data-cy="annotated-text-list"
@@ -58,6 +60,8 @@ const Annotation = () => {
         activeAnnotatedDataset={activeAnnotatedDataset}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         mode={mode}
+        isOpen={isDatasetListOpen}
+        setIsOpen={setIsDatasetListOpen}
       />
     </div>
   );

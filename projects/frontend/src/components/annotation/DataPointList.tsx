@@ -25,6 +25,7 @@ interface GenericDataPointListProps {
   setActiveDataPointId: (id: string | undefined) => void;
   activeAnnotatedText: any;
   mode: TaskMode;
+  isDatasetListOpen: boolean;
 }
 
 const DataPointList = (props: GenericDataPointListProps) => {
@@ -35,6 +36,7 @@ const DataPointList = (props: GenericDataPointListProps) => {
     setActiveDataPointId,
     activeAnnotatedText,
     mode,
+    isDatasetListOpen,
   } = props;
 
   const dataPoints = useLiveQuery<AnyDataPoint[]>(() => {
@@ -134,7 +136,9 @@ const DataPointList = (props: GenericDataPointListProps) => {
 
   return (
     <div
-      className="col-span-1 overflow-y-scroll"
+      className={`overflow-y-scroll ${
+        isDatasetListOpen ? "col-span-1" : "col-span-2"
+      }`}
       data-cy="datapoint-list-container"
     >
       <Card>
