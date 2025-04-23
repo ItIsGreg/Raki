@@ -67,6 +67,7 @@ export default function AnnotationPage() {
         setActiveDataPointId={setActiveSegmentId}
         activeAnnotatedText={activeAnnotatedText}
         mode={mode}
+        isDatasetListOpen={true}
       />
 
       <AnnotatedTextList
@@ -83,6 +84,8 @@ export default function AnnotationPage() {
         activeAnnotatedDataset={activeAnnotatedDataset}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         mode={mode}
+        isOpen={true}
+        setIsOpen={() => {}}
       />
     </div>
   );
