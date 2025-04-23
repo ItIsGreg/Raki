@@ -81,7 +81,17 @@ const DataPointSlice = (props: DataPointSliceProps) => {
             }
             className={`mr-1 ${dataPoint.verified ? "bg-green-800" : ""}`}
           >
-            {text.slice(dataPoint.match![0], dataPoint.match![1])}
+            <div className="flex flex-col items-center w-full">
+              <span>
+                {text.slice(dataPoint.match![0], dataPoint.match![1])}
+              </span>
+              <span className="text-[10px] opacity-75 text-center w-full">
+                {dataPoint.name}
+                {dataPoint.value && (
+                  <span className="ml-1">({dataPoint.value})</span>
+                )}
+              </span>
+            </div>
           </Badge>
         </TooltipTrigger>
         <TooltipContent side="bottom" ref={tooltipRef}>
