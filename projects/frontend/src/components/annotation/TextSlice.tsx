@@ -27,24 +27,16 @@ const TextSlice = (props: TextSliceProps) => {
             selection.focusOffset,
           ].sort((a, b) => a - b); // Use a numeric comparison
 
-          if (activeDataPoint && !activeDataPoint.match) {
-            const updatedDataPoint = {
-              ...activeDataPoint,
-              match: [startIndex + start, startIndex + end],
-            };
-            updateDataPoint(updatedDataPoint);
-          } else {
-            const newDataPoint = await createDataPoint({
-              name: selection.toString(),
-              annotatedTextId: annotatedTextId!,
-              match: [startIndex + start, startIndex + end],
-              profilePointId: undefined,
-              value: "",
-              verified: undefined,
-            });
-            const id = newDataPoint.id;
-            setActiveDataPointId(id);
-          }
+          const newDataPoint = await createDataPoint({
+            name: selection.toString(),
+            annotatedTextId: annotatedTextId!,
+            match: [startIndex + start, startIndex + end],
+            profilePointId: undefined,
+            value: "",
+            verified: undefined,
+          });
+          const id = newDataPoint.id;
+          setActiveDataPointId(id);
         }
       }}
     >
