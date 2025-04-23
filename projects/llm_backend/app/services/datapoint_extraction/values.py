@@ -3,6 +3,7 @@ from app.llm_calls import call_llm
 from app.models.datapoint_extraction_models import ExtractValuesReq
 from app.prompts.datapoint_extraction.values import Extract_Values_Prompt_List
 from app.config.environment import prompt_language
+import json
 
 
 prompt_list = Extract_Values_Prompt_List()
@@ -34,10 +35,23 @@ async def extract_values_service(
     )
 
     def convert_result(result: dict) -> dict:
-        return {
-            key: value["value"]
-            for key, value in result.items()
-        }
+        # Handle case where result is a string
+        if isinstance(result, str):
+            try:
+                result = json.loads(result)
+            except json.JSONDecodeError:
+                print(f"[ERROR] Failed to parse result as JSON: {result}")
+                return {}
+        
+        # Handle case where result is a dictionary with string values
+        if isinstance(result, dict):
+            return {
+                key: value["value"] if isinstance(value, dict) and "value" in value else value
+                for key, value in result.items()
+            }
+        
+        print(f"[ERROR] Unexpected result format: {result}")
+        return {}
 
     result = convert_result(result)
 
