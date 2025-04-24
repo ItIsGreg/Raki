@@ -23,6 +23,7 @@ export default function AnnotationPage() {
     AnnotatedText | undefined
   >();
   const [activeSegmentId, setActiveSegmentId] = useState<string>();
+  const [isDatasetListOpen, setIsDatasetListOpen] = useState(true);
 
   // Get text content from database
   const text = useLiveQuery<Text | undefined>(
@@ -84,8 +85,8 @@ export default function AnnotationPage() {
         activeAnnotatedDataset={activeAnnotatedDataset}
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         mode={mode}
-        isOpen={true}
-        setIsOpen={() => {}}
+        isOpen={isDatasetListOpen}
+        setIsOpen={setIsDatasetListOpen}
       />
     </div>
   );
