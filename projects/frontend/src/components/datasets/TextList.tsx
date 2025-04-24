@@ -12,6 +12,7 @@ import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import SingleTextInput from "./SingleTextInput";
 import * as pdfjsLib from "pdfjs-dist";
+import { backendURL } from "../../app/constants";
 
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
@@ -39,19 +40,24 @@ const TextList = (props: TextListProps) => {
     fileInputRef.current?.click();
   };
 
-  const extractTextFromPDF = async (file: File): Promise<string> => {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = "";
+  const extractTextFromPDFBackend = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
 
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map((item: any) => item.str).join(" ");
-      fullText += pageText + "\n";
+    const response = await fetch(
+      `${backendURL}/text-segmentation/extract-pdf`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to extract PDF text from backend");
     }
 
-    return fullText;
+    const data = await response.json();
+    return data.markdown;
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +70,7 @@ const TextList = (props: TextListProps) => {
 
       if (fileExtension === "pdf") {
         try {
-          const text = await extractTextFromPDF(file);
+          const text = await extractTextFromPDFBackend(file);
           if (!activeDataset) return;
           await createText({
             datasetId: activeDataset.id,
