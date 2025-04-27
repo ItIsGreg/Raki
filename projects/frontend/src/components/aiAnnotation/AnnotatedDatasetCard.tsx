@@ -86,14 +86,13 @@ export const AnnotatedDatasetCard = <
       data-cy="annotated-dataset-card"
       className={`${
         isActive && "bg-gray-100 shadow-lg border-black border-2"
-      } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
+      } transition-transform hover:bg-gray-100 hover:shadow-lg transform relative`}
       onClick={onSelect}
     >
       <CardHeader className="flex flex-row gap-2">
         <CardTitle data-cy="dataset-title">{dataset.name}</CardTitle>
         <div className="flex-grow"></div>
         <EditButton data-cy="edit-dataset-button" onClick={onEdit} />
-        <DownloadButton data-cy="download-dataset-button" dataset={dataset} />
         <DeleteButton
           data-cy="delete-dataset-button"
           onDelete={() => deleteAnnotatedDataset(dataset.id)}
@@ -209,6 +208,13 @@ export const AnnotatedDatasetCard = <
             )}
           </>
         )}
+        <div className="absolute bottom-4 right-4">
+          <DownloadButton
+            data-cy="download-dataset-button"
+            dataset={dataset}
+            mode={mode}
+          />
+        </div>
       </CardContent>
     </Card>
   );
