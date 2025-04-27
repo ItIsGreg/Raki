@@ -9,12 +9,16 @@ import {
   ProfilePoint,
   SegmentationProfilePoint,
 } from "@/lib/db/db";
-import { updateAnnotatedDataset } from "@/lib/db/crud";
+import {
+  updateAnnotatedDataset,
+  readAllAnnotatedDatasets,
+} from "@/lib/db/crud";
 import { UploadDatasetButton } from "./UploadDatasetButton";
 import { AddButton } from "@/components/AddButton";
 import SettingsMenu from "../llmSettings/SettingsMenu";
 import SettingsButton from "../llmSettings/SettingsButton";
 import { TaskMode } from "@/app/constants";
+import { useLiveQuery } from "dexie-react-hooks";
 
 // Update the props interface to include the mode and make it generic
 interface AnnotatedDatasetListProps<
@@ -25,6 +29,12 @@ interface AnnotatedDatasetListProps<
   setActiveAnnotatedDataset: (dataset: AnnotatedDataset | null) => void;
   setActiveProfilePoints: (points: T[]) => void;
   mode: TaskMode;
+  addingDataset: boolean;
+  setAddingDataset: (adding: boolean) => void;
+  annotationState: "idle" | "regular" | "faulty";
+  handleStart: () => void;
+  handleStop: () => void;
+  identifyActiveProfilePoints: (profileId: string) => void;
 }
 
 const AnnotatedDatasetList = <
@@ -38,25 +48,13 @@ const AnnotatedDatasetList = <
     setActiveAnnotatedDataset,
     setActiveProfilePoints,
     mode,
-  } = props;
-
-  const [autoRerunFaulty, setAutoRerunFaulty] = useState<boolean>(true);
-  const {
     addingDataset,
     setAddingDataset,
     annotationState,
-    dbAnnotatedDatasets,
     handleStart,
     handleStop,
     identifyActiveProfilePoints,
-  } = useAnnotationState<T>({
-    activeAnnotatedDataset,
-    activeProfilePoints,
-    setActiveAnnotatedDataset,
-    setActiveProfilePoints,
-    autoRerunFaulty,
-    mode,
-  });
+  } = props;
 
   const [editingDataset, setEditingDataset] = useState<
     AnnotatedDataset | undefined
@@ -68,6 +66,10 @@ const AnnotatedDatasetList = <
   };
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [autoRerunFaulty, setAutoRerunFaulty] = useState<boolean>(true);
+
+  // Get annotated datasets from the database
+  const dbAnnotatedDatasets = useLiveQuery(() => readAllAnnotatedDatasets());
 
   // Filter annotated datasets based on mode
   const filteredDatasets = dbAnnotatedDatasets?.filter(

@@ -10,6 +10,7 @@ import { TASK_MODE } from "@/app/constants";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 
 const Annotation = () => {
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] = useState<
@@ -25,6 +26,7 @@ const Annotation = () => {
     ProfilePoint[]
   >([]);
   const [isDatasetListOpen, setIsDatasetListOpen] = useState(true);
+  const [autoRerunFaulty, setAutoRerunFaulty] = useState(true);
 
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
   const mode = TASK_MODE.DATAPOINT_EXTRACTION;
@@ -35,6 +37,24 @@ const Annotation = () => {
   ) => {
     setActiveAnnotatedDataset(dataset || undefined);
   };
+
+  // Use the annotation state hook
+  const {
+    addingDataset,
+    setAddingDataset,
+    annotationState,
+    dbAnnotatedDatasets,
+    handleStart,
+    handleStop,
+    identifyActiveProfilePoints,
+  } = useAnnotationState<ProfilePoint>({
+    activeAnnotatedDataset: activeAnnotatedDataset || null,
+    setActiveAnnotatedDataset: handleSetActiveAnnotatedDataset,
+    activeProfilePoints,
+    setActiveProfilePoints,
+    autoRerunFaulty,
+    mode,
+  });
 
   return (
     <div
@@ -92,6 +112,12 @@ const Annotation = () => {
               setActiveAnnotatedDataset={handleSetActiveAnnotatedDataset}
               setActiveProfilePoints={setActiveProfilePoints}
               mode={mode}
+              addingDataset={addingDataset}
+              setAddingDataset={setAddingDataset}
+              annotationState={annotationState}
+              handleStart={handleStart}
+              handleStop={handleStop}
+              identifyActiveProfilePoints={identifyActiveProfilePoints}
             />
           </div>
         </SheetContent>
