@@ -79,6 +79,7 @@ const Annotation = () => {
         activeAnnotatedText={activeAnnotatedText}
         mode={mode}
         isDatasetListOpen={isDatasetListOpen}
+        activeProfilePoints={activeProfilePoints}
       />
       <AnnotatedTextList
         data-cy="annotated-text-list"

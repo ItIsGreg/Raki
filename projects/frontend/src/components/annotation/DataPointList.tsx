@@ -11,10 +11,20 @@ import {
 import { TiDeleteOutline } from "react-icons/ti";
 import CompactCard from "@/components/CompactCard";
 import { AnnotationDataPointListProps } from "@/app/types";
-import { DataPoint, SegmentDataPoint } from "@/lib/db/db";
+import { DataPoint, SegmentDataPoint, ProfilePoint } from "@/lib/db/db";
 import { TASK_MODE, TaskMode } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { BugIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { FaCheck } from "react-icons/fa6";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 
 type AnyDataPoint = DataPoint | SegmentDataPoint;
 
@@ -26,6 +36,7 @@ interface GenericDataPointListProps {
   activeAnnotatedText: any;
   mode: TaskMode;
   isDatasetListOpen: boolean;
+  activeProfilePoints?: ProfilePoint[];
 }
 
 const DataPointList = (props: GenericDataPointListProps) => {
@@ -37,7 +48,13 @@ const DataPointList = (props: GenericDataPointListProps) => {
     activeAnnotatedText,
     mode,
     isDatasetListOpen,
+    activeProfilePoints,
   } = props;
+
+  const [editingValue, setEditingValue] = useState<string>("");
+  const [editingDataPointId, setEditingDataPointId] = useState<
+    string | undefined
+  >(undefined);
 
   const dataPoints = useLiveQuery<AnyDataPoint[]>(() => {
     if (mode === TASK_MODE.DATAPOINT_EXTRACTION) {
@@ -134,6 +151,46 @@ const DataPointList = (props: GenericDataPointListProps) => {
     return "";
   };
 
+  const handleValueEdit = (dataPoint: AnyDataPoint) => {
+    if (mode === TASK_MODE.DATAPOINT_EXTRACTION && "match" in dataPoint) {
+      const activeProfilePoint = getActiveProfilePoint(dataPoint);
+      if (activeProfilePoint?.datatype !== "valueset") {
+        setEditingValue(dataPoint.value?.toString() || "");
+        setEditingDataPointId(dataPoint.id);
+      }
+    }
+  };
+
+  const handleValueUpdate = (dataPoint: AnyDataPoint) => {
+    if (mode === TASK_MODE.DATAPOINT_EXTRACTION && "match" in dataPoint) {
+      updateDataPoint({
+        ...dataPoint,
+        value: editingValue,
+        verified: true,
+      });
+      setEditingDataPointId(undefined);
+    }
+  };
+
+  const handleValuesetUpdate = (dataPoint: AnyDataPoint, value: string) => {
+    if (mode === TASK_MODE.DATAPOINT_EXTRACTION && "match" in dataPoint) {
+      updateDataPoint({
+        ...dataPoint,
+        value: value,
+        verified: true,
+      });
+    }
+  };
+
+  const getActiveProfilePoint = (dataPoint: AnyDataPoint) => {
+    if (mode === TASK_MODE.DATAPOINT_EXTRACTION && "match" in dataPoint) {
+      return activeProfilePoints?.find(
+        (profilePoint) => profilePoint.id === dataPoint.profilePointId
+      );
+    }
+    return undefined;
+  };
+
   return (
     <div
       className={`overflow-y-scroll ${
@@ -170,6 +227,7 @@ const DataPointList = (props: GenericDataPointListProps) => {
               mode === TASK_MODE.DATAPOINT_EXTRACTION
                 ? (dataPoint as DataPoint).value?.toString()
                 : undefined;
+            const activeProfilePoint = getActiveProfilePoint(dataPoint);
 
             return (
               <CompactCard
@@ -179,9 +237,51 @@ const DataPointList = (props: GenericDataPointListProps) => {
                   <div className="flex items-center gap-2 w-full">
                     {mode === TASK_MODE.DATAPOINT_EXTRACTION && (
                       <div className="w-24 flex-shrink-0">
-                        <span className="text-sm text-gray-500 truncate block">
-                          {value}
-                        </span>
+                        {activeProfilePoint?.datatype === "valueset" ? (
+                          <Select
+                            value={value}
+                            onValueChange={(value) =>
+                              handleValuesetUpdate(dataPoint, value)
+                            }
+                            data-cy="valueset-select"
+                          >
+                            <SelectTrigger className="h-6 text-sm">
+                              {value || "Select value"}
+                            </SelectTrigger>
+                            <SelectContent>
+                              {activeProfilePoint.valueset?.map((value) => (
+                                <SelectItem key={value} value={value}>
+                                  {value}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : editingDataPointId === dataPoint.id ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={editingValue}
+                              onChange={(e) => setEditingValue(e.target.value)}
+                              className="h-6 text-sm"
+                              data-cy="value-input"
+                            />
+                            <Button
+                              size="sm"
+                              className="h-6 px-2 bg-green-800"
+                              onClick={() => handleValueUpdate(dataPoint)}
+                              data-cy="update-value-btn"
+                            >
+                              <FaCheck size={16} />
+                            </Button>
+                          </div>
+                        ) : (
+                          <span
+                            className="text-sm text-gray-500 truncate block cursor-pointer hover:text-gray-700"
+                            onClick={() => handleValueEdit(dataPoint)}
+                            data-cy="value-display"
+                          >
+                            {value}
+                          </span>
+                        )}
                       </div>
                     )}
                     <span className="truncate flex-1">{dataPoint.name}</span>
