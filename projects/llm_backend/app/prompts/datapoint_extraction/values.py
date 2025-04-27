@@ -62,7 +62,8 @@ class Extract_Values_Template_List:
         For each datapoint you will be provided with a text excerpt, that should contain the datapoint.
 
         Your task is to extract the value of the datapoint from the text and provide it in the specified format.
-        Provide a short explanation for each value. Why did you chose this value? After that provide the value
+        Provide a short explanation for each value. Why did you chose this value? After that provide the value.
+        When having true/false valuesets or similar binary values pay attention to whether the concept in question was affirmed or denied.
         Always adhere to the json schema defined below.
 
         %DATAPOINTS:

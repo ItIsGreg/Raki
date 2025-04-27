@@ -7,12 +7,19 @@ from app.models.datapoint_extraction_models import (
     PipelineReq,
     PipelineResDatapoint,
     DoubleCheckReq,
+    DataPointSubstringMatch,
 )
 from app.services.datapoint_extraction.substrings import extract_datapoint_substrings_and_match_service
 from app.services.datapoint_extraction.values import extract_values_service
 from app.services.datapoint_extraction.double_check import double_check_service
+from app.services.datapoint_extraction.regex_extraction import regex_extraction_service
+from app.services.datapoint_extraction.rate_regex_matches import rate_regex_matches_service
 from typing import List
 import math
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
 
 
 def get_text_excerpt(text: str, match: tuple[int, int], overlap: int = 25) -> str:
@@ -83,7 +90,9 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
                     "text": req.text  # Fallback to full text if no match
                 }
         else:
-            used_profile_points.add(substring.name)
+            # Only mark as used if we have a non-empty substring
+            if substring.substring and substring.substring.strip():
+                used_profile_points.add(substring.name)
 
     # Get remaining profile points
     remaining_profile_points = {
@@ -122,6 +131,43 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
                 updated_substring_res.append(substring)
         
         all_substring_res = updated_substring_res
+
+    # Run regex extraction on remaining profile points
+    regex_matches = await regex_extraction_service(
+        text=req.text,
+        remaining_profile_points=remaining_profile_points
+    )
+
+    # Rate regex matches for each profile point
+    for name, matches in regex_matches.items():
+        if matches:  # Only rate if we found matches
+            profile_point = remaining_profile_points[name]
+            # Get text excerpts for each match
+            match_texts = [get_text_excerpt(req.text, match, overlap=50) for match in matches]
+            
+            # Rate the matches
+            rating_result = await rate_regex_matches_service(
+                datapoint=profile_point,
+                matches=match_texts,
+                llm_provider=req.llm_provider,
+                api_key=req.api_key,
+                model=req.model,
+                llm_url=req.llm_url,
+                max_tokens=req.max_tokens
+            )
+
+            # If we have a valid selected match, add it to all_substring_res
+            if rating_result["selected_match_index"] >= 0:
+                selected_match = matches[rating_result["selected_match_index"]]
+                # Create a new DataPointSubstringMatch for the selected match
+                new_substring = DataPointSubstringMatch(
+                    name=name,
+                    substring=match_texts[rating_result["selected_match_index"]],
+                    match=selected_match
+                )
+                all_substring_res.append(new_substring)
+                # Mark this profile point as used
+                used_profile_points.add(name)
 
     # get text excerpts and prepare for value extraction
     extract_values_datapoints: list[ExtractValuesReqDatapoint] = []
