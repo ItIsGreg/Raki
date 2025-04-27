@@ -83,7 +83,7 @@ const Annotation = () => {
             />
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="p-0 w-[300px]">
+        <SheetContent side="right" className="p-0 w-[400px]">
           <div className="h-full overflow-y-auto">
             <AnnotatedDatasetList<ProfilePoint>
               data-cy="dataset-list"
