@@ -20,7 +20,7 @@ import { deleteDataPoint, updateDataPoint } from "@/lib/db/crud";
 import { DataPoint, ProfilePoint } from "@/lib/db/db";
 import { FaCheck } from "react-icons/fa6";
 import { TiDeleteOutline } from "react-icons/ti";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const DataPointSlice = (props: DataPointSliceProps) => {
   const {
@@ -35,6 +35,7 @@ const DataPointSlice = (props: DataPointSliceProps) => {
     setActiveDataPointValue,
   } = props;
 
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -42,13 +43,13 @@ const DataPointSlice = (props: DataPointSliceProps) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        activeDataPointId === dataPoint.id &&
+        isTooltipOpen &&
         tooltipRef.current &&
         !tooltipRef.current.contains(event.target as Node) &&
         // Don't close if clicking on a select dropdown
         !(event.target as Element).closest('[role="listbox"]')
       ) {
-        setActiveDataPointId(undefined);
+        setIsTooltipOpen(false);
       }
     };
 
@@ -56,29 +57,41 @@ const DataPointSlice = (props: DataPointSliceProps) => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [activeDataPointId, dataPoint.id, setActiveDataPointId]);
+  }, [isTooltipOpen]);
 
   // Handle focus when tooltip opens
   useEffect(() => {
-    if (activeDataPointId === dataPoint.id) {
+    if (isTooltipOpen) {
       // Only focus input for number and text values, not for valueset
       if (inputRef.current && activeProfilePoint?.datatype !== "valueset") {
         inputRef.current.focus();
       }
     }
-  }, [activeDataPointId, dataPoint.id, activeProfilePoint?.datatype]);
+  }, [isTooltipOpen, activeProfilePoint?.datatype]);
+
+  // Handle tooltip state when activeDataPointId changes
+  useEffect(() => {
+    if (activeDataPointId === dataPoint.id) {
+      setIsTooltipOpen(true);
+    } else {
+      setIsTooltipOpen(false);
+    }
+  }, [activeDataPointId, dataPoint.id]);
 
   return (
     <TooltipProvider>
-      <Tooltip open={activeDataPointId === dataPoint.id}>
+      <Tooltip open={isTooltipOpen}>
         <TooltipTrigger>
           <Badge
             data-cy="datapoint-badge"
-            onClick={() =>
-              setActiveDataPointId(
-                activeDataPointId === dataPoint.id ? undefined : dataPoint.id
-              )
-            }
+            onClick={(e) => {
+              e.stopPropagation();
+              if (activeDataPointId === dataPoint.id) {
+                setIsTooltipOpen(!isTooltipOpen);
+              } else {
+                setActiveDataPointId(dataPoint.id);
+              }
+            }}
             className={`mr-1 ${dataPoint.verified ? "bg-green-800" : ""} ${
               activeDataPointId === dataPoint.id
                 ? "ring-2 ring-blue-500 ring-offset-2"
