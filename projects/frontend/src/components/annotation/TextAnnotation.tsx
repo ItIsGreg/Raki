@@ -72,33 +72,36 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!texts || !activeAnnotatedText || !annotatedTexts) return;
 
-      // Sort annotated texts alphabetically by filename, matching AnnotatedTextList's order
-      const sortedAnnotatedTexts = annotatedTexts
-        .map((annotatedText) => ({
-          ...annotatedText,
-          filename:
-            texts.find((text) => text.id === annotatedText.textId)?.filename ||
-            "",
-        }))
-        .sort((a, b) =>
-          a.filename.localeCompare(b.filename, undefined, {
-            sensitivity: "base",
-          })
+      // Only handle text navigation if Shift is pressed
+      if (event.shiftKey) {
+        // Sort annotated texts alphabetically by filename, matching AnnotatedTextList's order
+        const sortedAnnotatedTexts = annotatedTexts
+          .map((annotatedText) => ({
+            ...annotatedText,
+            filename:
+              texts.find((text) => text.id === annotatedText.textId)
+                ?.filename || "",
+          }))
+          .sort((a, b) =>
+            a.filename.localeCompare(b.filename, undefined, {
+              sensitivity: "base",
+            })
+          );
+
+        const currentIndex = sortedAnnotatedTexts.findIndex(
+          (at) => at.id === activeAnnotatedText.id
         );
 
-      const currentIndex = sortedAnnotatedTexts.findIndex(
-        (at) => at.id === activeAnnotatedText.id
-      );
-
-      if (event.key === "ArrowUp" && currentIndex > 0) {
-        event.preventDefault();
-        setActiveAnnotatedText(sortedAnnotatedTexts[currentIndex - 1]);
-      } else if (
-        event.key === "ArrowDown" &&
-        currentIndex < sortedAnnotatedTexts.length - 1
-      ) {
-        event.preventDefault();
-        setActiveAnnotatedText(sortedAnnotatedTexts[currentIndex + 1]);
+        if (event.key === "ArrowUp" && currentIndex > 0) {
+          event.preventDefault();
+          setActiveAnnotatedText(sortedAnnotatedTexts[currentIndex - 1]);
+        } else if (
+          event.key === "ArrowDown" &&
+          currentIndex < sortedAnnotatedTexts.length - 1
+        ) {
+          event.preventDefault();
+          setActiveAnnotatedText(sortedAnnotatedTexts[currentIndex + 1]);
+        }
       }
     };
 
