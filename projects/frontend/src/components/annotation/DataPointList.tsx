@@ -16,7 +16,7 @@ import { TASK_MODE, TaskMode } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { BugIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaCheck } from "react-icons/fa6";
 import {
   Select,
@@ -193,6 +193,36 @@ const DataPointList = (props: GenericDataPointListProps) => {
   const handleDataPointClick = (dataPointId: string) => {
     setActiveDataPointId(dataPointId);
   };
+
+  // Handle keyboard navigation in datapoint list
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!dataPoints?.length) return;
+
+      // Only handle datapoint list navigation if Shift is not pressed
+      if (!event.shiftKey) {
+        const currentIndex = dataPoints.findIndex(
+          (dp) => dp.id === activeDataPointId
+        );
+
+        if (event.key === "ArrowUp" && currentIndex > 0) {
+          event.preventDefault();
+          setActiveDataPointId(dataPoints[currentIndex - 1].id);
+        } else if (
+          event.key === "ArrowDown" &&
+          currentIndex < dataPoints.length - 1
+        ) {
+          event.preventDefault();
+          setActiveDataPointId(dataPoints[currentIndex + 1].id);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [dataPoints, activeDataPointId, setActiveDataPointId]);
 
   return (
     <div
