@@ -287,13 +287,7 @@ const DataPointList = (props: GenericDataPointListProps) => {
                     <span className="truncate flex-1">{dataPoint.name}</span>
                   </div>
                 }
-                onClick={() =>
-                  setActiveDataPointId(
-                    activeDataPointId === dataPoint.id
-                      ? undefined
-                      : dataPoint.id
-                  )
-                }
+                onClick={() => setActiveDataPointId(dataPoint.id)}
                 isActive={activeDataPointId === dataPoint.id}
                 tooltipContent={dataPoint.name}
                 className={getCardClassName(dataPoint)}

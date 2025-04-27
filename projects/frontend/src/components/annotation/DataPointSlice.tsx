@@ -79,7 +79,11 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                 activeDataPointId === dataPoint.id ? undefined : dataPoint.id
               )
             }
-            className={`mr-1 ${dataPoint.verified ? "bg-green-800" : ""}`}
+            className={`mr-1 ${dataPoint.verified ? "bg-green-800" : ""} ${
+              activeDataPointId === dataPoint.id
+                ? "ring-2 ring-blue-500 ring-offset-2"
+                : ""
+            }`}
           >
             <div className="flex flex-col items-center w-full">
               <span>
