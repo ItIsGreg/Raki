@@ -161,14 +161,13 @@ const DataPointList = (props: GenericDataPointListProps) => {
     }
   };
 
-  const handleValueUpdate = (dataPoint: AnyDataPoint) => {
+  const handleValueChange = (dataPoint: AnyDataPoint, value: string) => {
     if (mode === TASK_MODE.DATAPOINT_EXTRACTION && "match" in dataPoint) {
       updateDataPoint({
         ...dataPoint,
-        value: editingValue,
+        value: value,
         verified: true,
       });
-      setEditingDataPointId(undefined);
     }
   };
 
@@ -261,22 +260,17 @@ const DataPointList = (props: GenericDataPointListProps) => {
                             </SelectContent>
                           </Select>
                         ) : editingDataPointId === dataPoint.id ? (
-                          <div className="flex items-center gap-1">
-                            <Input
-                              value={editingValue}
-                              onChange={(e) => setEditingValue(e.target.value)}
-                              className="h-6 text-sm"
-                              data-cy="value-input"
-                            />
-                            <Button
-                              size="sm"
-                              className="h-6 px-2 bg-green-800"
-                              onClick={() => handleValueUpdate(dataPoint)}
-                              data-cy="update-value-btn"
-                            >
-                              <FaCheck size={16} />
-                            </Button>
-                          </div>
+                          <Input
+                            value={editingValue}
+                            onChange={(e) => {
+                              setEditingValue(e.target.value);
+                              handleValueChange(dataPoint, e.target.value);
+                            }}
+                            className="h-6 text-sm"
+                            data-cy="value-input"
+                            onBlur={() => setEditingDataPointId(undefined)}
+                            autoFocus
+                          />
                         ) : (
                           <span
                             className="text-sm text-gray-500 truncate block cursor-pointer hover:text-gray-700"
