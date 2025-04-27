@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddDatasetForm } from "./AddDatasetForm";
 import { AnnotatedDatasetCard } from "./AnnotatedDatasetCard";
@@ -35,6 +35,7 @@ interface AnnotatedDatasetListProps<
   handleStart: () => void;
   handleStop: () => void;
   identifyActiveProfilePoints: (profileId: string) => void;
+  isOpen: boolean;
 }
 
 const AnnotatedDatasetList = <
@@ -54,11 +55,14 @@ const AnnotatedDatasetList = <
     handleStart,
     handleStop,
     identifyActiveProfilePoints,
+    isOpen,
   } = props;
 
   const [editingDataset, setEditingDataset] = useState<
     AnnotatedDataset | undefined
   >(undefined);
+  const activeDatasetRef = useRef<HTMLDivElement>(null);
+  const hasScrolledRef = useRef(false);
 
   const handleSaveDataset = (dataset: AnnotatedDataset) => {
     updateAnnotatedDataset(dataset);
@@ -75,6 +79,38 @@ const AnnotatedDatasetList = <
   const filteredDatasets = dbAnnotatedDatasets?.filter(
     (dataset) => dataset.mode === mode
   );
+
+  // Scroll active dataset into view when sheet opens or active dataset changes
+  useEffect(() => {
+    if (activeAnnotatedDataset && isOpen) {
+      // Reset the scroll state when the sheet opens
+      hasScrolledRef.current = false;
+
+      // Use a small delay to ensure the DOM is ready after sheet opens
+      const timeoutId = setTimeout(() => {
+        if (activeDatasetRef.current) {
+          activeDatasetRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          hasScrolledRef.current = true;
+        } else {
+          // If ref is still not available, try again after a longer delay
+          setTimeout(() => {
+            if (activeDatasetRef.current) {
+              activeDatasetRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+              hasScrolledRef.current = true;
+            }
+          }, 500);
+        }
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [activeAnnotatedDataset, isOpen]);
 
   return (
     <div className="overflow-y-scroll" data-cy="ai-annotate-datasets-container">
@@ -119,8 +155,10 @@ const AnnotatedDatasetList = <
           )}
 
           <div data-cy="ai-annotate-datasets-list">
-            {filteredDatasets?.map((dataset) =>
-              editingDataset && editingDataset.id === dataset.id ? (
+            {filteredDatasets?.map((dataset) => {
+              const isActive = activeAnnotatedDataset?.id === dataset.id;
+
+              return editingDataset && editingDataset.id === dataset.id ? (
                 <EntityForm<AnnotatedDataset>
                   key={dataset.id}
                   data-cy="ai-annotate-edit-dataset-form"
@@ -130,27 +168,32 @@ const AnnotatedDatasetList = <
                   entityType="Annotated Dataset"
                 />
               ) : (
-                <AnnotatedDatasetCard<T>
+                <div
                   key={dataset.id}
-                  data-cy="ai-annotate-dataset-card"
-                  dataset={dataset}
-                  isActive={activeAnnotatedDataset === dataset}
-                  annotationState={annotationState}
-                  onSelect={() => {
-                    identifyActiveProfilePoints(dataset.profileId);
-                    setActiveAnnotatedDataset(dataset);
-                  }}
-                  onStart={() => {
-                    identifyActiveProfilePoints(dataset.profileId);
-                    setActiveAnnotatedDataset(dataset);
-                    handleStart();
-                  }}
-                  onStop={handleStop}
-                  onEdit={() => setEditingDataset(dataset)}
-                  mode={mode}
-                />
-              )
-            )}
+                  ref={isActive ? activeDatasetRef : undefined}
+                >
+                  <AnnotatedDatasetCard<T>
+                    data-cy="ai-annotate-dataset-card"
+                    dataset={dataset}
+                    isActive={isActive}
+                    annotationState={annotationState}
+                    onSelect={() => {
+                      hasScrolledRef.current = false;
+                      identifyActiveProfilePoints(dataset.profileId);
+                      setActiveAnnotatedDataset(dataset);
+                    }}
+                    onStart={() => {
+                      identifyActiveProfilePoints(dataset.profileId);
+                      setActiveAnnotatedDataset(dataset);
+                      handleStart();
+                    }}
+                    onStop={handleStop}
+                    onEdit={() => setEditingDataset(dataset)}
+                    mode={mode}
+                  />
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

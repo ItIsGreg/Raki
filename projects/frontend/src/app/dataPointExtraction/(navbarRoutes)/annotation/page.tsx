@@ -118,6 +118,7 @@ const Annotation = () => {
               handleStart={handleStart}
               handleStop={handleStop}
               identifyActiveProfilePoints={identifyActiveProfilePoints}
+              isOpen={isDatasetListOpen}
             />
           </div>
         </SheetContent>
