@@ -8,6 +8,8 @@ interface UseKeyboardNavigationProps {
   setActiveDataPointId: (id: string | undefined) => void;
   activeDataPointValue: string;
   setActiveDataPointValue: (value: string) => void;
+  activeTooltipId: string | undefined;
+  setActiveTooltipId: (id: string | undefined) => void;
 }
 
 export const useKeyboardNavigation = ({
@@ -16,6 +18,8 @@ export const useKeyboardNavigation = ({
   setActiveDataPointId,
   activeDataPointValue,
   setActiveDataPointValue,
+  activeTooltipId,
+  setActiveTooltipId,
 }: UseKeyboardNavigationProps) => {
   useEffect(() => {
     const arrowRight = () => {
@@ -23,13 +27,20 @@ export const useKeyboardNavigation = ({
       if (!dataPoints?.length) return;
       if (!activeDataPoint) {
         setActiveDataPointId(dataPoints[0].id);
+        setActiveTooltipId(dataPoints[0].id);
         return;
       }
       const nextDataPoint = dataPoints?.find(
         (dataPoint) =>
           dataPoint.match && dataPoint.match![0] > activeDataPoint?.match![0]
       );
-      setActiveDataPointId(nextDataPoint ? nextDataPoint.id : undefined);
+      if (nextDataPoint) {
+        setActiveDataPointId(nextDataPoint.id);
+        setActiveTooltipId(nextDataPoint.id);
+      } else {
+        setActiveDataPointId(undefined);
+        setActiveTooltipId(undefined);
+      }
     };
 
     const arrowLeft = () => {
@@ -37,6 +48,7 @@ export const useKeyboardNavigation = ({
       if (!dataPoints?.length) return;
       if (!activeDataPoint) {
         setActiveDataPointId(dataPoints[0].id);
+        setActiveTooltipId(dataPoints[0].id);
         return;
       }
       const previousDataPoint = dataPoints
@@ -46,9 +58,13 @@ export const useKeyboardNavigation = ({
           (dataPoint) =>
             dataPoint.match && dataPoint.match[0] < activeDataPoint?.match![0]
         );
-      setActiveDataPointId(
-        previousDataPoint ? previousDataPoint.id : dataPoints[0].id
-      );
+      if (previousDataPoint) {
+        setActiveDataPointId(previousDataPoint.id);
+        setActiveTooltipId(previousDataPoint.id);
+      } else {
+        setActiveDataPointId(dataPoints[0].id);
+        setActiveTooltipId(dataPoints[0].id);
+      }
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -71,6 +87,7 @@ export const useKeyboardNavigation = ({
           break;
         case "Escape":
           setActiveDataPointId(undefined);
+          setActiveTooltipId(undefined);
           break;
         default:
           break;
@@ -88,5 +105,7 @@ export const useKeyboardNavigation = ({
     activeDataPointValue,
     setActiveDataPointId,
     setActiveDataPointValue,
+    activeTooltipId,
+    setActiveTooltipId,
   ]);
 };

@@ -13,6 +13,8 @@ interface GenerateHighlightedTextProps {
   activeProfilePoint: ProfilePoint | undefined;
   activeDataPointValue: string;
   setActiveDataPointValue: (value: string) => void;
+  activeTooltipId: string | undefined;
+  setActiveTooltipId: (id: string | undefined) => void;
 }
 
 export const generateHighlightedText = ({
@@ -25,6 +27,8 @@ export const generateHighlightedText = ({
   activeProfilePoint,
   activeDataPointValue,
   setActiveDataPointValue,
+  activeTooltipId,
+  setActiveTooltipId,
 }: GenerateHighlightedTextProps) => {
   const matchedDataPoints = dataPoints.filter((dataPoint) => dataPoint.match);
   const sortedDataPoints = matchedDataPoints.sort(
@@ -56,6 +60,8 @@ export const generateHighlightedText = ({
         activeProfilePoint={activeProfilePoint}
         activeDataPointValue={activeDataPointValue}
         setActiveDataPointValue={setActiveDataPointValue}
+        activeTooltipId={activeTooltipId}
+        setActiveTooltipId={setActiveTooltipId}
       />
     );
     lastEnd = dataPoint.match![1];

@@ -19,6 +19,9 @@ const TextAnnotation = (props: TextAnnotationProps) => {
   } = props;
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
+  const [activeTooltipId, setActiveTooltipId] = useState<string | undefined>(
+    undefined
+  );
 
   const {
     texts,
@@ -111,6 +114,8 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     setActiveDataPointId,
     activeDataPointValue,
     setActiveDataPointValue,
+    activeTooltipId,
+    setActiveTooltipId,
   });
 
   const highlightedText = useMemo(
@@ -127,6 +132,8 @@ const TextAnnotation = (props: TextAnnotationProps) => {
         activeProfilePoint,
         activeDataPointValue,
         setActiveDataPointValue,
+        activeTooltipId,
+        setActiveTooltipId,
       }),
     [
       texts,
@@ -137,6 +144,8 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       activeProfilePoint,
       activeDataPointValue,
       setActiveDataPointId,
+      activeTooltipId,
+      setActiveTooltipId,
     ]
   );
 

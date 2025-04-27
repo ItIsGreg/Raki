@@ -22,7 +22,12 @@ import { FaCheck } from "react-icons/fa6";
 import { TiDeleteOutline } from "react-icons/ti";
 import { useEffect, useRef, useState } from "react";
 
-const DataPointSlice = (props: DataPointSliceProps) => {
+interface ExtendedDataPointSliceProps extends DataPointSliceProps {
+  activeTooltipId: string | undefined;
+  setActiveTooltipId: (id: string | undefined) => void;
+}
+
+const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
   const {
     dataPoint,
     dataPoints,
@@ -33,23 +38,23 @@ const DataPointSlice = (props: DataPointSliceProps) => {
     activeProfilePoint,
     activeDataPointValue,
     setActiveDataPointValue,
+    activeTooltipId,
+    setActiveTooltipId,
   } = props;
 
-  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        isTooltipOpen &&
+        activeTooltipId === dataPoint.id &&
         tooltipRef.current &&
         !tooltipRef.current.contains(event.target as Node) &&
         // Don't close if clicking on a select dropdown
         !(event.target as Element).closest('[role="listbox"]')
       ) {
-        setIsTooltipOpen(false);
+        setActiveTooltipId(undefined);
       }
     };
 
@@ -57,41 +62,24 @@ const DataPointSlice = (props: DataPointSliceProps) => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isTooltipOpen]);
+  }, [activeTooltipId, dataPoint.id, setActiveTooltipId]);
 
-  // Handle focus when tooltip opens
-  useEffect(() => {
-    if (isTooltipOpen) {
-      // Only focus input for number and text values, not for valueset
-      if (inputRef.current && activeProfilePoint?.datatype !== "valueset") {
-        inputRef.current.focus();
-      }
-    }
-  }, [isTooltipOpen, activeProfilePoint?.datatype]);
+  const handleClick = () => {
+    setActiveDataPointId(dataPoint.id);
+    setActiveTooltipId(dataPoint.id);
+  };
 
-  // Handle tooltip state when activeDataPointId changes
-  useEffect(() => {
-    if (activeDataPointId === dataPoint.id) {
-      setIsTooltipOpen(true);
-    } else {
-      setIsTooltipOpen(false);
-    }
-  }, [activeDataPointId, dataPoint.id]);
+  const handleTooltipClose = () => {
+    setActiveTooltipId(undefined);
+  };
 
   return (
     <TooltipProvider>
-      <Tooltip open={isTooltipOpen}>
+      <Tooltip open={activeTooltipId === dataPoint.id}>
         <TooltipTrigger>
           <Badge
             data-cy="datapoint-badge"
-            onClick={(e) => {
-              e.stopPropagation();
-              if (activeDataPointId === dataPoint.id) {
-                setIsTooltipOpen(!isTooltipOpen);
-              } else {
-                setActiveDataPointId(dataPoint.id);
-              }
-            }}
+            onClick={handleClick}
             className={`mr-1 ${dataPoint.verified ? "bg-green-800" : ""} ${
               activeDataPointId === dataPoint.id
                 ? "ring-2 ring-blue-500 ring-offset-2"
@@ -116,6 +104,15 @@ const DataPointSlice = (props: DataPointSliceProps) => {
             <CardHeader className="flex flex-row gap-2">
               <CardTitle data-cy="datapoint-title">{dataPoint.name}</CardTitle>
               <div className="flex-grow"></div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleTooltipClose}
+                className="h-6 w-6"
+                data-cy="close-datapoint-dialog-btn"
+              >
+                ✕
+              </Button>
               <TiDeleteOutline
                 data-cy="datapoint-delete-btn"
                 className="hover:text-red-500 cursor-pointer"
@@ -235,8 +232,6 @@ const DataPointSlice = (props: DataPointSliceProps) => {
                   data-cy="value-input-container"
                 >
                   <Input
-                    ref={inputRef}
-                    data-cy="value-input"
                     value={activeDataPointValue}
                     onChange={(e) => setActiveDataPointValue(e.target.value)}
                     placeholder={dataPoint.value?.toString() ?? "Value"}

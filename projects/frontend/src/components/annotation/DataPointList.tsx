@@ -191,6 +191,10 @@ const DataPointList = (props: GenericDataPointListProps) => {
     return undefined;
   };
 
+  const handleDataPointClick = (dataPointId: string) => {
+    setActiveDataPointId(dataPointId);
+  };
+
   return (
     <div
       className={`overflow-y-scroll ${
@@ -287,7 +291,7 @@ const DataPointList = (props: GenericDataPointListProps) => {
                     <span className="truncate flex-1">{dataPoint.name}</span>
                   </div>
                 }
-                onClick={() => setActiveDataPointId(dataPoint.id)}
+                onClick={() => handleDataPointClick(dataPoint.id)}
                 isActive={activeDataPointId === dataPoint.id}
                 tooltipContent={dataPoint.name}
                 className={getCardClassName(dataPoint)}

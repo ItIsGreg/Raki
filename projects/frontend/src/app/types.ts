@@ -144,6 +144,8 @@ export interface DataPointSliceProps {
   activeProfilePoint: ProfilePoint | undefined;
   activeDataPointValue: string;
   setActiveDataPointValue: (value: string) => void;
+  activeTooltipId: string | undefined;
+  setActiveTooltipId: (id: string | undefined) => void;
 }
 
 export interface LLMProviderSelectProps {
