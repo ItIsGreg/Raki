@@ -25,6 +25,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
+import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 
 type AnyDataPoint = DataPoint | SegmentDataPoint;
 
@@ -207,59 +208,23 @@ const DataPointList = (props: GenericDataPointListProps) => {
     }
   };
 
-  // Handle keyboard navigation in datapoint list
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!dataPoints?.length) return;
-
-      // Only handle datapoint list navigation if Shift is not pressed
-      if (!event.shiftKey) {
-        const currentIndex = dataPoints.findIndex(
-          (dp) => dp.id === activeDataPointId
-        );
-
-        if (event.key === "ArrowUp" && currentIndex > 0) {
-          event.preventDefault();
-          const newDataPoint = dataPoints[currentIndex - 1];
-          setActiveDataPointId(newDataPoint.id);
-          // Start editing the value immediately
-          if (
-            mode === TASK_MODE.DATAPOINT_EXTRACTION &&
-            "match" in newDataPoint
-          ) {
-            const activeProfilePoint = getActiveProfilePoint(newDataPoint);
-            if (activeProfilePoint?.datatype !== "valueset") {
-              setEditingValue(newDataPoint.value?.toString() || "");
-              setEditingDataPointId(newDataPoint.id);
-            }
-          }
-        } else if (
-          event.key === "ArrowDown" &&
-          currentIndex < dataPoints.length - 1
-        ) {
-          event.preventDefault();
-          const newDataPoint = dataPoints[currentIndex + 1];
-          setActiveDataPointId(newDataPoint.id);
-          // Start editing the value immediately
-          if (
-            mode === TASK_MODE.DATAPOINT_EXTRACTION &&
-            "match" in newDataPoint
-          ) {
-            const activeProfilePoint = getActiveProfilePoint(newDataPoint);
-            if (activeProfilePoint?.datatype !== "valueset") {
-              setEditingValue(newDataPoint.value?.toString() || "");
-              setEditingDataPointId(newDataPoint.id);
-            }
-          }
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [dataPoints, activeDataPointId, setActiveDataPointId, mode]);
+  useKeyboardNavigation({
+    dataPoints,
+    activeDataPoint: dataPoints?.find((dp) => dp.id === activeDataPointId),
+    setActiveDataPointId,
+    activeDataPointValue: editingValue,
+    setActiveDataPointValue: setEditingValue,
+    activeTooltipId: undefined,
+    setActiveTooltipId: () => {},
+    texts: undefined,
+    activeAnnotatedText: undefined,
+    annotatedTexts: undefined,
+    setActiveAnnotatedText: () => {},
+    mode,
+    activeProfilePoints,
+    setEditingValue,
+    setEditingDataPointId,
+  });
 
   // Focus the input field when editingDataPointId changes
   useEffect(() => {

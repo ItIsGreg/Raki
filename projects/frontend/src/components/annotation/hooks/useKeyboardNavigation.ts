@@ -1,10 +1,13 @@
 import { updateDataPoint } from "@/lib/db/crud";
-import { DataPoint, Text, AnnotatedText } from "@/lib/db/db";
+import { DataPoint, Text, AnnotatedText, ProfilePoint, SegmentDataPoint } from "@/lib/db/db";
 import { useEffect } from "react";
+import { TASK_MODE, TaskMode } from "@/app/constants";
+
+type AnyDataPoint = DataPoint | SegmentDataPoint;
 
 interface UseKeyboardNavigationProps {
-  dataPoints: DataPoint[] | undefined;
-  activeDataPoint: DataPoint | undefined;
+  dataPoints: AnyDataPoint[] | undefined;
+  activeDataPoint: AnyDataPoint | undefined;
   setActiveDataPointId: (id: string | undefined) => void;
   activeDataPointValue: string;
   setActiveDataPointValue: (value: string) => void;
@@ -14,6 +17,10 @@ interface UseKeyboardNavigationProps {
   activeAnnotatedText: AnnotatedText | undefined;
   annotatedTexts: AnnotatedText[] | undefined;
   setActiveAnnotatedText: (text: AnnotatedText) => void;
+  mode: TaskMode;
+  activeProfilePoints?: ProfilePoint[];
+  setEditingValue?: (value: string) => void;
+  setEditingDataPointId?: (id: string | undefined) => void;
 }
 
 export const useKeyboardNavigation = ({
@@ -28,6 +35,10 @@ export const useKeyboardNavigation = ({
   activeAnnotatedText,
   annotatedTexts,
   setActiveAnnotatedText,
+  mode,
+  activeProfilePoints,
+  setEditingValue,
+  setEditingDataPointId,
 }: UseKeyboardNavigationProps) => {
   useEffect(() => {
     const arrowRight = () => {
@@ -40,7 +51,10 @@ export const useKeyboardNavigation = ({
       }
       const nextDataPoint = dataPoints?.find(
         (dataPoint) =>
-          dataPoint.match && dataPoint.match![0] > activeDataPoint?.match![0]
+          "match" in dataPoint &&
+          dataPoint.match &&
+          (activeDataPoint as DataPoint).match &&
+          dataPoint.match[0] > (activeDataPoint as DataPoint).match![0]
       );
       if (nextDataPoint) {
         setActiveDataPointId(nextDataPoint.id);
@@ -64,7 +78,10 @@ export const useKeyboardNavigation = ({
         .reverse()
         .find(
           (dataPoint) =>
-            dataPoint.match && dataPoint.match[0] < activeDataPoint?.match![0]
+            "match" in dataPoint &&
+            dataPoint.match &&
+            (activeDataPoint as DataPoint).match &&
+            dataPoint.match[0] < (activeDataPoint as DataPoint).match![0]
         );
       if (previousDataPoint) {
         setActiveDataPointId(previousDataPoint.id);
@@ -107,10 +124,66 @@ export const useKeyboardNavigation = ({
       }
     };
 
+    const handleDataPointListNavigation = (event: KeyboardEvent) => {
+      if (!dataPoints?.length) return;
+
+      const currentIndex = dataPoints.findIndex(
+        (dp) => dp.id === activeDataPoint?.id
+      );
+
+      if (event.key === "ArrowUp" && currentIndex > 0) {
+        event.preventDefault();
+        const newDataPoint = dataPoints[currentIndex - 1];
+        setActiveDataPointId(newDataPoint.id);
+        // Start editing the value immediately if in datapoint extraction mode
+        if (
+          mode === TASK_MODE.DATAPOINT_EXTRACTION &&
+          "match" in newDataPoint &&
+          setEditingValue &&
+          setEditingDataPointId
+        ) {
+          const activeProfilePoint = activeProfilePoints?.find(
+            (profilePoint) => profilePoint.id === newDataPoint.profilePointId
+          );
+          if (activeProfilePoint?.datatype !== "valueset") {
+            setEditingValue(newDataPoint.value?.toString() || "");
+            setEditingDataPointId(newDataPoint.id);
+          }
+        }
+      } else if (
+        event.key === "ArrowDown" &&
+        currentIndex < dataPoints.length - 1
+      ) {
+        event.preventDefault();
+        const newDataPoint = dataPoints[currentIndex + 1];
+        setActiveDataPointId(newDataPoint.id);
+        // Start editing the value immediately if in datapoint extraction mode
+        if (
+          mode === TASK_MODE.DATAPOINT_EXTRACTION &&
+          "match" in newDataPoint &&
+          setEditingValue &&
+          setEditingDataPointId
+        ) {
+          const activeProfilePoint = activeProfilePoints?.find(
+            (profilePoint) => profilePoint.id === newDataPoint.profilePointId
+          );
+          if (activeProfilePoint?.datatype !== "valueset") {
+            setEditingValue(newDataPoint.value?.toString() || "");
+            setEditingDataPointId(newDataPoint.id);
+          }
+        }
+      }
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.shiftKey) {
         handleTextNavigation(event);
         return;
+      }
+
+      // Handle data point list navigation when Shift is not pressed
+      if (!event.shiftKey) {
+        handleDataPointListNavigation(event);
       }
 
       switch (event.key) {
@@ -121,7 +194,7 @@ export const useKeyboardNavigation = ({
           arrowLeft();
           break;
         case "Enter":
-          if (activeDataPoint) {
+          if (activeDataPoint && "match" in activeDataPoint) {
             updateDataPoint({
               ...activeDataPoint,
               value: activeDataPointValue || activeDataPoint.value,
@@ -156,5 +229,9 @@ export const useKeyboardNavigation = ({
     activeAnnotatedText,
     annotatedTexts,
     setActiveAnnotatedText,
+    mode,
+    activeProfilePoints,
+    setEditingValue,
+    setEditingDataPointId,
   ]);
 };
