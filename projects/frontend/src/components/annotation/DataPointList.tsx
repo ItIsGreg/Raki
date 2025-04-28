@@ -192,6 +192,19 @@ const DataPointList = (props: GenericDataPointListProps) => {
 
   const handleDataPointClick = (dataPointId: string) => {
     setActiveDataPointId(dataPointId);
+    // Start editing the value immediately
+    const dataPoint = dataPoints?.find((dp) => dp.id === dataPointId);
+    if (
+      dataPoint &&
+      mode === TASK_MODE.DATAPOINT_EXTRACTION &&
+      "match" in dataPoint
+    ) {
+      const activeProfilePoint = getActiveProfilePoint(dataPoint);
+      if (activeProfilePoint?.datatype !== "valueset") {
+        setEditingValue(dataPoint.value?.toString() || "");
+        setEditingDataPointId(dataPointId);
+      }
+    }
   };
 
   // Handle keyboard navigation in datapoint list
@@ -207,13 +220,37 @@ const DataPointList = (props: GenericDataPointListProps) => {
 
         if (event.key === "ArrowUp" && currentIndex > 0) {
           event.preventDefault();
-          setActiveDataPointId(dataPoints[currentIndex - 1].id);
+          const newDataPoint = dataPoints[currentIndex - 1];
+          setActiveDataPointId(newDataPoint.id);
+          // Start editing the value immediately
+          if (
+            mode === TASK_MODE.DATAPOINT_EXTRACTION &&
+            "match" in newDataPoint
+          ) {
+            const activeProfilePoint = getActiveProfilePoint(newDataPoint);
+            if (activeProfilePoint?.datatype !== "valueset") {
+              setEditingValue(newDataPoint.value?.toString() || "");
+              setEditingDataPointId(newDataPoint.id);
+            }
+          }
         } else if (
           event.key === "ArrowDown" &&
           currentIndex < dataPoints.length - 1
         ) {
           event.preventDefault();
-          setActiveDataPointId(dataPoints[currentIndex + 1].id);
+          const newDataPoint = dataPoints[currentIndex + 1];
+          setActiveDataPointId(newDataPoint.id);
+          // Start editing the value immediately
+          if (
+            mode === TASK_MODE.DATAPOINT_EXTRACTION &&
+            "match" in newDataPoint
+          ) {
+            const activeProfilePoint = getActiveProfilePoint(newDataPoint);
+            if (activeProfilePoint?.datatype !== "valueset") {
+              setEditingValue(newDataPoint.value?.toString() || "");
+              setEditingDataPointId(newDataPoint.id);
+            }
+          }
         }
       }
     };
@@ -222,7 +259,19 @@ const DataPointList = (props: GenericDataPointListProps) => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [dataPoints, activeDataPointId, setActiveDataPointId]);
+  }, [dataPoints, activeDataPointId, setActiveDataPointId, mode]);
+
+  // Focus the input field when editingDataPointId changes
+  useEffect(() => {
+    if (editingDataPointId) {
+      const input = document.querySelector(
+        `[data-cy="value-input"]`
+      ) as HTMLInputElement;
+      if (input) {
+        input.focus();
+      }
+    }
+  }, [editingDataPointId]);
 
   return (
     <div
