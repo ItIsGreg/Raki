@@ -291,8 +291,10 @@ const DataPointList = (props: GenericDataPointListProps) => {
                             onOpenChange={setIsSelectOpen}
                             data-cy="valueset-select"
                           >
-                            <SelectTrigger className="h-6 text-sm">
-                              {value || "Select value"}
+                            <SelectTrigger className="h-6 text-sm w-24 overflow-hidden text-ellipsis whitespace-nowrap">
+                              <span className="truncate">
+                                {value || "Select value"}
+                              </span>
                             </SelectTrigger>
                             <SelectContent>
                               {activeProfilePoint.valueset?.map((value) => (
@@ -309,14 +311,14 @@ const DataPointList = (props: GenericDataPointListProps) => {
                               setEditingValue(e.target.value);
                               handleValueChange(dataPoint, e.target.value);
                             }}
-                            className="h-6 text-sm"
+                            className="h-6 text-sm w-24 overflow-hidden text-ellipsis whitespace-nowrap"
                             data-cy="value-input"
                             onBlur={() => setEditingDataPointId(undefined)}
                             autoFocus
                           />
                         ) : (
                           <span
-                            className="text-sm text-gray-500 truncate block cursor-pointer hover:text-gray-700"
+                            className="text-sm text-gray-500 w-24 overflow-hidden text-ellipsis whitespace-nowrap block cursor-pointer hover:text-gray-700"
                             onClick={() => handleValueEdit(dataPoint)}
                             data-cy="value-display"
                           >
