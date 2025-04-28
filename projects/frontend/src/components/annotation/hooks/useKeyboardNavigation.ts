@@ -95,24 +95,6 @@ export const useDataPointKeyboardNavigation = ({
 
       // Handle data point list navigation
       handleDataPointListNavigation(event);
-
-      switch (event.key) {
-        case "Enter":
-          if (activeDataPoint && "match" in activeDataPoint) {
-            updateDataPoint({
-              ...activeDataPoint,
-              value: activeDataPointValue || activeDataPoint.value,
-              verified: true,
-            });
-          }
-          break;
-        case "Escape":
-          setActiveDataPointId(undefined);
-          setActiveTooltipId(undefined);
-          break;
-        default:
-          break;
-      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -265,6 +247,25 @@ export const useTextKeyboardNavigation = ({
 
       // Handle text navigation
       handleTextNavigation(event);
+
+      // Handle escape and enter keys
+      switch (event.key) {
+        case "Enter":
+          if (activeDataPoint && "match" in activeDataPoint) {
+            updateDataPoint({
+              ...activeDataPoint,
+              value: activeDataPointValue || activeDataPoint.value,
+              verified: true,
+            });
+          }
+          break;
+        case "Escape":
+          setActiveDataPointId(undefined);
+          setActiveTooltipId(undefined);
+          break;
+        default:
+          break;
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
