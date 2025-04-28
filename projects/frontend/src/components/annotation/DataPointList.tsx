@@ -25,7 +25,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
+import { useDataPointKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 
 type AnyDataPoint = DataPoint | SegmentDataPoint;
 
@@ -56,6 +56,7 @@ const DataPointList = (props: GenericDataPointListProps) => {
   const [editingDataPointId, setEditingDataPointId] = useState<
     string | undefined
   >(undefined);
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
 
   const dataPoints = useLiveQuery<AnyDataPoint[]>(() => {
     if (mode === TASK_MODE.DATAPOINT_EXTRACTION) {
@@ -208,7 +209,7 @@ const DataPointList = (props: GenericDataPointListProps) => {
     }
   };
 
-  useKeyboardNavigation({
+  useDataPointKeyboardNavigation({
     dataPoints,
     activeDataPoint: dataPoints?.find((dp) => dp.id === activeDataPointId),
     setActiveDataPointId,
@@ -216,14 +217,11 @@ const DataPointList = (props: GenericDataPointListProps) => {
     setActiveDataPointValue: setEditingValue,
     activeTooltipId: undefined,
     setActiveTooltipId: () => {},
-    texts: undefined,
-    activeAnnotatedText: undefined,
-    annotatedTexts: undefined,
-    setActiveAnnotatedText: () => {},
     mode,
     activeProfilePoints,
     setEditingValue,
     setEditingDataPointId,
+    isSelectOpen,
   });
 
   // Focus the input field when editingDataPointId changes
@@ -290,6 +288,7 @@ const DataPointList = (props: GenericDataPointListProps) => {
                             onValueChange={(value) =>
                               handleValuesetUpdate(dataPoint, value)
                             }
+                            onOpenChange={setIsSelectOpen}
                             data-cy="valueset-select"
                           >
                             <SelectTrigger className="h-6 text-sm">

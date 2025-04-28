@@ -5,7 +5,7 @@ import { TASK_MODE, TaskMode } from "@/app/constants";
 
 type AnyDataPoint = DataPoint | SegmentDataPoint;
 
-interface UseKeyboardNavigationProps {
+interface UseDataPointKeyboardNavigationProps {
   dataPoints: AnyDataPoint[] | undefined;
   activeDataPoint: AnyDataPoint | undefined;
   setActiveDataPointId: (id: string | undefined) => void;
@@ -13,17 +13,14 @@ interface UseKeyboardNavigationProps {
   setActiveDataPointValue: (value: string) => void;
   activeTooltipId: string | undefined;
   setActiveTooltipId: (id: string | undefined) => void;
-  texts: Text[] | undefined;
-  activeAnnotatedText: AnnotatedText | undefined;
-  annotatedTexts: AnnotatedText[] | undefined;
-  setActiveAnnotatedText: (text: AnnotatedText) => void;
   mode: TaskMode;
   activeProfilePoints?: ProfilePoint[];
   setEditingValue?: (value: string) => void;
   setEditingDataPointId?: (id: string | undefined) => void;
+  isSelectOpen: boolean;
 }
 
-export const useKeyboardNavigation = ({
+export const useDataPointKeyboardNavigation = ({
   dataPoints,
   activeDataPoint,
   setActiveDataPointId,
@@ -31,15 +28,141 @@ export const useKeyboardNavigation = ({
   setActiveDataPointValue,
   activeTooltipId,
   setActiveTooltipId,
-  texts,
-  activeAnnotatedText,
-  annotatedTexts,
-  setActiveAnnotatedText,
   mode,
   activeProfilePoints,
   setEditingValue,
   setEditingDataPointId,
-}: UseKeyboardNavigationProps) => {
+  isSelectOpen,
+}: UseDataPointKeyboardNavigationProps) => {
+  useEffect(() => {
+    const handleDataPointListNavigation = (event: KeyboardEvent) => {
+      // Don't handle navigation if a select is open
+      if (isSelectOpen) return;
+
+      if (!dataPoints?.length) return;
+
+      const currentIndex = dataPoints.findIndex(
+        (dp) => dp.id === activeDataPoint?.id
+      );
+
+      if (event.key === "ArrowUp" && currentIndex > 0) {
+        event.preventDefault();
+        const newDataPoint = dataPoints[currentIndex - 1];
+        setActiveDataPointId(newDataPoint.id);
+        // Start editing the value immediately if in datapoint extraction mode
+        if (
+          mode === TASK_MODE.DATAPOINT_EXTRACTION &&
+          "match" in newDataPoint &&
+          setEditingValue &&
+          setEditingDataPointId
+        ) {
+          const activeProfilePoint = activeProfilePoints?.find(
+            (profilePoint) => profilePoint.id === newDataPoint.profilePointId
+          );
+          if (activeProfilePoint?.datatype !== "valueset") {
+            setEditingValue(newDataPoint.value?.toString() || "");
+            setEditingDataPointId(newDataPoint.id);
+          }
+        }
+      } else if (
+        event.key === "ArrowDown" &&
+        currentIndex < dataPoints.length - 1
+      ) {
+        event.preventDefault();
+        const newDataPoint = dataPoints[currentIndex + 1];
+        setActiveDataPointId(newDataPoint.id);
+        // Start editing the value immediately if in datapoint extraction mode
+        if (
+          mode === TASK_MODE.DATAPOINT_EXTRACTION &&
+          "match" in newDataPoint &&
+          setEditingValue &&
+          setEditingDataPointId
+        ) {
+          const activeProfilePoint = activeProfilePoints?.find(
+            (profilePoint) => profilePoint.id === newDataPoint.profilePointId
+          );
+          if (activeProfilePoint?.datatype !== "valueset") {
+            setEditingValue(newDataPoint.value?.toString() || "");
+            setEditingDataPointId(newDataPoint.id);
+          }
+        }
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't handle any keyboard navigation if a select is open
+      if (isSelectOpen) return;
+
+      // Handle data point list navigation
+      handleDataPointListNavigation(event);
+
+      switch (event.key) {
+        case "Enter":
+          if (activeDataPoint && "match" in activeDataPoint) {
+            updateDataPoint({
+              ...activeDataPoint,
+              value: activeDataPointValue || activeDataPoint.value,
+              verified: true,
+            });
+          }
+          break;
+        case "Escape":
+          setActiveDataPointId(undefined);
+          setActiveTooltipId(undefined);
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [
+    activeDataPoint,
+    dataPoints,
+    activeDataPointValue,
+    setActiveDataPointId,
+    setActiveDataPointValue,
+    activeTooltipId,
+    setActiveTooltipId,
+    mode,
+    activeProfilePoints,
+    setEditingValue,
+    setEditingDataPointId,
+    isSelectOpen,
+  ]);
+};
+
+interface UseTextKeyboardNavigationProps {
+  texts: Text[] | undefined;
+  activeAnnotatedText: AnnotatedText | undefined;
+  annotatedTexts: AnnotatedText[] | undefined;
+  setActiveAnnotatedText: (text: AnnotatedText) => void;
+  dataPoints: AnyDataPoint[] | undefined;
+  activeDataPoint: AnyDataPoint | undefined;
+  setActiveDataPointId: (id: string | undefined) => void;
+  activeDataPointValue: string;
+  setActiveDataPointValue: (value: string) => void;
+  activeTooltipId: string | undefined;
+  setActiveTooltipId: (id: string | undefined) => void;
+}
+
+export const useTextKeyboardNavigation = ({
+  texts,
+  activeAnnotatedText,
+  annotatedTexts,
+  setActiveAnnotatedText,
+  dataPoints,
+  activeDataPoint,
+  setActiveDataPointId,
+  activeDataPointValue,
+  setActiveDataPointValue,
+  activeTooltipId,
+  setActiveTooltipId,
+}: UseTextKeyboardNavigationProps) => {
   useEffect(() => {
     const arrowRight = () => {
       setActiveDataPointValue("");
@@ -95,6 +218,9 @@ export const useKeyboardNavigation = ({
     const handleTextNavigation = (event: KeyboardEvent) => {
       if (!texts || !activeAnnotatedText || !annotatedTexts) return;
 
+      // Only handle text navigation if Shift is pressed
+      if (!event.shiftKey) return;
+
       const sortedAnnotatedTexts = annotatedTexts
         .map((annotatedText) => ({
           ...annotatedText,
@@ -124,92 +250,21 @@ export const useKeyboardNavigation = ({
       }
     };
 
-    const handleDataPointListNavigation = (event: KeyboardEvent) => {
-      if (!dataPoints?.length) return;
-
-      const currentIndex = dataPoints.findIndex(
-        (dp) => dp.id === activeDataPoint?.id
-      );
-
-      if (event.key === "ArrowUp" && currentIndex > 0) {
-        event.preventDefault();
-        const newDataPoint = dataPoints[currentIndex - 1];
-        setActiveDataPointId(newDataPoint.id);
-        // Start editing the value immediately if in datapoint extraction mode
-        if (
-          mode === TASK_MODE.DATAPOINT_EXTRACTION &&
-          "match" in newDataPoint &&
-          setEditingValue &&
-          setEditingDataPointId
-        ) {
-          const activeProfilePoint = activeProfilePoints?.find(
-            (profilePoint) => profilePoint.id === newDataPoint.profilePointId
-          );
-          if (activeProfilePoint?.datatype !== "valueset") {
-            setEditingValue(newDataPoint.value?.toString() || "");
-            setEditingDataPointId(newDataPoint.id);
-          }
-        }
-      } else if (
-        event.key === "ArrowDown" &&
-        currentIndex < dataPoints.length - 1
-      ) {
-        event.preventDefault();
-        const newDataPoint = dataPoints[currentIndex + 1];
-        setActiveDataPointId(newDataPoint.id);
-        // Start editing the value immediately if in datapoint extraction mode
-        if (
-          mode === TASK_MODE.DATAPOINT_EXTRACTION &&
-          "match" in newDataPoint &&
-          setEditingValue &&
-          setEditingDataPointId
-        ) {
-          const activeProfilePoint = activeProfilePoints?.find(
-            (profilePoint) => profilePoint.id === newDataPoint.profilePointId
-          );
-          if (activeProfilePoint?.datatype !== "valueset") {
-            setEditingValue(newDataPoint.value?.toString() || "");
-            setEditingDataPointId(newDataPoint.id);
-          }
-        }
-      }
-    };
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.shiftKey) {
-        handleTextNavigation(event);
+      // Handle tooltip navigation
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        arrowRight();
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        arrowLeft();
         return;
       }
 
-      // Handle data point list navigation when Shift is not pressed
-      if (!event.shiftKey) {
-        handleDataPointListNavigation(event);
-      }
-
-      switch (event.key) {
-        case "ArrowRight":
-          arrowRight();
-          break;
-        case "ArrowLeft":
-          arrowLeft();
-          break;
-        case "Enter":
-          if (activeDataPoint && "match" in activeDataPoint) {
-            updateDataPoint({
-              ...activeDataPoint,
-              value: activeDataPointValue || activeDataPoint.value,
-              verified: true,
-            });
-            arrowRight();
-          }
-          break;
-        case "Escape":
-          setActiveDataPointId(undefined);
-          setActiveTooltipId(undefined);
-          break;
-        default:
-          break;
-      }
+      // Handle text navigation
+      handleTextNavigation(event);
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -218,20 +273,16 @@ export const useKeyboardNavigation = ({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [
-    activeDataPoint,
-    dataPoints,
-    activeDataPointValue,
-    setActiveDataPointId,
-    setActiveDataPointValue,
-    activeTooltipId,
-    setActiveTooltipId,
     texts,
     activeAnnotatedText,
     annotatedTexts,
     setActiveAnnotatedText,
-    mode,
-    activeProfilePoints,
-    setEditingValue,
-    setEditingDataPointId,
+    dataPoints,
+    activeDataPoint,
+    setActiveDataPointId,
+    activeDataPointValue,
+    setActiveDataPointValue,
+    activeTooltipId,
+    setActiveTooltipId,
   ]);
 };

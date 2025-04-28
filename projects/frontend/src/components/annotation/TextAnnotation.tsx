@@ -1,12 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useMemo, useEffect } from "react";
 import { useAnnotationData } from "./hooks/useAnnotationData";
-import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
+import { useTextKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 import { generateHighlightedText } from "./utils/textAnnotationUtils";
 import { TextAnnotationProps } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { updateProfile, readProfile } from "@/lib/db/crud";
 import { Profile } from "@/lib/db/db";
+import { TASK_MODE } from "@/app/constants";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -67,7 +68,11 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     await updateProfile(updatedProfile);
   };
 
-  useKeyboardNavigation({
+  useTextKeyboardNavigation({
+    texts,
+    activeAnnotatedText,
+    annotatedTexts,
+    setActiveAnnotatedText,
     dataPoints,
     activeDataPoint,
     setActiveDataPointId,
@@ -75,10 +80,6 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     setActiveDataPointValue,
     activeTooltipId,
     setActiveTooltipId,
-    texts,
-    activeAnnotatedText,
-    annotatedTexts,
-    setActiveAnnotatedText,
   });
 
   const highlightedText = useMemo(
