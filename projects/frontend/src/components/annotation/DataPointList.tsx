@@ -57,6 +57,9 @@ const DataPointList = (props: GenericDataPointListProps) => {
     string | undefined
   >(undefined);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [openSelectId, setOpenSelectId] = useState<string | undefined>(
+    undefined
+  );
 
   const dataPoints = useLiveQuery<AnyDataPoint[]>(() => {
     if (mode === TASK_MODE.DATAPOINT_EXTRACTION) {
@@ -222,6 +225,8 @@ const DataPointList = (props: GenericDataPointListProps) => {
     setEditingValue,
     setEditingDataPointId,
     isSelectOpen,
+    openSelectId,
+    setOpenSelectId,
   });
 
   // Focus the input field when editingDataPointId changes
@@ -288,7 +293,11 @@ const DataPointList = (props: GenericDataPointListProps) => {
                             onValueChange={(value) =>
                               handleValuesetUpdate(dataPoint, value)
                             }
-                            onOpenChange={setIsSelectOpen}
+                            open={openSelectId === dataPoint.id}
+                            onOpenChange={(open) => {
+                              setIsSelectOpen(open);
+                              setOpenSelectId(open ? dataPoint.id : undefined);
+                            }}
                             data-cy="valueset-select"
                           >
                             <SelectTrigger className="h-6 text-sm w-24 overflow-hidden text-ellipsis whitespace-nowrap">

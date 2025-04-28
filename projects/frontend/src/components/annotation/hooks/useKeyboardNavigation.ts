@@ -18,6 +18,8 @@ interface UseDataPointKeyboardNavigationProps {
   setEditingValue?: (value: string) => void;
   setEditingDataPointId?: (id: string | undefined) => void;
   isSelectOpen: boolean;
+  openSelectId: string | undefined;
+  setOpenSelectId: (id: string | undefined) => void;
 }
 
 export const useDataPointKeyboardNavigation = ({
@@ -33,11 +35,13 @@ export const useDataPointKeyboardNavigation = ({
   setEditingValue,
   setEditingDataPointId,
   isSelectOpen,
+  openSelectId,
+  setOpenSelectId,
 }: UseDataPointKeyboardNavigationProps) => {
   useEffect(() => {
     const handleDataPointListNavigation = (event: KeyboardEvent) => {
       // Don't handle navigation if a select is open
-      if (isSelectOpen) return;
+      if (openSelectId) return;
 
       if (!dataPoints?.length) return;
 
@@ -91,10 +95,21 @@ export const useDataPointKeyboardNavigation = ({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Don't handle any keyboard navigation if a select is open
-      if (isSelectOpen) return;
+      if (openSelectId) return;
 
       // Handle data point list navigation
       handleDataPointListNavigation(event);
+
+      // Handle enter key for valueset inputs
+      if (event.key === "Enter" && activeDataPoint && "match" in activeDataPoint) {
+        const activeProfilePoint = activeProfilePoints?.find(
+          (profilePoint) => profilePoint.id === activeDataPoint.profilePointId
+        );
+        if (activeProfilePoint?.datatype === "valueset") {
+          event.preventDefault();
+          setOpenSelectId(activeDataPoint.id);
+        }
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -115,6 +130,8 @@ export const useDataPointKeyboardNavigation = ({
     setEditingValue,
     setEditingDataPointId,
     isSelectOpen,
+    openSelectId,
+    setOpenSelectId,
   ]);
 };
 
