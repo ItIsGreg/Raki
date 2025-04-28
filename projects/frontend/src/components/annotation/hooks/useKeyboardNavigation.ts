@@ -1,5 +1,5 @@
 import { updateDataPoint } from "@/lib/db/crud";
-import { DataPoint } from "@/lib/db/db";
+import { DataPoint, Text, AnnotatedText } from "@/lib/db/db";
 import { useEffect } from "react";
 
 interface UseKeyboardNavigationProps {
@@ -10,6 +10,10 @@ interface UseKeyboardNavigationProps {
   setActiveDataPointValue: (value: string) => void;
   activeTooltipId: string | undefined;
   setActiveTooltipId: (id: string | undefined) => void;
+  texts: Text[] | undefined;
+  activeAnnotatedText: AnnotatedText | undefined;
+  annotatedTexts: AnnotatedText[] | undefined;
+  setActiveAnnotatedText: (text: AnnotatedText) => void;
 }
 
 export const useKeyboardNavigation = ({
@@ -20,6 +24,10 @@ export const useKeyboardNavigation = ({
   setActiveDataPointValue,
   activeTooltipId,
   setActiveTooltipId,
+  texts,
+  activeAnnotatedText,
+  annotatedTexts,
+  setActiveAnnotatedText,
 }: UseKeyboardNavigationProps) => {
   useEffect(() => {
     const arrowRight = () => {
@@ -67,7 +75,44 @@ export const useKeyboardNavigation = ({
       }
     };
 
+    const handleTextNavigation = (event: KeyboardEvent) => {
+      if (!texts || !activeAnnotatedText || !annotatedTexts) return;
+
+      const sortedAnnotatedTexts = annotatedTexts
+        .map((annotatedText) => ({
+          ...annotatedText,
+          filename:
+            texts.find((text) => text.id === annotatedText.textId)
+              ?.filename || "",
+        }))
+        .sort((a, b) =>
+          a.filename.localeCompare(b.filename, undefined, {
+            sensitivity: "base",
+          })
+        );
+
+      const currentIndex = sortedAnnotatedTexts.findIndex(
+        (at) => at.id === activeAnnotatedText.id
+      );
+
+      if (event.key === "ArrowUp" && currentIndex > 0) {
+        event.preventDefault();
+        setActiveAnnotatedText(sortedAnnotatedTexts[currentIndex - 1]);
+      } else if (
+        event.key === "ArrowDown" &&
+        currentIndex < sortedAnnotatedTexts.length - 1
+      ) {
+        event.preventDefault();
+        setActiveAnnotatedText(sortedAnnotatedTexts[currentIndex + 1]);
+      }
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.shiftKey) {
+        handleTextNavigation(event);
+        return;
+      }
+
       switch (event.key) {
         case "ArrowRight":
           arrowRight();
@@ -107,5 +152,9 @@ export const useKeyboardNavigation = ({
     setActiveDataPointValue,
     activeTooltipId,
     setActiveTooltipId,
+    texts,
+    activeAnnotatedText,
+    annotatedTexts,
+    setActiveAnnotatedText,
   ]);
 };
