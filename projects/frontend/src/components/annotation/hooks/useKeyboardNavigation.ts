@@ -17,6 +17,9 @@ interface UseDataPointKeyboardNavigationProps {
   activeProfilePoints?: ProfilePoint[];
   setEditingValue?: (value: string) => void;
   setEditingDataPointId?: (id: string | undefined) => void;
+  isSelectOpen: boolean;
+  openSelectId: string | undefined;
+  setOpenSelectId: (id: string | undefined) => void;
 }
 
 export const useDataPointKeyboardNavigation = ({
@@ -31,18 +34,22 @@ export const useDataPointKeyboardNavigation = ({
   activeProfilePoints,
   setEditingValue,
   setEditingDataPointId,
+  isSelectOpen,
+  openSelectId,
+  setOpenSelectId,
 }: UseDataPointKeyboardNavigationProps) => {
   useEffect(() => {
     const handleDataPointListNavigation = (event: KeyboardEvent) => {
       console.log('handleDataPointListNavigation called:', {
         key: event.key,
+        openSelectId,
         activeDataPointId: activeDataPoint?.id,
         currentIndex: dataPoints?.findIndex(dp => dp.id === activeDataPoint?.id)
       });
 
-      // Don't handle navigation if the target is a select element
-      if (event.target instanceof HTMLSelectElement) {
-        console.log('Navigation blocked - target is a select element');
+      // Don't handle navigation if a select is open
+      if (openSelectId) {
+        console.log('Navigation blocked - select is open');
         return;
       }
 
@@ -101,14 +108,15 @@ export const useDataPointKeyboardNavigation = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       console.log('Keyboard event:', {
         key: event.key,
+        openSelectId,
         activeDataPoint: activeDataPoint?.id,
         target: event.target,
         defaultPrevented: event.defaultPrevented
       });
 
-      // Don't handle any keyboard navigation if the target is a select element
-      if (event.target instanceof HTMLSelectElement) {
-        console.log('Select is focused, letting default behavior handle it');
+      // Don't handle any keyboard navigation if a select is open
+      if (openSelectId) {
+        console.log('Select is open, letting default behavior handle it');
         return;
       }
 
@@ -121,11 +129,14 @@ export const useDataPointKeyboardNavigation = ({
           (profilePoint) => profilePoint.id === activeDataPoint.profilePointId
         );
         if (activeProfilePoint?.datatype === "valueset") {
-          // Find the select element for this data point and focus it
-          const selectElement = document.querySelector(`[data-cy="valueset-select"][data-datapoint-id="${activeDataPoint.id}"]`) as HTMLSelectElement;
-          if (selectElement) {
+          // Check if the event target is a select item or select content
+          const target = event.target as HTMLElement;
+          const isSelectItem = target.closest('[role="option"]') || target.closest('[role="listbox"]');
+          
+          if (!isSelectItem) {
+            console.log('Opening valueset select for data point:', activeDataPoint.id);
             event.preventDefault();
-            selectElement.focus();
+            setOpenSelectId(activeDataPoint.id);
           }
         }
       }
@@ -148,6 +159,9 @@ export const useDataPointKeyboardNavigation = ({
     activeProfilePoints,
     setEditingValue,
     setEditingDataPointId,
+    isSelectOpen,
+    openSelectId,
+    setOpenSelectId,
   ]);
 };
 

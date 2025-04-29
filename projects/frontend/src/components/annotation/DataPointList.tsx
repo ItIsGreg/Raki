@@ -183,12 +183,17 @@ const DataPointList = (props: GenericDataPointListProps) => {
         value: value,
         verified: true,
       });
-      // Blur the select element after selection
-      const selectElement = document.querySelector(
-        `[data-cy="valueset-select"][data-datapoint-id="${dataPoint.id}"]`
-      ) as HTMLSelectElement;
-      if (selectElement) {
-        selectElement.blur();
+      // Blur the select trigger after selection
+      console.log("Attempting to blur select trigger...");
+      const selectTrigger = document.querySelector(
+        `[data-cy="valueset-select"] [role="combobox"]`
+      ) as HTMLElement;
+      console.log("Found select trigger:", selectTrigger);
+      if (selectTrigger) {
+        console.log("Blurring select trigger");
+        selectTrigger.blur();
+      } else {
+        console.log("No select trigger found");
       }
     }
   };
@@ -231,6 +236,9 @@ const DataPointList = (props: GenericDataPointListProps) => {
     activeProfilePoints,
     setEditingValue,
     setEditingDataPointId,
+    isSelectOpen,
+    openSelectId,
+    setOpenSelectId,
   });
 
   // Focus the input field when editingDataPointId changes
@@ -292,22 +300,58 @@ const DataPointList = (props: GenericDataPointListProps) => {
                     {mode === TASK_MODE.DATAPOINT_EXTRACTION && (
                       <div className="w-24 flex-shrink-0">
                         {activeProfilePoint?.datatype === "valueset" ? (
-                          <select
+                          <Select
                             value={value}
-                            onChange={(e) =>
-                              handleValuesetUpdate(dataPoint, e.target.value)
-                            }
-                            className="h-6 text-sm w-24 overflow-hidden text-ellipsis whitespace-nowrap border rounded"
+                            onValueChange={(value) => {
+                              handleValuesetUpdate(dataPoint, value);
+                              // Blur after selection
+                              const trigger = document.querySelector(
+                                '[role="combobox"]'
+                              ) as HTMLElement;
+                              if (trigger) {
+                                setTimeout(() => {
+                                  trigger.blur();
+                                }, 0);
+                              }
+                            }}
+                            open={openSelectId === dataPoint.id}
+                            onOpenChange={(open) => {
+                              setIsSelectOpen(open);
+                              setOpenSelectId(open ? dataPoint.id : undefined);
+                              // Blur when closing
+                              if (!open) {
+                                const trigger = document.querySelector(
+                                  '[role="combobox"]'
+                                ) as HTMLElement;
+                                if (trigger) {
+                                  setTimeout(() => {
+                                    trigger.blur();
+                                  }, 0);
+                                }
+                              }
+                            }}
                             data-cy="valueset-select"
-                            data-datapoint-id={dataPoint.id}
                           >
-                            <option value="">Select value</option>
-                            {activeProfilePoint.valueset?.map((value) => (
-                              <option key={value} value={value}>
-                                {value}
-                              </option>
-                            ))}
-                          </select>
+                            <SelectTrigger
+                              className="h-6 text-sm w-24 overflow-hidden text-ellipsis whitespace-nowrap"
+                              tabIndex={-1}
+                              onFocus={(e) => {
+                                e.preventDefault();
+                                e.target.blur();
+                              }}
+                            >
+                              <span className="truncate">
+                                {value || "Select value"}
+                              </span>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {activeProfilePoint.valueset?.map((value) => (
+                                <SelectItem key={value} value={value}>
+                                  {value}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         ) : editingDataPointId === dataPoint.id ? (
                           <Input
                             value={editingValue}
