@@ -183,6 +183,13 @@ const DataPointList = (props: GenericDataPointListProps) => {
         value: value,
         verified: true,
       });
+      // Blur the select element after selection
+      const selectElement = document.querySelector(
+        `[data-cy="valueset-select"][data-datapoint-id="${dataPoint.id}"]`
+      ) as HTMLSelectElement;
+      if (selectElement) {
+        selectElement.blur();
+      }
     }
   };
 
@@ -224,9 +231,6 @@ const DataPointList = (props: GenericDataPointListProps) => {
     activeProfilePoints,
     setEditingValue,
     setEditingDataPointId,
-    isSelectOpen,
-    openSelectId,
-    setOpenSelectId,
   });
 
   // Focus the input field when editingDataPointId changes
@@ -288,31 +292,22 @@ const DataPointList = (props: GenericDataPointListProps) => {
                     {mode === TASK_MODE.DATAPOINT_EXTRACTION && (
                       <div className="w-24 flex-shrink-0">
                         {activeProfilePoint?.datatype === "valueset" ? (
-                          <Select
+                          <select
                             value={value}
-                            onValueChange={(value) =>
-                              handleValuesetUpdate(dataPoint, value)
+                            onChange={(e) =>
+                              handleValuesetUpdate(dataPoint, e.target.value)
                             }
-                            open={openSelectId === dataPoint.id}
-                            onOpenChange={(open) => {
-                              setIsSelectOpen(open);
-                              setOpenSelectId(open ? dataPoint.id : undefined);
-                            }}
+                            className="h-6 text-sm w-24 overflow-hidden text-ellipsis whitespace-nowrap border rounded"
                             data-cy="valueset-select"
+                            data-datapoint-id={dataPoint.id}
                           >
-                            <SelectTrigger className="h-6 text-sm w-24 overflow-hidden text-ellipsis whitespace-nowrap">
-                              <span className="truncate">
-                                {value || "Select value"}
-                              </span>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {activeProfilePoint.valueset?.map((value) => (
-                                <SelectItem key={value} value={value}>
-                                  {value}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            <option value="">Select value</option>
+                            {activeProfilePoint.valueset?.map((value) => (
+                              <option key={value} value={value}>
+                                {value}
+                              </option>
+                            ))}
+                          </select>
                         ) : editingDataPointId === dataPoint.id ? (
                           <Input
                             value={editingValue}

@@ -17,9 +17,6 @@ interface UseDataPointKeyboardNavigationProps {
   activeProfilePoints?: ProfilePoint[];
   setEditingValue?: (value: string) => void;
   setEditingDataPointId?: (id: string | undefined) => void;
-  isSelectOpen: boolean;
-  openSelectId: string | undefined;
-  setOpenSelectId: (id: string | undefined) => void;
 }
 
 export const useDataPointKeyboardNavigation = ({
@@ -34,14 +31,20 @@ export const useDataPointKeyboardNavigation = ({
   activeProfilePoints,
   setEditingValue,
   setEditingDataPointId,
-  isSelectOpen,
-  openSelectId,
-  setOpenSelectId,
 }: UseDataPointKeyboardNavigationProps) => {
   useEffect(() => {
     const handleDataPointListNavigation = (event: KeyboardEvent) => {
-      // Don't handle navigation if a select is open
-      if (openSelectId) return;
+      console.log('handleDataPointListNavigation called:', {
+        key: event.key,
+        activeDataPointId: activeDataPoint?.id,
+        currentIndex: dataPoints?.findIndex(dp => dp.id === activeDataPoint?.id)
+      });
+
+      // Don't handle navigation if the target is a select element
+      if (event.target instanceof HTMLSelectElement) {
+        console.log('Navigation blocked - target is a select element');
+        return;
+      }
 
       if (!dataPoints?.length) return;
 
@@ -50,6 +53,7 @@ export const useDataPointKeyboardNavigation = ({
       );
 
       if (event.key === "ArrowUp" && currentIndex > 0) {
+        console.log('ArrowUp pressed - changing to previous data point');
         event.preventDefault();
         const newDataPoint = dataPoints[currentIndex - 1];
         setActiveDataPointId(newDataPoint.id);
@@ -72,6 +76,7 @@ export const useDataPointKeyboardNavigation = ({
         event.key === "ArrowDown" &&
         currentIndex < dataPoints.length - 1
       ) {
+        console.log('ArrowDown pressed - changing to next data point');
         event.preventDefault();
         const newDataPoint = dataPoints[currentIndex + 1];
         setActiveDataPointId(newDataPoint.id);
@@ -94,20 +99,34 @@ export const useDataPointKeyboardNavigation = ({
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Don't handle any keyboard navigation if a select is open
-      if (openSelectId) return;
+      console.log('Keyboard event:', {
+        key: event.key,
+        activeDataPoint: activeDataPoint?.id,
+        target: event.target,
+        defaultPrevented: event.defaultPrevented
+      });
+
+      // Don't handle any keyboard navigation if the target is a select element
+      if (event.target instanceof HTMLSelectElement) {
+        console.log('Select is focused, letting default behavior handle it');
+        return;
+      }
 
       // Handle data point list navigation
       handleDataPointListNavigation(event);
 
       // Handle enter key for valueset inputs
-      if (event.key === "Enter" && activeDataPoint && "match" in activeDataPoint) {
+      if (event.key === "Enter" && activeDataPoint) {
         const activeProfilePoint = activeProfilePoints?.find(
           (profilePoint) => profilePoint.id === activeDataPoint.profilePointId
         );
         if (activeProfilePoint?.datatype === "valueset") {
-          event.preventDefault();
-          setOpenSelectId(activeDataPoint.id);
+          // Find the select element for this data point and focus it
+          const selectElement = document.querySelector(`[data-cy="valueset-select"][data-datapoint-id="${activeDataPoint.id}"]`) as HTMLSelectElement;
+          if (selectElement) {
+            event.preventDefault();
+            selectElement.focus();
+          }
         }
       }
     };
@@ -129,9 +148,6 @@ export const useDataPointKeyboardNavigation = ({
     activeProfilePoints,
     setEditingValue,
     setEditingDataPointId,
-    isSelectOpen,
-    openSelectId,
-    setOpenSelectId,
   ]);
 };
 
@@ -269,11 +285,11 @@ export const useTextKeyboardNavigation = ({
       switch (event.key) {
         case "Enter":
           if (activeDataPoint && "match" in activeDataPoint) {
-            updateDataPoint({
-              ...activeDataPoint,
-              value: activeDataPointValue || activeDataPoint.value,
-              verified: true,
-            });
+            // updateDataPoint({
+            //   ...activeDataPoint,
+            //   value: activeDataPointValue || activeDataPoint.value,
+            //   verified: true,
+            // });
           }
           break;
         case "Escape":
