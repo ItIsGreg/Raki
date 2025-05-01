@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Annotation = () => {
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] = useState<
@@ -70,25 +71,46 @@ const Annotation = () => {
         activeAnnotatedText={activeAnnotatedText}
         setActiveAnnotatedText={setActiveAnnotatedText}
       />
-      <DataPointList
-        data-cy="data-point-list"
-        activeAnnotatedDataset={activeAnnotatedDataset}
-        activeDataPointId={activeDataPointId}
-        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-        setActiveDataPointId={setActiveDataPointId}
-        activeAnnotatedText={activeAnnotatedText}
-        mode={mode}
-        isDatasetListOpen={isDatasetListOpen}
-        activeProfilePoints={activeProfilePoints}
-      />
-      <AnnotatedTextList
-        data-cy="annotated-text-list"
-        activeAnnotatedDataset={activeAnnotatedDataset}
-        activeAnnotatedText={activeAnnotatedText}
-        setActiveAnnotatedText={setActiveAnnotatedText}
-        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-        mode={mode}
-      />
+      <Tabs defaultValue="annotation" className="col-span-3 h-full">
+        <TabsList className="w-full">
+          <TabsTrigger value="annotation" className="flex-1">
+            Annotation
+          </TabsTrigger>
+          <TabsTrigger value="profiles" className="flex-1">
+            Profiles
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="annotation" className="h-[calc(100%-3rem)] mt-0">
+          <div className="grid grid-cols-2 gap-4 h-full">
+            <div className="col-span-1">
+              <DataPointList
+                data-cy="data-point-list"
+                activeAnnotatedDataset={activeAnnotatedDataset}
+                activeDataPointId={activeDataPointId}
+                setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                setActiveDataPointId={setActiveDataPointId}
+                activeAnnotatedText={activeAnnotatedText}
+                mode={mode}
+                isDatasetListOpen={isDatasetListOpen}
+                activeProfilePoints={activeProfilePoints}
+              />
+            </div>
+            <div className="col-span-1">
+              <AnnotatedTextList
+                data-cy="annotated-text-list"
+                activeAnnotatedDataset={activeAnnotatedDataset}
+                activeAnnotatedText={activeAnnotatedText}
+                setActiveAnnotatedText={setActiveAnnotatedText}
+                setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                mode={mode}
+              />
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="profiles" className="h-[calc(100%-3rem)] mt-0">
+          {/* Empty profiles tab for now */}
+        </TabsContent>
+      </Tabs>
       <Sheet open={isDatasetListOpen} onOpenChange={setIsDatasetListOpen}>
         <SheetTrigger asChild>
           <Button
