@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { updateProfile, readProfile } from "@/lib/db/crud";
 import { Profile } from "@/lib/db/db";
 import { TASK_MODE } from "@/app/constants";
+import { RefreshCw } from "lucide-react";
+import { reannotateFaultyText } from "@/components/aiAnnotation/annotationUtils";
+import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -23,6 +26,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
   const [activeTooltipId, setActiveTooltipId] = useState<string | undefined>(
     undefined
   );
+  const [isReannotating, setIsReannotating] = useState(false);
 
   const {
     texts,
@@ -36,6 +40,18 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     activeAnnotatedText,
     activeDataPointId,
   });
+
+  // Get LLM configuration from annotation state
+  const { dbApiKeys, dbLlmProvider, dbLlmModel, dbLlmUrl, dbMaxTokens } =
+    useAnnotationState({
+      activeAnnotatedDataset: activeAnnotatedDataset || null,
+      activeProfilePoints: activeProfilePoints || [],
+      setActiveAnnotatedDataset: (dataset) =>
+        setActiveAnnotatedDataset(dataset || undefined),
+      setActiveProfilePoints: () => {}, // Not needed for this component
+      autoRerunFaulty: true,
+      mode: TASK_MODE.DATAPOINT_EXTRACTION,
+    });
 
   const handleSaveAsExample = async () => {
     if (!activeAnnotatedText || !activeAnnotatedDataset || !dataPoints) return;
@@ -66,6 +82,37 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     };
 
     await updateProfile(updatedProfile);
+  };
+
+  const handleReannotate = async () => {
+    if (
+      !activeAnnotatedText ||
+      !activeProfilePoints ||
+      !dbApiKeys ||
+      !dbLlmProvider ||
+      !dbLlmModel ||
+      !dbLlmUrl ||
+      !dbMaxTokens
+    ) {
+      return;
+    }
+
+    setIsReannotating(true);
+    try {
+      await reannotateFaultyText(
+        activeAnnotatedText,
+        activeProfilePoints,
+        dbLlmProvider[0].provider,
+        dbLlmModel[0].name,
+        dbLlmUrl[0].url,
+        dbApiKeys[0].key,
+        dbMaxTokens[0]?.value
+      );
+    } catch (error) {
+      console.error("Error reannotating text:", error);
+    } finally {
+      setIsReannotating(false);
+    }
   };
 
   useTextKeyboardNavigation({
@@ -121,15 +168,28 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle data-cy="text-annotation-title">Annotation</CardTitle>
-          <Button
-            onClick={handleSaveAsExample}
-            variant="outline"
-            disabled={
-              !activeAnnotatedText || !activeAnnotatedDataset || !dataPoints
-            }
-          >
-            Save as Example
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSaveAsExample}
+              variant="outline"
+              disabled={
+                !activeAnnotatedText || !activeAnnotatedDataset || !dataPoints
+              }
+            >
+              Save as Example
+            </Button>
+            <Button
+              variant="outline"
+              disabled={!activeAnnotatedText || isReannotating}
+              data-cy="reannotate-button"
+              size="icon"
+              onClick={handleReannotate}
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isReannotating ? "animate-spin" : ""}`}
+              />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent
           className="whitespace-pre-wrap"
