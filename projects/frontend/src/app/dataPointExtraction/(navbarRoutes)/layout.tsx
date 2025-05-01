@@ -17,9 +17,9 @@ export default function Layout({
   ];
 
   return (
-    <div className="h-full overflow-hidden pb-10">
+    <div className="h-screen flex flex-col overflow-hidden">
       <Navbar routes={routes} />
-      {children}
+      <div className="flex-1 overflow-hidden">{children}</div>
     </div>
   );
 }

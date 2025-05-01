@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { AnnotatedDataset, AnnotatedText, ProfilePoint } from "@/lib/db/db";
+import { useState, useEffect } from "react";
+import {
+  AnnotatedDataset,
+  AnnotatedText,
+  Profile,
+  ProfilePoint,
+  ProfilePointCreate,
+  SegmentationProfilePoint,
+} from "@/lib/db/db";
 import TextAnnotation from "@/components/annotation/TextAnnotation";
 import DataPointList from "@/components/annotation/DataPointList";
 import AnnotatedTextList from "@/components/annotation/AnnotatedTextList";
@@ -11,8 +18,27 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProfileDataPointList from "@/components/profiles/DataPointList";
+import DataPointEditor from "@/components/profiles/DataPointEditor";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useLiveQuery } from "dexie-react-hooks";
+import {
+  readProfilesByMode,
+  readProfilePointsByProfile,
+  createProfilePoint,
+} from "@/lib/db/crud";
 
 const Annotation = () => {
+  // Since this is in the dataPointExtraction directory, we set the mode accordingly
+  const mode = TASK_MODE.DATAPOINT_EXTRACTION;
+
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] = useState<
     AnnotatedDataset | undefined
   >(undefined);
@@ -27,9 +53,27 @@ const Annotation = () => {
   >([]);
   const [isDatasetListOpen, setIsDatasetListOpen] = useState(true);
   const [autoRerunFaulty, setAutoRerunFaulty] = useState(true);
+  const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
+  const [activeDataPoint, setActiveDataPoint] = useState<
+    ProfilePoint | SegmentationProfilePoint | undefined
+  >(undefined);
+  const [creatingNewDataPoint, setCreatingNewDataPoint] =
+    useState<boolean>(false);
 
-  // Since this is in the dataPointExtraction directory, we set the mode accordingly
-  const mode = TASK_MODE.DATAPOINT_EXTRACTION;
+  // Get profiles from database
+  const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
+
+  // Synchronize active profile with active annotated dataset
+  useEffect(() => {
+    if (activeAnnotatedDataset && profiles) {
+      const associatedProfile = profiles.find(
+        (p) => p.id === activeAnnotatedDataset.profileId
+      );
+      if (associatedProfile) {
+        setActiveProfile(associatedProfile);
+      }
+    }
+  }, [activeAnnotatedDataset, profiles]);
 
   // Wrapper functions to handle type conversion
   const handleSetActiveAnnotatedDataset = (
@@ -58,7 +102,7 @@ const Annotation = () => {
 
   return (
     <div
-      className="grid grid-cols-7 gap-4 h-full"
+      className="grid grid-cols-7 gap-4 h-full overflow-hidden"
       data-cy="annotation-container"
     >
       <TextAnnotation
@@ -70,25 +114,105 @@ const Annotation = () => {
         activeAnnotatedText={activeAnnotatedText}
         setActiveAnnotatedText={setActiveAnnotatedText}
       />
-      <DataPointList
-        data-cy="data-point-list"
-        activeAnnotatedDataset={activeAnnotatedDataset}
-        activeDataPointId={activeDataPointId}
-        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-        setActiveDataPointId={setActiveDataPointId}
-        activeAnnotatedText={activeAnnotatedText}
-        mode={mode}
-        isDatasetListOpen={isDatasetListOpen}
-        activeProfilePoints={activeProfilePoints}
-      />
-      <AnnotatedTextList
-        data-cy="annotated-text-list"
-        activeAnnotatedDataset={activeAnnotatedDataset}
-        activeAnnotatedText={activeAnnotatedText}
-        setActiveAnnotatedText={setActiveAnnotatedText}
-        setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-        mode={mode}
-      />
+      <Tabs
+        defaultValue="annotation"
+        className="col-span-3 h-full flex flex-col overflow-hidden"
+      >
+        <TabsList className="w-full">
+          <TabsTrigger value="annotation" className="flex-1">
+            Annotation
+          </TabsTrigger>
+          <TabsTrigger value="profiles" className="flex-1">
+            Profiles
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent
+          value="annotation"
+          className="flex-1 min-h-0 mt-0 overflow-hidden"
+        >
+          <div className="h-full overflow-y-auto">
+            <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)] p-4">
+              <div className="col-span-1 overflow-y-auto">
+                <DataPointList
+                  data-cy="data-point-list"
+                  activeAnnotatedDataset={activeAnnotatedDataset}
+                  activeDataPointId={activeDataPointId}
+                  setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                  setActiveDataPointId={setActiveDataPointId}
+                  activeAnnotatedText={activeAnnotatedText}
+                  mode={mode}
+                  isDatasetListOpen={isDatasetListOpen}
+                  activeProfilePoints={activeProfilePoints}
+                />
+              </div>
+              <div className="col-span-1 overflow-y-auto">
+                <AnnotatedTextList
+                  data-cy="annotated-text-list"
+                  activeAnnotatedDataset={activeAnnotatedDataset}
+                  activeAnnotatedText={activeAnnotatedText}
+                  setActiveAnnotatedText={setActiveAnnotatedText}
+                  setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                  mode={mode}
+                />
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent
+          value="profiles"
+          className="flex-1 min-h-0 mt-0 overflow-hidden"
+        >
+          <div className="h-full overflow-y-auto">
+            <div className="flex flex-col gap-4 p-4">
+              <Select
+                value={activeProfile?.id}
+                onValueChange={(value) => {
+                  const profile = profiles?.find((p) => p.id === value);
+                  setActiveProfile(profile);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a profile" />
+                </SelectTrigger>
+                <SelectContent>
+                  {profiles?.map((profile) => (
+                    <SelectItem key={profile.id} value={profile.id}>
+                      {profile.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="grid grid-cols-2 gap-4 h-[calc(100vh-12rem)]">
+                <div className="col-span-1 overflow-y-auto">
+                  <ProfileDataPointList
+                    data-cy="profile-datapoint-list"
+                    activeProfile={activeProfile}
+                    activeDataPoint={activeDataPoint}
+                    setActiveDataPoint={setActiveDataPoint}
+                    setCreatingNewDataPoint={setCreatingNewDataPoint}
+                    readPointsByProfile={readProfilePointsByProfile}
+                    createPoint={(point) =>
+                      createProfilePoint(point as ProfilePointCreate)
+                    }
+                  />
+                </div>
+                <div className="col-span-1 overflow-y-auto">
+                  <DataPointEditor
+                    data-cy="profile-datapoint-editor"
+                    activeProfile={activeProfile}
+                    activeDataPoint={
+                      activeDataPoint as ProfilePoint | undefined
+                    }
+                    setActiveDataPoint={setActiveDataPoint}
+                    creatingNewDataPoint={creatingNewDataPoint}
+                    setCreatingNewDataPoint={setCreatingNewDataPoint}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
       <Sheet open={isDatasetListOpen} onOpenChange={setIsDatasetListOpen}>
         <SheetTrigger asChild>
           <Button
