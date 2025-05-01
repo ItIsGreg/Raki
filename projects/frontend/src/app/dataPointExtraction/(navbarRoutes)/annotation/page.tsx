@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AnnotatedDataset,
   AnnotatedText,
@@ -62,6 +62,18 @@ const Annotation = () => {
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
+
+  // Synchronize active profile with active annotated dataset
+  useEffect(() => {
+    if (activeAnnotatedDataset && profiles) {
+      const associatedProfile = profiles.find(
+        (p) => p.id === activeAnnotatedDataset.profileId
+      );
+      if (associatedProfile) {
+        setActiveProfile(associatedProfile);
+      }
+    }
+  }, [activeAnnotatedDataset, profiles]);
 
   // Wrapper functions to handle type conversion
   const handleSetActiveAnnotatedDataset = (
