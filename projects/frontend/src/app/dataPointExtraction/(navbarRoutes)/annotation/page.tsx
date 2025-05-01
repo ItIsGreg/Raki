@@ -182,7 +182,19 @@ const Annotation = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <div className="grid grid-cols-2 gap-4 h-[calc(100vh-12rem)]">
+              <div className="grid grid-cols-3 gap-4 h-[calc(100vh-12rem)]">
+                <div className="col-span-2 overflow-y-auto">
+                  <DataPointEditor
+                    data-cy="profile-datapoint-editor"
+                    activeProfile={activeProfile}
+                    activeDataPoint={
+                      activeDataPoint as ProfilePoint | undefined
+                    }
+                    setActiveDataPoint={setActiveDataPoint}
+                    creatingNewDataPoint={creatingNewDataPoint}
+                    setCreatingNewDataPoint={setCreatingNewDataPoint}
+                  />
+                </div>
                 <div className="col-span-1 overflow-y-auto">
                   <ProfileDataPointList
                     data-cy="profile-datapoint-list"
@@ -194,18 +206,6 @@ const Annotation = () => {
                     createPoint={(point) =>
                       createProfilePoint(point as ProfilePointCreate)
                     }
-                  />
-                </div>
-                <div className="col-span-1 overflow-y-auto">
-                  <DataPointEditor
-                    data-cy="profile-datapoint-editor"
-                    activeProfile={activeProfile}
-                    activeDataPoint={
-                      activeDataPoint as ProfilePoint | undefined
-                    }
-                    setActiveDataPoint={setActiveDataPoint}
-                    creatingNewDataPoint={creatingNewDataPoint}
-                    setCreatingNewDataPoint={setCreatingNewDataPoint}
                   />
                 </div>
               </div>
