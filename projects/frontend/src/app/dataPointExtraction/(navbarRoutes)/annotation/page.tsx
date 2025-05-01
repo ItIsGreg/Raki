@@ -113,34 +113,36 @@ const Annotation = () => {
           <TabsTrigger value="profiles" className="flex-1">
             Profiles
           </TabsTrigger>
-          <TabsTrigger value="scrolling" className="flex-1">
-            Scrolling
-          </TabsTrigger>
         </TabsList>
-        <TabsContent value="annotation" className="h-[calc(100%-3rem)] mt-0">
-          <div className="grid grid-cols-2 gap-4 h-full">
-            <div className="col-span-1">
-              <DataPointList
-                data-cy="data-point-list"
-                activeAnnotatedDataset={activeAnnotatedDataset}
-                activeDataPointId={activeDataPointId}
-                setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-                setActiveDataPointId={setActiveDataPointId}
-                activeAnnotatedText={activeAnnotatedText}
-                mode={mode}
-                isDatasetListOpen={isDatasetListOpen}
-                activeProfilePoints={activeProfilePoints}
-              />
-            </div>
-            <div className="col-span-1">
-              <AnnotatedTextList
-                data-cy="annotated-text-list"
-                activeAnnotatedDataset={activeAnnotatedDataset}
-                activeAnnotatedText={activeAnnotatedText}
-                setActiveAnnotatedText={setActiveAnnotatedText}
-                setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-                mode={mode}
-              />
+        <TabsContent
+          value="annotation"
+          className="flex-1 min-h-0 mt-0 overflow-hidden"
+        >
+          <div className="h-full overflow-y-auto">
+            <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)] p-4">
+              <div className="col-span-1 overflow-y-auto">
+                <DataPointList
+                  data-cy="data-point-list"
+                  activeAnnotatedDataset={activeAnnotatedDataset}
+                  activeDataPointId={activeDataPointId}
+                  setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                  setActiveDataPointId={setActiveDataPointId}
+                  activeAnnotatedText={activeAnnotatedText}
+                  mode={mode}
+                  isDatasetListOpen={isDatasetListOpen}
+                  activeProfilePoints={activeProfilePoints}
+                />
+              </div>
+              <div className="col-span-1 overflow-y-auto">
+                <AnnotatedTextList
+                  data-cy="annotated-text-list"
+                  activeAnnotatedDataset={activeAnnotatedDataset}
+                  activeAnnotatedText={activeAnnotatedText}
+                  setActiveAnnotatedText={setActiveAnnotatedText}
+                  setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                  mode={mode}
+                />
+              </div>
             </div>
           </div>
         </TabsContent>
@@ -195,31 +197,6 @@ const Annotation = () => {
                   />
                 </div>
               </div>
-            </div>
-          </div>
-        </TabsContent>
-        <TabsContent
-          value="scrolling"
-          className="flex-1 min-h-0 mt-0 overflow-hidden"
-        >
-          <div className="h-full overflow-y-auto">
-            <div className="p-4 space-y-4">
-              {Array.from({ length: 50 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="p-4 border rounded-lg shadow-sm bg-white"
-                >
-                  <h3 className="text-lg font-semibold mb-2">
-                    Item {index + 1}
-                  </h3>
-                  <p className="text-gray-600">
-                    This is a dummy content item to test scrolling
-                    functionality. Each item has some text content to create
-                    enough height for scrolling. You should be able to scroll
-                    through all 50 items in this list.
-                  </p>
-                </div>
-              ))}
             </div>
           </div>
         </TabsContent>
