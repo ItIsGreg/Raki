@@ -90,7 +90,7 @@ const Annotation = () => {
 
   return (
     <div
-      className="grid grid-cols-7 gap-4 h-full"
+      className="grid grid-cols-7 gap-4 h-full overflow-hidden"
       data-cy="annotation-container"
     >
       <TextAnnotation
@@ -102,13 +102,19 @@ const Annotation = () => {
         activeAnnotatedText={activeAnnotatedText}
         setActiveAnnotatedText={setActiveAnnotatedText}
       />
-      <Tabs defaultValue="annotation" className="col-span-3 h-full">
+      <Tabs
+        defaultValue="annotation"
+        className="col-span-3 h-full flex flex-col overflow-hidden"
+      >
         <TabsList className="w-full">
           <TabsTrigger value="annotation" className="flex-1">
             Annotation
           </TabsTrigger>
           <TabsTrigger value="profiles" className="flex-1">
             Profiles
+          </TabsTrigger>
+          <TabsTrigger value="scrolling" className="flex-1">
+            Scrolling
           </TabsTrigger>
         </TabsList>
         <TabsContent value="annotation" className="h-[calc(100%-3rem)] mt-0">
@@ -138,50 +144,82 @@ const Annotation = () => {
             </div>
           </div>
         </TabsContent>
-        <TabsContent value="profiles" className="h-[calc(100%-3rem)] mt-0">
-          <div className="flex flex-col gap-4 h-full">
-            <Select
-              value={activeProfile?.id}
-              onValueChange={(value) => {
-                const profile = profiles?.find((p) => p.id === value);
-                setActiveProfile(profile);
-              }}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a profile" />
-              </SelectTrigger>
-              <SelectContent>
-                {profiles?.map((profile) => (
-                  <SelectItem key={profile.id} value={profile.id}>
-                    {profile.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="grid grid-cols-2 gap-4 flex-1">
-              <div className="col-span-1">
-                <ProfileDataPointList
-                  data-cy="profile-datapoint-list"
-                  activeProfile={activeProfile}
-                  activeDataPoint={activeDataPoint}
-                  setActiveDataPoint={setActiveDataPoint}
-                  setCreatingNewDataPoint={setCreatingNewDataPoint}
-                  readPointsByProfile={readProfilePointsByProfile}
-                  createPoint={(point) =>
-                    createProfilePoint(point as ProfilePointCreate)
-                  }
-                />
+        <TabsContent
+          value="profiles"
+          className="flex-1 min-h-0 mt-0 overflow-hidden"
+        >
+          <div className="h-full overflow-y-auto">
+            <div className="flex flex-col gap-4 p-4">
+              <Select
+                value={activeProfile?.id}
+                onValueChange={(value) => {
+                  const profile = profiles?.find((p) => p.id === value);
+                  setActiveProfile(profile);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a profile" />
+                </SelectTrigger>
+                <SelectContent>
+                  {profiles?.map((profile) => (
+                    <SelectItem key={profile.id} value={profile.id}>
+                      {profile.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="grid grid-cols-2 gap-4 h-[calc(100vh-12rem)]">
+                <div className="col-span-1 overflow-y-auto">
+                  <ProfileDataPointList
+                    data-cy="profile-datapoint-list"
+                    activeProfile={activeProfile}
+                    activeDataPoint={activeDataPoint}
+                    setActiveDataPoint={setActiveDataPoint}
+                    setCreatingNewDataPoint={setCreatingNewDataPoint}
+                    readPointsByProfile={readProfilePointsByProfile}
+                    createPoint={(point) =>
+                      createProfilePoint(point as ProfilePointCreate)
+                    }
+                  />
+                </div>
+                <div className="col-span-1 overflow-y-auto">
+                  <DataPointEditor
+                    data-cy="profile-datapoint-editor"
+                    activeProfile={activeProfile}
+                    activeDataPoint={
+                      activeDataPoint as ProfilePoint | undefined
+                    }
+                    setActiveDataPoint={setActiveDataPoint}
+                    creatingNewDataPoint={creatingNewDataPoint}
+                    setCreatingNewDataPoint={setCreatingNewDataPoint}
+                  />
+                </div>
               </div>
-              <div className="col-span-1">
-                <DataPointEditor
-                  data-cy="profile-datapoint-editor"
-                  activeProfile={activeProfile}
-                  activeDataPoint={activeDataPoint as ProfilePoint | undefined}
-                  setActiveDataPoint={setActiveDataPoint}
-                  creatingNewDataPoint={creatingNewDataPoint}
-                  setCreatingNewDataPoint={setCreatingNewDataPoint}
-                />
-              </div>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent
+          value="scrolling"
+          className="flex-1 min-h-0 mt-0 overflow-hidden"
+        >
+          <div className="h-full overflow-y-auto">
+            <div className="p-4 space-y-4">
+              {Array.from({ length: 50 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="p-4 border rounded-lg shadow-sm bg-white"
+                >
+                  <h3 className="text-lg font-semibold mb-2">
+                    Item {index + 1}
+                  </h3>
+                  <p className="text-gray-600">
+                    This is a dummy content item to test scrolling
+                    functionality. Each item has some text content to create
+                    enough height for scrolling. You should be able to scroll
+                    through all 50 items in this list.
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </TabsContent>
