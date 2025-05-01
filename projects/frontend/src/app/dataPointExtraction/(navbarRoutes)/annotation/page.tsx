@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { AnnotatedDataset, AnnotatedText, ProfilePoint } from "@/lib/db/db";
+import {
+  AnnotatedDataset,
+  AnnotatedText,
+  Profile,
+  ProfilePoint,
+} from "@/lib/db/db";
 import TextAnnotation from "@/components/annotation/TextAnnotation";
 import DataPointList from "@/components/annotation/DataPointList";
 import AnnotatedTextList from "@/components/annotation/AnnotatedTextList";
@@ -12,8 +17,22 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ProfileDataPointList from "@/components/profiles/DataPointList";
+import DataPointEditor from "@/components/profiles/DataPointEditor";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useLiveQuery } from "dexie-react-hooks";
+import { readProfilesByMode } from "@/lib/db/crud";
 
 const Annotation = () => {
+  // Since this is in the dataPointExtraction directory, we set the mode accordingly
+  const mode = TASK_MODE.DATAPOINT_EXTRACTION;
+
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] = useState<
     AnnotatedDataset | undefined
   >(undefined);
@@ -28,9 +47,10 @@ const Annotation = () => {
   >([]);
   const [isDatasetListOpen, setIsDatasetListOpen] = useState(true);
   const [autoRerunFaulty, setAutoRerunFaulty] = useState(true);
+  const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
 
-  // Since this is in the dataPointExtraction directory, we set the mode accordingly
-  const mode = TASK_MODE.DATAPOINT_EXTRACTION;
+  // Get profiles from database
+  const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
 
   // Wrapper functions to handle type conversion
   const handleSetActiveAnnotatedDataset = (
@@ -108,7 +128,49 @@ const Annotation = () => {
           </div>
         </TabsContent>
         <TabsContent value="profiles" className="h-[calc(100%-3rem)] mt-0">
-          {/* Empty profiles tab for now */}
+          <div className="flex flex-col gap-4 h-full">
+            <Select
+              value={activeProfile?.id}
+              onValueChange={(value) => {
+                const profile = profiles?.find((p) => p.id === value);
+                setActiveProfile(profile);
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a profile" />
+              </SelectTrigger>
+              <SelectContent>
+                {profiles?.map((profile) => (
+                  <SelectItem key={profile.id} value={profile.id}>
+                    {profile.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="grid grid-cols-2 gap-4 flex-1">
+              <div className="col-span-1">
+                <ProfileDataPointList
+                  data-cy="profile-datapoint-list"
+                  activeProfile={activeProfile}
+                  activeDataPoint={undefined}
+                  setActiveDataPoint={() => {}}
+                  setCreatingNewDataPoint={() => {}}
+                  readPointsByProfile={() => Promise.resolve([])}
+                  createPoint={() => Promise.resolve()}
+                />
+              </div>
+              <div className="col-span-1">
+                <DataPointEditor
+                  data-cy="profile-datapoint-editor"
+                  activeProfile={activeProfile}
+                  activeDataPoint={undefined}
+                  setActiveDataPoint={() => {}}
+                  creatingNewDataPoint={false}
+                  setCreatingNewDataPoint={() => {}}
+                />
+              </div>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
       <Sheet open={isDatasetListOpen} onOpenChange={setIsDatasetListOpen}>
