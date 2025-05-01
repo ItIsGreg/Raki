@@ -16,8 +16,10 @@ from app.services.datapoint_extraction.regex_extraction import regex_extraction_
 from app.services.datapoint_extraction.rate_regex_matches import rate_regex_matches_service
 from typing import List
 import math
+import json
 from rich.console import Console
 from rich.table import Table
+from rich.syntax import Syntax
 
 console = Console()
 
@@ -301,6 +303,29 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
             )
         )
 
+    # Deduplicate results
+    deduplicated_results = {}
+    for result in pipeline_res_datapoints:
+        if result.name not in deduplicated_results:
+            deduplicated_results[result.name] = result
+        else:
+            existing = deduplicated_results[result.name]
+            # If existing has no value, replace it
+            if existing.value is None:
+                deduplicated_results[result.name] = result
+            # If new has no value, keep existing
+            elif result.value is None:
+                continue
+            # If existing has no match but new has match, replace it
+            elif existing.match is None and result.match is not None:
+                deduplicated_results[result.name] = result
+            # Otherwise keep existing (first one found)
+            else:
+                continue
+
+    # Convert back to list
+    pipeline_res_datapoints = list(deduplicated_results.values())
+
     # Log final results
     console.print("\n[bold blue]Final Pipeline Results[/bold blue]")
     results_table = Table(title="Pipeline Results")
@@ -318,6 +343,14 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
         )
 
     console.print(results_table)
+
+    # Log raw JSON output
+    console.print("\n[bold blue]Raw JSON Output[/bold blue]")
+    json_output = [result.dict() for result in pipeline_res_datapoints]
+    json_str = json.dumps(json_output, indent=2)
+    syntax = Syntax(json_str, "json", theme="monokai", line_numbers=True)
+    console.print(syntax)
+
     return pipeline_res_datapoints
 
 
