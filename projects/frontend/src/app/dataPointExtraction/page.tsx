@@ -19,14 +19,14 @@ export default function Home() {
       label: "Datasets",
       icon: Database,
     },
-    {
-      path: "/dataPointExtraction/aiAnnotation",
-      label: "AI-Annotation",
-      icon: Brain,
-    },
+    // {
+    //   path: "/dataPointExtraction/aiAnnotation",
+    //   label: "AI-Annotation",
+    //   icon: Brain,
+    // },
     {
       path: "/dataPointExtraction/annotation",
-      label: "Manual Annotation",
+      label: "Annotation",
       icon: ScanText,
     },
     {

@@ -12,8 +12,8 @@ export default function Layout({
     { path: "/dataPointExtraction", label: "Home" },
     { path: "/dataPointExtraction/profiles", label: "Profiles" },
     { path: "/dataPointExtraction/datasets", label: "Datasets" },
-    { path: "/dataPointExtraction/aiAnnotation", label: "AI-Annotation" },
-    { path: "/dataPointExtraction/annotation", label: "Manual Annotation" },
+    // { path: "/dataPointExtraction/aiAnnotation", label: "AI-Annotation" },
+    { path: "/dataPointExtraction/annotation", label: "Annotation" },
   ];
 
   return (
