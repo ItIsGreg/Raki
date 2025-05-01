@@ -11,6 +11,17 @@ const AIAnnotation = () => {
   const [activeProfilePoints, setActiveProfilePoints] = useState<
     SegmentationProfilePoint[]
   >([]);
+  const [addingDataset, setAddingDataset] = useState(false);
+  const [annotationState, setAnnotationState] = useState<
+    "idle" | "regular" | "faulty"
+  >("idle");
+  const [isDatasetListOpen, setIsDatasetListOpen] = useState(true);
+
+  const handleStart = () => setAnnotationState("regular");
+  const handleStop = () => setAnnotationState("idle");
+  const identifyActiveProfilePoints = (profileId: string) => {
+    // Implementation needed
+  };
 
   return (
     <div
@@ -24,6 +35,13 @@ const AIAnnotation = () => {
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         setActiveProfilePoints={setActiveProfilePoints}
         mode="text_segmentation"
+        addingDataset={addingDataset}
+        setAddingDataset={setAddingDataset}
+        annotationState={annotationState}
+        handleStart={handleStart}
+        handleStop={handleStop}
+        identifyActiveProfilePoints={identifyActiveProfilePoints}
+        isOpen={isDatasetListOpen}
       />
       <AnnotatedTextsList<SegmentationProfilePoint>
         data-cy="annotated-texts-list"
