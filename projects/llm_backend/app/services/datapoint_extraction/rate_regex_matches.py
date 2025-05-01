@@ -62,7 +62,6 @@ async def rate_regex_matches_service(
             try:
                 result = json.loads(result)
             except json.JSONDecodeError:
-                print(f"[ERROR] Failed to parse result as JSON: {result}")
                 return {
                     "selected_match_index": -1,
                     "explanation": "Failed to parse LLM response",
@@ -71,7 +70,6 @@ async def rate_regex_matches_service(
         
         # Ensure all required fields are present
         if not isinstance(result, dict):
-            print(f"[ERROR] Unexpected result format: {result}")
             return {
                 "selected_match_index": -1,
                 "explanation": "Invalid response format",
@@ -82,7 +80,6 @@ async def rate_regex_matches_service(
         required_fields = ["selected_match_index", "explanation", "match_ratings"]
         for field in required_fields:
             if field not in result:
-                print(f"[ERROR] Missing required field: {field}")
                 return {
                     "selected_match_index": -1,
                     "explanation": f"Missing required field: {field}",
