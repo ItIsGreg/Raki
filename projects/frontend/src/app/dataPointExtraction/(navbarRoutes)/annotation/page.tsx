@@ -16,7 +16,7 @@ import AnnotatedDatasetList from "@/components/aiAnnotation/AnnotatedDatasetList
 import { TASK_MODE } from "@/app/constants";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Trash2 } from "lucide-react";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileDataPointList from "@/components/profiles/DataPointList";
@@ -33,7 +33,11 @@ import {
   readProfilesByMode,
   readProfilePointsByProfile,
   createProfilePoint,
+  createProfile,
+  deleteProfile,
 } from "@/lib/db/crud";
+import { AddButton } from "@/components/AddButton";
+import EntityForm from "@/components/EntityForm";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -59,6 +63,7 @@ const Annotation = () => {
   >(undefined);
   const [creatingNewDataPoint, setCreatingNewDataPoint] =
     useState<boolean>(false);
+  const [addingProfile, setAddingProfile] = useState(false);
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
@@ -99,6 +104,25 @@ const Annotation = () => {
     autoRerunFaulty,
     mode,
   });
+
+  const handleCancelAddProfile = () => {
+    setAddingProfile(false);
+  };
+
+  const handleSaveProfile = (profile: Profile) => {
+    const profileWithMode = { ...profile, mode };
+    createProfile(profileWithMode).then((newProfile) => {
+      setActiveProfile(newProfile);
+      setAddingProfile(false);
+    });
+  };
+
+  const handleDeleteProfile = () => {
+    if (activeProfile) {
+      deleteProfile(activeProfile.id);
+      setActiveProfile(undefined);
+    }
+  };
 
   return (
     <div
@@ -164,24 +188,49 @@ const Annotation = () => {
         >
           <div className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4 p-4">
-              <Select
-                value={activeProfile?.id}
-                onValueChange={(value) => {
-                  const profile = profiles?.find((p) => p.id === value);
-                  setActiveProfile(profile);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a profile" />
-                </SelectTrigger>
-                <SelectContent>
-                  {profiles?.map((profile) => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      {profile.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-4 items-center">
+                <Select
+                  value={activeProfile?.id}
+                  onValueChange={(value) => {
+                    const profile = profiles?.find((p) => p.id === value);
+                    setActiveProfile(profile);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a profile" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {profiles?.map((profile) => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        {profile.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <AddButton
+                  onClick={() => setAddingProfile(true)}
+                  label="Profile"
+                  data-cy="add-profile-button"
+                />
+                {activeProfile && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDeleteProfile}
+                    data-cy="delete-profile-button"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              {addingProfile && (
+                <EntityForm<Profile>
+                  onCancel={handleCancelAddProfile}
+                  onSave={handleSaveProfile}
+                  entityType="Profile"
+                  data-cy="new-profile-form"
+                />
+              )}
               <div className="grid grid-cols-3 gap-4 h-[calc(100vh-12rem)]">
                 <div className="col-span-2 overflow-y-auto">
                   <DataPointEditor

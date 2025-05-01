@@ -27,6 +27,14 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { reorderPoint } from "@/lib/db/ordering";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
+import { AddButton } from "@/components/AddButton";
 
 export interface DataPointListProps<T> {
   activeProfile: Profile | undefined;
@@ -200,12 +208,41 @@ const DataPointList = <T extends { id: string; profileId: string }>(
           <div className="flex-grow"></div>
           {activeProfile && (
             <div className="flex flex-row gap-3 justify-center items-center">
-              <MdUpload
-                size={26}
-                className="hover:text-blue-500 cursor-pointer"
-                onClick={handleUploadButtonClick}
-                data-cy="upload-datapoints-button"
+              <AddButton
+                onClick={() => {
+                  setActiveDataPoint(undefined);
+                  setCreatingNewDataPoint(true);
+                }}
+                label="Data Point"
+                data-cy="new-datapoint-button"
               />
+              <ProfileChatButton
+                onClick={() => setIsChatOpen(true)}
+                data-cy="profile-chat-button"
+              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={handleUploadButtonClick}
+                    data-cy="upload-datapoints-button"
+                  >
+                    <MdUpload className="mr-2 h-4 w-4" />
+                    Upload
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleDownloadDatapoints}
+                    data-cy="download-datapoints-button"
+                  >
+                    <MdDownload className="mr-2 h-4 w-4" />
+                    Download
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -214,25 +251,6 @@ const DataPointList = <T extends { id: string; profileId: string }>(
                 onChange={handleUploadDatapoints}
                 data-cy="upload-datapoints-input"
               />
-              <MdDownload
-                size={26}
-                className="hover:text-blue-500 cursor-pointer"
-                onClick={handleDownloadDatapoints}
-                data-cy="download-datapoints-button"
-              />
-              <ProfileChatButton
-                onClick={() => setIsChatOpen(true)}
-                data-cy="profile-chat-button"
-              />
-              <Button
-                onClick={() => {
-                  setActiveDataPoint(undefined);
-                  setCreatingNewDataPoint(true);
-                }}
-                data-cy="new-datapoint-button"
-              >
-                New
-              </Button>
             </div>
           )}
         </CardHeader>
