@@ -6,6 +6,8 @@ import {
   AnnotatedText,
   Profile,
   ProfilePoint,
+  ProfilePointCreate,
+  SegmentationProfilePoint,
 } from "@/lib/db/db";
 import TextAnnotation from "@/components/annotation/TextAnnotation";
 import DataPointList from "@/components/annotation/DataPointList";
@@ -27,7 +29,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLiveQuery } from "dexie-react-hooks";
-import { readProfilesByMode } from "@/lib/db/crud";
+import {
+  readProfilesByMode,
+  readProfilePointsByProfile,
+  createProfilePoint,
+} from "@/lib/db/crud";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -48,6 +54,11 @@ const Annotation = () => {
   const [isDatasetListOpen, setIsDatasetListOpen] = useState(true);
   const [autoRerunFaulty, setAutoRerunFaulty] = useState(true);
   const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
+  const [activeDataPoint, setActiveDataPoint] = useState<
+    ProfilePoint | SegmentationProfilePoint | undefined
+  >(undefined);
+  const [creatingNewDataPoint, setCreatingNewDataPoint] =
+    useState<boolean>(false);
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
@@ -152,21 +163,23 @@ const Annotation = () => {
                 <ProfileDataPointList
                   data-cy="profile-datapoint-list"
                   activeProfile={activeProfile}
-                  activeDataPoint={undefined}
-                  setActiveDataPoint={() => {}}
-                  setCreatingNewDataPoint={() => {}}
-                  readPointsByProfile={() => Promise.resolve([])}
-                  createPoint={() => Promise.resolve()}
+                  activeDataPoint={activeDataPoint}
+                  setActiveDataPoint={setActiveDataPoint}
+                  setCreatingNewDataPoint={setCreatingNewDataPoint}
+                  readPointsByProfile={readProfilePointsByProfile}
+                  createPoint={(point) =>
+                    createProfilePoint(point as ProfilePointCreate)
+                  }
                 />
               </div>
               <div className="col-span-1">
                 <DataPointEditor
                   data-cy="profile-datapoint-editor"
                   activeProfile={activeProfile}
-                  activeDataPoint={undefined}
-                  setActiveDataPoint={() => {}}
-                  creatingNewDataPoint={false}
-                  setCreatingNewDataPoint={() => {}}
+                  activeDataPoint={activeDataPoint as ProfilePoint | undefined}
+                  setActiveDataPoint={setActiveDataPoint}
+                  creatingNewDataPoint={creatingNewDataPoint}
+                  setCreatingNewDataPoint={setCreatingNewDataPoint}
                 />
               </div>
             </div>
