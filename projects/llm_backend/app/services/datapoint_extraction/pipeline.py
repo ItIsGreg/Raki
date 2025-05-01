@@ -17,11 +17,7 @@ from app.services.datapoint_extraction.rate_regex_matches import rate_regex_matc
 from typing import List
 import math
 import json
-from rich.console import Console
-from rich.table import Table
-from rich.syntax import Syntax
-
-console = Console()
+import asyncio
 
 
 def get_text_excerpt(text: str, match: tuple[int, int], overlap: int = 25) -> str:
@@ -40,9 +36,9 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
     # Process datapoints in batches of 10
     batch_size = 10
     datapoint_batches = batch_list(req.datapoints, batch_size)
-    all_substring_res = []
-
-    # Process each batch for substring extraction
+    
+    # Create a list of coroutines for each batch
+    batch_coroutines = []
     for batch in datapoint_batches:
         substring_req_datapoints: list[BaseDataPoint] = []
         for datapoint in batch:
@@ -54,19 +50,28 @@ async def pipeline_service(req: PipelineReq) -> list[PipelineResDatapoint]:
                 )
             )
         
-        batch_substring_res = await extract_datapoint_substrings_and_match_service(
-            ExtractDatapointSubstringsReq(
-                api_key=req.api_key,
-                llm_provider=req.llm_provider,
-                model=req.model,
-                llm_url=req.llm_url,
-                datapoints=substring_req_datapoints,
-                text=req.text,
-                max_tokens=req.max_tokens,
-                example=req.example,
+        batch_coroutines.append(
+            extract_datapoint_substrings_and_match_service(
+                ExtractDatapointSubstringsReq(
+                    api_key=req.api_key,
+                    llm_provider=req.llm_provider,
+                    model=req.model,
+                    llm_url=req.llm_url,
+                    datapoints=substring_req_datapoints,
+                    text=req.text,
+                    max_tokens=req.max_tokens,
+                    example=req.example,
+                )
             )
         )
-        all_substring_res.extend(batch_substring_res)
+    
+    # Process all batches in parallel
+    batch_results = await asyncio.gather(*batch_coroutines)
+    
+    # Flatten the results
+    all_substring_res = []
+    for batch_result in batch_results:
+        all_substring_res.extend(batch_result)
 
     # Identify substrings without a corresponding profile point and used profile points
     substrings_without_profile = {}
@@ -264,3 +269,30 @@ def get_corresponding_profile_point(
         if profile_point.name == name:
             return profile_point
     return None
+
+
+async def process_batch(
+    batch_index: int,
+    total_batches: int,
+    req: PipelineReq,
+    substring_req_datapoints: list[BaseDataPoint]
+) -> List:
+    batch_start_time = time.time()
+    console.print(f"[cyan]Starting batch {batch_index + 1}/{total_batches}[/cyan]")
+    
+    result = await extract_datapoint_substrings_and_match_service(
+        ExtractDatapointSubstringsReq(
+            api_key=req.api_key,
+            llm_provider=req.llm_provider,
+            model=req.model,
+            llm_url=req.llm_url,
+            datapoints=substring_req_datapoints,
+            text=req.text,
+            max_tokens=req.max_tokens,
+            example=req.example,
+        )
+    )
+    
+    batch_time = time.time() - batch_start_time
+    console.print(f"[green]Completed batch {batch_index + 1}/{total_batches} in {batch_time:.2f} seconds[/green]")
+    return result
