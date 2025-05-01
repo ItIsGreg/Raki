@@ -183,18 +183,6 @@ const DataPointList = (props: GenericDataPointListProps) => {
         value: value,
         verified: true,
       });
-      // Blur the select trigger after selection
-      console.log("Attempting to blur select trigger...");
-      const selectTrigger = document.querySelector(
-        `[data-cy="valueset-select"] [role="combobox"]`
-      ) as HTMLElement;
-      console.log("Found select trigger:", selectTrigger);
-      if (selectTrigger) {
-        console.log("Blurring select trigger");
-        selectTrigger.blur();
-      } else {
-        console.log("No select trigger found");
-      }
     }
   };
 

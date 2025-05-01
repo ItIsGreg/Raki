@@ -40,16 +40,8 @@ export const useDataPointKeyboardNavigation = ({
 }: UseDataPointKeyboardNavigationProps) => {
   useEffect(() => {
     const handleDataPointListNavigation = (event: KeyboardEvent) => {
-      console.log('handleDataPointListNavigation called:', {
-        key: event.key,
-        openSelectId,
-        activeDataPointId: activeDataPoint?.id,
-        currentIndex: dataPoints?.findIndex(dp => dp.id === activeDataPoint?.id)
-      });
-
       // Don't handle navigation if a select is open
       if (openSelectId) {
-        console.log('Navigation blocked - select is open');
         return;
       }
 
@@ -60,7 +52,6 @@ export const useDataPointKeyboardNavigation = ({
       );
 
       if (event.key === "ArrowUp" && currentIndex > 0) {
-        console.log('ArrowUp pressed - changing to previous data point');
         event.preventDefault();
         const newDataPoint = dataPoints[currentIndex - 1];
         setActiveDataPointId(newDataPoint.id);
@@ -83,7 +74,6 @@ export const useDataPointKeyboardNavigation = ({
         event.key === "ArrowDown" &&
         currentIndex < dataPoints.length - 1
       ) {
-        console.log('ArrowDown pressed - changing to next data point');
         event.preventDefault();
         const newDataPoint = dataPoints[currentIndex + 1];
         setActiveDataPointId(newDataPoint.id);
@@ -106,17 +96,8 @@ export const useDataPointKeyboardNavigation = ({
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      console.log('Keyboard event:', {
-        key: event.key,
-        openSelectId,
-        activeDataPoint: activeDataPoint?.id,
-        target: event.target,
-        defaultPrevented: event.defaultPrevented
-      });
-
       // Don't handle any keyboard navigation if a select is open
       if (openSelectId) {
-        console.log('Select is open, letting default behavior handle it');
         return;
       }
 
@@ -134,7 +115,6 @@ export const useDataPointKeyboardNavigation = ({
           const isSelectItem = target.closest('[role="option"]') || target.closest('[role="listbox"]');
           
           if (!isSelectItem) {
-            console.log('Opening valueset select for data point:', activeDataPoint.id);
             event.preventDefault();
             setOpenSelectId(activeDataPoint.id);
           }
