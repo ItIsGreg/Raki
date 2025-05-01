@@ -100,11 +100,15 @@ export const useAnnotationState = <T extends ProfilePointType>({
         .map((at) => at.textId)
     );
 
-    const unannotatedTexts = dbTexts.filter(
-      (text) =>
-        text.datasetId === activeAnnotatedDataset.datasetId &&
-        !annotatedTextIds.has(text.id)
-    );
+    const unannotatedTexts = dbTexts
+      .filter(
+        (text) =>
+          text.datasetId === activeAnnotatedDataset.datasetId &&
+          !annotatedTextIds.has(text.id)
+      )
+      .sort((a, b) => 
+        a.filename.localeCompare(b.filename, undefined, { sensitivity: "base" })
+      );
 
     const batches: Text[][] = [];
     for (let i = 0; i < unannotatedTexts.length; i += batchSize) {
