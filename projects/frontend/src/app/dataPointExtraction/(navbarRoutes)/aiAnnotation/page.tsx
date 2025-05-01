@@ -4,6 +4,7 @@ import { useState } from "react";
 import AnnotatedDatasetList from "@/components/aiAnnotation/AnnotatedDatasetList";
 import AnnotatedTextsList from "@/components/aiAnnotation/AnnotatedTextsList";
 import { AnnotatedDataset, ProfilePoint } from "@/lib/db/db";
+import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 
 const LLMAnnotation = () => {
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] =
@@ -11,6 +12,22 @@ const LLMAnnotation = () => {
   const [activeProfilePoints, setActiveProfilePoints] = useState<
     ProfilePoint[]
   >([]);
+  const [addingDataset, setAddingDataset] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+
+  const {
+    annotationState,
+    handleStart,
+    handleStop,
+    identifyActiveProfilePoints,
+  } = useAnnotationState<ProfilePoint>({
+    activeAnnotatedDataset,
+    setActiveAnnotatedDataset,
+    activeProfilePoints,
+    setActiveProfilePoints,
+    autoRerunFaulty: true,
+    mode: "datapoint_extraction",
+  });
 
   return (
     <div
@@ -24,6 +41,13 @@ const LLMAnnotation = () => {
         setActiveAnnotatedDataset={setActiveAnnotatedDataset}
         setActiveProfilePoints={setActiveProfilePoints}
         mode="datapoint_extraction"
+        addingDataset={addingDataset}
+        setAddingDataset={setAddingDataset}
+        annotationState={annotationState}
+        handleStart={handleStart}
+        handleStop={handleStop}
+        identifyActiveProfilePoints={identifyActiveProfilePoints}
+        isOpen={isOpen}
       />
       <AnnotatedTextsList<ProfilePoint>
         data-cy="annotated-texts-list"
