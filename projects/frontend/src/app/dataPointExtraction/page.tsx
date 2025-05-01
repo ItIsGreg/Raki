@@ -10,11 +10,6 @@ export default function Home() {
   // Define routes configuration
   const routes: Route[] = [
     {
-      path: "/dataPointExtraction/profiles",
-      label: "Profile",
-      icon: Rocket,
-    },
-    {
       path: "/dataPointExtraction/datasets",
       label: "Datasets",
       icon: Database,
