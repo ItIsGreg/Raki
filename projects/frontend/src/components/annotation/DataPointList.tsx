@@ -77,6 +77,18 @@ const DataPointList = (props: GenericDataPointListProps) => {
         return -1;
       } else if (dpB.match) {
         return 1;
+      } else {
+        // If neither has a match, sort by profile point order
+        const profilePointA = activeProfilePoints?.find(
+          (p) => p.id === dpA.profilePointId
+        );
+        const profilePointB = activeProfilePoints?.find(
+          (p) => p.id === dpB.profilePointId
+        );
+        if (profilePointA?.order && profilePointB?.order) {
+          return profilePointA.order - profilePointB.order;
+        }
+        return 0;
       }
     } else {
       const dpA = a as SegmentDataPoint;
@@ -88,8 +100,8 @@ const DataPointList = (props: GenericDataPointListProps) => {
       } else if (dpB.beginMatch) {
         return 1;
       }
+      return 0;
     }
-    return 0;
   });
 
   const handleDelete = (dataPoint: AnyDataPoint, e: React.MouseEvent) => {
