@@ -8,11 +8,13 @@ import {
   ProfilePoint,
   ProfilePointCreate,
   SegmentationProfilePoint,
+  Dataset,
 } from "@/lib/db/db";
 import TextAnnotation from "@/components/annotation/TextAnnotation";
 import DataPointList from "@/components/annotation/DataPointList";
 import AnnotatedTextList from "@/components/annotation/AnnotatedTextList";
 import AnnotatedDatasetList from "@/components/aiAnnotation/AnnotatedDatasetList";
+import TextList from "@/components/datasets/TextList";
 import { TASK_MODE } from "@/app/constants";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -35,6 +37,7 @@ import {
   createProfilePoint,
   createProfile,
   deleteProfile,
+  readDatasetsByMode,
 } from "@/lib/db/crud";
 import { AddButton } from "@/components/AddButton";
 import EntityForm from "@/components/EntityForm";
@@ -64,9 +67,14 @@ const Annotation = () => {
   const [creatingNewDataPoint, setCreatingNewDataPoint] =
     useState<boolean>(false);
   const [addingProfile, setAddingProfile] = useState(false);
+  const [activeDataset, setActiveDataset] = useState<Dataset | undefined>(
+    undefined
+  );
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
+  // Get datasets from database
+  const datasets = useLiveQuery(() => readDatasetsByMode(mode), [mode]);
 
   // Synchronize active profile with active annotated dataset
   useEffect(() => {
@@ -148,6 +156,9 @@ const Annotation = () => {
           </TabsTrigger>
           <TabsTrigger value="profiles" className="flex-1">
             Profiles
+          </TabsTrigger>
+          <TabsTrigger value="text-upload" className="flex-1">
+            Text Upload
           </TabsTrigger>
         </TabsList>
         <TabsContent
@@ -258,6 +269,46 @@ const Annotation = () => {
                   />
                 </div>
               </div>
+            </div>
+          </div>
+        </TabsContent>
+        <TabsContent
+          value="text-upload"
+          className="flex-1 min-h-0 mt-0 overflow-hidden"
+        >
+          <div className="h-full overflow-y-auto">
+            <div className="flex flex-col gap-4 p-4">
+              <div className="flex gap-4 items-center">
+                <Select
+                  value={activeDataset?.id}
+                  onValueChange={(value) => {
+                    const dataset = datasets?.find((d) => d.id === value);
+                    setActiveDataset(dataset);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a dataset" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {datasets?.map((dataset) => (
+                      <SelectItem key={dataset.id} value={dataset.id}>
+                        {dataset.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <AddButton
+                  onClick={() => setAddingDataset(true)}
+                  label="Dataset"
+                  data-cy="add-dataset-button"
+                />
+              </div>
+              <TextList
+                activeText={undefined}
+                activeDataset={activeDataset}
+                setActiveText={() => {}}
+                data-cy="text-list"
+              />
             </div>
           </div>
         </TabsContent>
