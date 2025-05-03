@@ -55,6 +55,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useQuery } from "react-query";
+import { getProfiles } from "@/lib/db/crud";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -202,11 +204,13 @@ const Annotation = () => {
         setActiveAnnotatedText={setActiveAnnotatedText}
         mode={displayMode}
         activeText={activeText}
+        setActiveTab={setActiveTab}
       />
       <Tabs
         defaultValue="annotation"
         className="col-span-3 h-full flex flex-col overflow-hidden"
         onValueChange={setActiveTab}
+        value={activeTab}
       >
         <TabsList className="w-full">
           <TabsTrigger value="annotation" className="flex-1">

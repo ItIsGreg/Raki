@@ -99,6 +99,7 @@ export interface TextAnnotationProps {
   setActiveAnnotatedText: (text: AnnotatedText | undefined) => void;
   mode?: 'display' | 'annotation';
   activeText?: Text;
+  setActiveTab?: (tab: string) => void;
 }
 
 export interface AnnotationDataPointListProps {
@@ -148,6 +149,7 @@ export interface DataPointSliceProps {
   setActiveDataPointValue: (value: string) => void;
   activeTooltipId: string | undefined;
   setActiveTooltipId: (id: string | undefined) => void;
+  setActiveTab?: (tab: string) => void;
 }
 
 export interface LLMProviderSelectProps {

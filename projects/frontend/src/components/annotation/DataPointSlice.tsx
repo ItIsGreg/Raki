@@ -25,6 +25,7 @@ import { useEffect, useRef, useState } from "react";
 interface ExtendedDataPointSliceProps extends DataPointSliceProps {
   activeTooltipId: string | undefined;
   setActiveTooltipId: (id: string | undefined) => void;
+  setActiveTab?: (tab: string) => void;
 }
 
 const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
@@ -40,6 +41,7 @@ const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
     setActiveDataPointValue,
     activeTooltipId,
     setActiveTooltipId,
+    setActiveTab,
   } = props;
 
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -104,6 +106,19 @@ const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
             <CardHeader className="flex flex-row gap-2">
               <CardTitle data-cy="datapoint-title">{dataPoint.name}</CardTitle>
               <div className="flex-grow"></div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mr-2"
+                data-cy="open-profile-point-btn"
+                onClick={() => {
+                  if (setActiveTab) {
+                    setActiveTab("profiles");
+                  }
+                }}
+              >
+                Open Profile Point
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -237,19 +252,6 @@ const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
                     placeholder={dataPoint.value?.toString() ?? "Value"}
                   />
                   <div className="flex flex-row gap-1">
-                    <Button
-                      data-cy="update-value-btn"
-                      onClick={() => {
-                        // update the data point value
-                        updateDataPoint({
-                          ...dataPoint,
-                          value: activeDataPointValue,
-                          verified: true,
-                        });
-                      }}
-                    >
-                      Update
-                    </Button>
                     <div className="flex-grow"></div>
                     <Button
                       data-cy="verify-value-btn"
@@ -258,6 +260,7 @@ const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
                         // verify the data point
                         updateDataPoint({
                           ...dataPoint,
+                          value: activeDataPointValue,
                           verified: true,
                         });
                       }}
