@@ -13,6 +13,7 @@ import JSZip from "jszip";
 import SingleTextInput from "./SingleTextInput";
 import * as pdfjsLib from "pdfjs-dist";
 import { backendURL } from "../../app/constants";
+import CompactCard from "@/components/CompactCard";
 
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
@@ -236,35 +237,28 @@ const TextList = (props: TextListProps) => {
             data-cy="table-file-input"
           />
         </CardHeader>
-        <CardContent>
-          {sortedTexts?.map((text) => {
-            return (
-              <Card
-                key={text.id}
-                onClick={() => {
-                  setActiveText(text);
-                }}
-                className={`${
-                  activeText == text &&
-                  "bg-gray-100 shadow-lg border-black border-2"
-                } transition-transform hover:bg-gray-100 hover:shadow-lg transform`}
-                data-cy="text-card"
-              >
-                <CardHeader className="flex flex-row">
-                  <CardTitle>{text.filename}</CardTitle>
-                  <div className="flex-grow"></div>
-                  <TiDeleteOutline
-                    className="hover:text-red-500 cursor-pointer"
-                    size={24}
-                    onClick={() => {
-                      deleteText(text.id);
-                    }}
-                    data-cy="delete-text-btn"
-                  />
-                </CardHeader>
-              </Card>
-            );
-          })}
+        <CardContent className="flex flex-col gap-1">
+          {sortedTexts?.map((text) => (
+            <CompactCard
+              key={text.id}
+              title={text.filename}
+              onClick={() => setActiveText(text)}
+              isActive={activeText?.id === text.id}
+              tooltipContent={text.filename}
+              rightIcon={
+                <TiDeleteOutline
+                  className="hover:text-red-500 cursor-pointer"
+                  size={20}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteText(text.id);
+                  }}
+                  data-cy="delete-text-btn"
+                />
+              }
+              data-cy="text-card"
+            />
+          ))}
         </CardContent>
       </Card>
       <TableView
