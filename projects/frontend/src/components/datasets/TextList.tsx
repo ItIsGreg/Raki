@@ -132,21 +132,75 @@ const TextList = (props: TextListProps) => {
     if (fileExtension === "csv") {
       Papa.parse(file, {
         complete: (result) => {
-          setTableData(result.data);
+          if (result.errors && result.errors.length > 0) {
+            console.error("CSV parsing errors:", result.errors);
+            return;
+          }
+          // Ensure we have valid data
+          if (!result.data || result.data.length === 0) {
+            console.error("No data found in CSV file");
+            return;
+          }
+          // Filter out any empty rows
+          const validData = result.data.filter((row: any) =>
+            Object.values(row).some(
+              (value) => value !== null && value !== undefined && value !== ""
+            )
+          );
+          setTableData(validData);
           setIsTableViewOpen(true);
         },
         header: true,
+        skipEmptyLines: true,
+        transformHeader: (header: string) => header.trim(),
+        transform: (value: string) => value.trim(),
       });
     } else if (["xlsx", "xls"].includes(fileExtension || "")) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const parsedData = XLSX.utils.sheet_to_json(worksheet);
-        setTableData(parsedData);
-        setIsTableViewOpen(true);
+        try {
+          const data = e.target?.result;
+          if (!data) {
+            console.error("No data read from file");
+            return;
+          }
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+
+          // Convert to JSON with proper header handling
+          const parsedData = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1,
+            raw: false,
+            defval: "",
+          });
+
+          // Convert to proper format with headers
+          const headers = parsedData[0] as string[];
+          const rows = parsedData.slice(1) as string[][];
+
+          const formattedData = rows
+            .map((row) => {
+              const obj: { [key: string]: string } = {};
+              headers.forEach((header, index) => {
+                obj[header] = row[index] || "";
+              });
+              return obj;
+            })
+            .filter((row) =>
+              Object.values(row).some(
+                (value) => value !== null && value !== undefined && value !== ""
+              )
+            );
+
+          setTableData(formattedData);
+          setIsTableViewOpen(true);
+        } catch (error) {
+          console.error("Error processing Excel file:", error);
+        }
+      };
+      reader.onerror = (error) => {
+        console.error("Error reading file:", error);
       };
       reader.readAsArrayBuffer(file);
     }
@@ -155,10 +209,6 @@ const TextList = (props: TextListProps) => {
   const handleUploadTableClick = () => {
     if (!tableFileInputRef.current) return;
     tableFileInputRef.current?.click();
-  };
-
-  const handleOpenTableClick = () => {
-    setIsTableViewOpen(true);
   };
 
   // Add this sorting function
@@ -212,10 +262,6 @@ const TextList = (props: TextListProps) => {
                   <DropdownMenuItem onClick={handleUploadTableClick}>
                     <FaTable className="mr-2" />
                     Upload Table
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleOpenTableClick}>
-                    <FaFolderOpen className="mr-2" />
-                    Open Table
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
