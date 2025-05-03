@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,7 @@ const TableView: React.FC<TableViewProps> = ({
 }) => {
   const [indexColumn, setIndexColumn] = useState<string | null>(null);
   const [textColumn, setTextColumn] = useState<string | null>(null);
+  const gridRef = useRef(null);
 
   const columnNames = useMemo(() => {
     if (!data || data.length === 0) return [];
@@ -217,15 +218,28 @@ const TableView: React.FC<TableViewProps> = ({
               data-cy="table-grid"
             >
               <AgGridReact
+                ref={gridRef}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
                 rowData={data}
+                domLayout="normal"
+                suppressPropertyNamesCheck={true}
+                suppressContextMenu={true}
+                suppressRowClickSelection={true}
+                suppressCellFocus={true}
+                suppressRowHoverHighlight={true}
+                suppressColumnVirtualisation={true}
+                suppressRowVirtualisation={true}
+                suppressLoadingOverlay={true}
+                suppressNoRowsOverlay={true}
+                suppressFieldDotNotation={true}
+                suppressScrollOnNewData={true}
+                suppressAutoSize={true}
                 suppressColumnMoveAnimation={true}
                 suppressDragLeaveHidesColumns={true}
+                suppressRowTransform={true}
                 enableCellTextSelection={true}
                 ensureDomOrder={true}
-                suppressRowVirtualisation={true}
-                suppressColumnVirtualisation={true}
                 rowBuffer={0}
                 suppressAnimationFrame={true}
                 suppressModelUpdateAfterUpdateTransaction={true}
