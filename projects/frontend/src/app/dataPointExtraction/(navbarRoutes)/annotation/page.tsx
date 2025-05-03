@@ -41,6 +41,7 @@ import {
   readDatasetsByMode,
   createDataset,
   deleteDataset,
+  readTextsByDataset,
 } from "@/lib/db/crud";
 import { AddButton } from "@/components/AddButton";
 import EntityForm from "@/components/EntityForm";
@@ -96,6 +97,13 @@ const Annotation = () => {
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
   // Get datasets from database
   const datasets = useLiveQuery(() => readDatasetsByMode(mode), [mode]);
+  // Get all texts for all datasets
+  const allTexts = useLiveQuery(() => {
+    if (!datasets) return [];
+    return Promise.all(
+      datasets.map((dataset) => readTextsByDataset(dataset.id))
+    ).then((textArrays) => textArrays.flat());
+  }, [datasets]);
 
   // Update display mode when tab changes
   useEffect(() => {

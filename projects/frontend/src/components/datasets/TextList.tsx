@@ -1,11 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { createText, deleteText, readTextsByDataset } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 import { TextListProps } from "../../app/types";
 import { TiDeleteOutline } from "react-icons/ti";
 import { useRef, useState, useEffect } from "react";
-import { FaTable, FaFolderOpen, FaDownload } from "react-icons/fa";
+import { FaTable, FaFolderOpen, FaDownload, FaUpload } from "react-icons/fa";
 import TableView from "./TableView";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
@@ -14,6 +20,12 @@ import SingleTextInput from "./SingleTextInput";
 import * as pdfjsLib from "pdfjs-dist";
 import { backendURL } from "../../app/constants";
 import CompactCard from "@/components/CompactCard";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
@@ -174,43 +186,42 @@ const TextList = (props: TextListProps) => {
   return (
     <div className="overflow-y-scroll">
       <Card>
-        <CardHeader className="flex flex-row items-center">
-          <CardTitle>Texts</CardTitle>
-          <div className="flex-grow"></div>
-
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>
+              Texts {sortedTexts && `(${sortedTexts.length})`}
+            </CardTitle>
+            <CardDescription>{activeDataset?.name}</CardDescription>
+          </div>
           {activeDataset && (
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                onClick={handleUploadButtonClick}
-                data-cy="upload-texts-btn"
-              >
-                Upload Texts
-              </Button>
-              <Button
-                onClick={() => setIsSingleTextOpen(true)}
-                data-cy="single-text-btn"
-              >
-                Single Text
-              </Button>
-              <Button
-                onClick={handleUploadTableClick}
-                className="flex items-center"
-                data-cy="upload-table-btn"
-              >
-                <FaTable className="mr-2" />
-                Upload Table
-              </Button>
-              <Button
-                onClick={handleOpenTableClick}
-                className="flex items-center"
-                data-cy="open-table-btn"
-              >
-                <FaFolderOpen className="mr-2" />
-                Open Table
-              </Button>
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button data-cy="upload-texts-btn">
+                    <FaUpload className="mr-2" />
+                    Upload
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={handleUploadButtonClick}>
+                    Upload Files
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsSingleTextOpen(true)}>
+                    Single Text
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleUploadTableClick}>
+                    <FaTable className="mr-2" />
+                    Upload Table
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleOpenTableClick}>
+                    <FaFolderOpen className="mr-2" />
+                    Open Table
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 onClick={handleDownloadTexts}
-                className="col-span-2 flex items-center justify-center"
+                className="flex items-center"
                 title="Download Texts"
                 data-cy="download-all-btn"
               >
