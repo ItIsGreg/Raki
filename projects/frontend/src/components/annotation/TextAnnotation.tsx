@@ -8,9 +8,17 @@ import { Button } from "@/components/ui/button";
 import { updateProfile, readProfile } from "@/lib/db/crud";
 import { Profile } from "@/lib/db/db";
 import { TASK_MODE } from "@/app/constants";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Menu, Settings, Home, FileText } from "lucide-react";
 import { reannotateFaultyText } from "@/components/aiAnnotation/annotationUtils";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
+import { useSettings } from "@/contexts/SettingsContext";
+import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const TextAnnotation = (props: TextAnnotationProps) => {
   const {
@@ -54,6 +62,9 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       autoRerunFaulty: true,
       mode: TASK_MODE.DATAPOINT_EXTRACTION,
     });
+
+  const { setIsSettingsOpen } = useSettings();
+  const router = useRouter();
 
   const handleSaveAsExample = async () => {
     if (!activeAnnotatedText || !activeAnnotatedDataset || !dataPoints) return;
@@ -189,8 +200,36 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       data-cy="text-annotation-container"
     >
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle data-cy="text-annotation-title">Annotation</CardTitle>
+        <CardHeader className="flex flex-row items-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" data-cy="burger-menu">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => router.push("/")}>
+                <Home className="mr-2 h-4 w-4" />
+                <span>Home</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push("/textSegmentation")}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Text Segmentation</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Setup</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <CardTitle
+            data-cy="text-annotation-title"
+            className="flex-1 text-center"
+          >
+            Annotation
+          </CardTitle>
           <div className="flex gap-2">
             <Button
               onClick={handleSaveAsExample}
