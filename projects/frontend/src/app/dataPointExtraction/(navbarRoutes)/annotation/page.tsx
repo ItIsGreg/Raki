@@ -38,9 +38,21 @@ import {
   createProfile,
   deleteProfile,
   readDatasetsByMode,
+  createDataset,
+  deleteDataset,
 } from "@/lib/db/crud";
 import { AddButton } from "@/components/AddButton";
 import EntityForm from "@/components/EntityForm";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -70,6 +82,9 @@ const Annotation = () => {
   const [activeDataset, setActiveDataset] = useState<Dataset | undefined>(
     undefined
   );
+  const [addingDataset, setAddingDataset] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteProfileDialog, setShowDeleteProfileDialog] = useState(false);
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
@@ -97,8 +112,8 @@ const Annotation = () => {
 
   // Use the annotation state hook
   const {
-    addingDataset,
-    setAddingDataset,
+    addingDataset: annotationAddingDataset,
+    setAddingDataset: setAnnotationAddingDataset,
     annotationState,
     dbAnnotatedDatasets,
     handleStart,
@@ -129,6 +144,27 @@ const Annotation = () => {
     if (activeProfile) {
       deleteProfile(activeProfile.id);
       setActiveProfile(undefined);
+      setShowDeleteProfileDialog(false);
+    }
+  };
+
+  const handleCancelAddDataset = () => {
+    setAddingDataset(false);
+  };
+
+  const handleSaveDataset = (dataset: Dataset) => {
+    const datasetWithMode = { ...dataset, mode };
+    createDataset(datasetWithMode).then((newDataset) => {
+      setActiveDataset(newDataset);
+      setAddingDataset(false);
+    });
+  };
+
+  const handleDeleteDataset = () => {
+    if (activeDataset) {
+      deleteDataset(activeDataset.id);
+      setActiveDataset(undefined);
+      setShowDeleteDialog(false);
     }
   };
 
@@ -227,13 +263,36 @@ const Annotation = () => {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={handleDeleteProfile}
+                    onClick={() => setShowDeleteProfileDialog(true)}
                     data-cy="delete-profile-button"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
+              <AlertDialog
+                open={showDeleteProfileDialog}
+                onOpenChange={setShowDeleteProfileDialog}
+              >
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete
+                      the profile and all associated data points.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteProfile}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               {addingProfile && (
                 <EntityForm<Profile>
                   onCancel={handleCancelAddProfile}
@@ -302,7 +361,48 @@ const Annotation = () => {
                   label="Dataset"
                   data-cy="add-dataset-button"
                 />
+                {activeDataset && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowDeleteDialog(true)}
+                    data-cy="delete-dataset-button"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
+              <AlertDialog
+                open={showDeleteDialog}
+                onOpenChange={setShowDeleteDialog}
+              >
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete
+                      the dataset and all associated texts.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteDataset}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              {addingDataset && (
+                <EntityForm<Dataset>
+                  onCancel={handleCancelAddDataset}
+                  onSave={handleSaveDataset}
+                  entityType="Dataset"
+                  data-cy="new-dataset-form"
+                />
+              )}
               <TextList
                 activeText={undefined}
                 activeDataset={activeDataset}
@@ -337,8 +437,8 @@ const Annotation = () => {
               setActiveAnnotatedDataset={handleSetActiveAnnotatedDataset}
               setActiveProfilePoints={setActiveProfilePoints}
               mode={mode}
-              addingDataset={addingDataset}
-              setAddingDataset={setAddingDataset}
+              addingDataset={annotationAddingDataset}
+              setAddingDataset={setAnnotationAddingDataset}
               annotationState={annotationState}
               handleStart={handleStart}
               handleStop={handleStop}
