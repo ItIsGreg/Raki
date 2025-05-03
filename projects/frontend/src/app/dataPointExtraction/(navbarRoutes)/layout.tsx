@@ -10,8 +10,6 @@ export default function Layout({
   const routes: NavRoute[] = [
     { path: "/", label: "Task Selection" },
     { path: "/dataPointExtraction", label: "Home" },
-    { path: "/dataPointExtraction/datasets", label: "Datasets" },
-    // { path: "/dataPointExtraction/aiAnnotation", label: "AI-Annotation" },
     { path: "/dataPointExtraction/annotation", label: "Annotation" },
   ];
 

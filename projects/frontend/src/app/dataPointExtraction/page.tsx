@@ -10,16 +10,6 @@ export default function Home() {
   // Define routes configuration
   const routes: Route[] = [
     {
-      path: "/dataPointExtraction/datasets",
-      label: "Datasets",
-      icon: Database,
-    },
-    // {
-    //   path: "/dataPointExtraction/aiAnnotation",
-    //   label: "AI-Annotation",
-    //   icon: Brain,
-    // },
-    {
       path: "/dataPointExtraction/annotation",
       label: "Annotation",
       icon: ScanText,
