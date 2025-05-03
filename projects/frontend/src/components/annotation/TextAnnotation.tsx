@@ -20,6 +20,8 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     setActiveDataPointId,
     activeAnnotatedText,
     setActiveAnnotatedText,
+    mode = "annotation",
+    activeText,
   } = props;
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
@@ -159,6 +161,27 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       setActiveTooltipId,
     ]
   );
+
+  if (mode === "display" && activeText) {
+    return (
+      <div
+        className="col-span-4 overflow-y-auto"
+        data-cy="text-display-container"
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle data-cy="text-display-title">Text Display</CardTitle>
+          </CardHeader>
+          <CardContent
+            className="whitespace-pre-wrap"
+            data-cy="text-display-content"
+          >
+            {activeText.text}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div

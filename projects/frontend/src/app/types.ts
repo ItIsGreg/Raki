@@ -97,6 +97,8 @@ export interface TextAnnotationProps {
   setActiveDataPointId: (id: string | undefined) => void;
   activeAnnotatedText?: AnnotatedText;
   setActiveAnnotatedText: (text: AnnotatedText | undefined) => void;
+  mode?: 'display' | 'annotation';
+  activeText?: Text;
 }
 
 export interface AnnotationDataPointListProps {

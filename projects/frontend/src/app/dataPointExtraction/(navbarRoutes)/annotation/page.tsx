@@ -9,6 +9,7 @@ import {
   ProfilePointCreate,
   SegmentationProfilePoint,
   Dataset,
+  Text,
 } from "@/lib/db/db";
 import TextAnnotation from "@/components/annotation/TextAnnotation";
 import DataPointList from "@/components/annotation/DataPointList";
@@ -85,11 +86,21 @@ const Annotation = () => {
   const [addingDataset, setAddingDataset] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDeleteProfileDialog, setShowDeleteProfileDialog] = useState(false);
+  const [displayMode, setDisplayMode] = useState<"display" | "annotation">(
+    "annotation"
+  );
+  const [activeTab, setActiveTab] = useState("annotation");
+  const [activeText, setActiveText] = useState<Text | undefined>(undefined);
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
   // Get datasets from database
   const datasets = useLiveQuery(() => readDatasetsByMode(mode), [mode]);
+
+  // Update display mode when tab changes
+  useEffect(() => {
+    setDisplayMode(activeTab === "text-upload" ? "display" : "annotation");
+  }, [activeTab]);
 
   // Synchronize active profile with active annotated dataset
   useEffect(() => {
@@ -181,10 +192,13 @@ const Annotation = () => {
         setActiveDataPointId={setActiveDataPointId}
         activeAnnotatedText={activeAnnotatedText}
         setActiveAnnotatedText={setActiveAnnotatedText}
+        mode={displayMode}
+        activeText={activeText}
       />
       <Tabs
         defaultValue="annotation"
         className="col-span-3 h-full flex flex-col overflow-hidden"
+        onValueChange={setActiveTab}
       >
         <TabsList className="w-full">
           <TabsTrigger value="annotation" className="flex-1">
@@ -404,9 +418,9 @@ const Annotation = () => {
                 />
               )}
               <TextList
-                activeText={undefined}
+                activeText={activeText}
                 activeDataset={activeDataset}
-                setActiveText={() => {}}
+                setActiveText={setActiveText}
                 data-cy="text-list"
               />
             </div>
