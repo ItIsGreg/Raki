@@ -236,7 +236,7 @@ const TextList = (props: TextListProps) => {
   return (
     <div className="overflow-y-scroll">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="grid grid-cols-3 items-center">
           <div>
             <CardTitle>
               Texts {sortedTexts && `(${sortedTexts.length})`}
@@ -244,37 +244,42 @@ const TextList = (props: TextListProps) => {
             <CardDescription>{activeDataset?.name}</CardDescription>
           </div>
           {activeDataset && (
-            <div className="flex gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button data-cy="upload-texts-btn">
-                    <FaUpload className="mr-2" />
-                    Upload
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={handleUploadButtonClick}>
-                    Upload Files
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setIsSingleTextOpen(true)}>
-                    Single Text
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleUploadTableClick}>
-                    <FaTable className="mr-2" />
-                    Upload Table
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button
-                onClick={handleDownloadTexts}
-                className="flex items-center"
-                title="Download Texts"
-                data-cy="download-all-btn"
-              >
-                <FaDownload className="mr-2" />
-                Download All
-              </Button>
-            </div>
+            <>
+              <div className="flex justify-center">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button data-cy="upload-texts-btn">
+                      <FaUpload className="mr-2" />
+                      Upload
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleUploadButtonClick}>
+                      Upload Files
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsSingleTextOpen(true)}>
+                      Single Text
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleUploadTableClick}>
+                      <FaTable className="mr-2" />
+                      Upload Table
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleDownloadTexts}
+                  className="flex items-center"
+                  title="Download Texts"
+                  data-cy="download-all-btn"
+                  variant="ghost"
+                  size="icon"
+                >
+                  <FaDownload className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
           )}
           <input
             type="file"
