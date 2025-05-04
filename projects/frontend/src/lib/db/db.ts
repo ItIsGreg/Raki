@@ -114,6 +114,11 @@ export interface Model {
   name: string;
 }
 
+export interface UserSettings {
+  id: string;
+  tutorialCompleted: boolean;
+}
+
 export interface LLMProvider {
   id: string;
   provider: string;
@@ -165,6 +170,7 @@ export class MySubClassedDexie extends Dexie {
   batchSizes!: Table<BatchSize>;
   maxTokens!: Table<MaxTokens>;
   SegmentDataPoints!: Table<SegmentDataPoint>;
+  userSettings!: Table<UserSettings>;
 
   constructor() {
     super("myDatabase");
@@ -311,6 +317,10 @@ export class MySubClassedDexie extends Dexie {
       Profiles: "++id, name, mode"
     }).upgrade(tx => {
       // No upgrade needed as the field is optional
+    });
+
+    this.version(15).stores({
+      userSettings: "++id, tutorialCompleted"
     });
   }
 }

@@ -42,6 +42,8 @@ import {
   createDataset,
   deleteDataset,
   readTextsByDataset,
+  getUserSettings,
+  updateUserSettings,
 } from "@/lib/db/crud";
 import { AddButton } from "@/components/AddButton";
 import EntityForm from "@/components/EntityForm";
@@ -67,6 +69,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -84,7 +88,7 @@ const Annotation = () => {
   const [activeProfilePoints, setActiveProfilePoints] = useState<
     ProfilePoint[]
   >([]);
-  const [isDatasetListOpen, setIsDatasetListOpen] = useState(true);
+  const [isDatasetListOpen, setIsDatasetListOpen] = useState(false);
   const [autoRerunFaulty, setAutoRerunFaulty] = useState(true);
   const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
   const [activeDataPoint, setActiveDataPoint] = useState<
@@ -105,6 +109,29 @@ const Annotation = () => {
   const [activeTab, setActiveTab] = useState("annotation");
   const [activeText, setActiveText] = useState<Text | undefined>(undefined);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [tutorialCompleted, setTutorialCompleted] = useState(false);
+
+  // Get user settings from database
+  const userSettings = useLiveQuery(() => getUserSettings(), []);
+
+  // Update tutorial completed state when user settings change
+  useEffect(() => {
+    if (userSettings) {
+      setTutorialCompleted(userSettings.tutorialCompleted);
+      // Only open the tutorial if it hasn't been completed
+      setIsTutorialOpen(!userSettings.tutorialCompleted);
+    }
+  }, [userSettings]);
+
+  // Handle tutorial completion
+  const handleTutorialComplete = async (completed: boolean) => {
+    setTutorialCompleted(completed);
+    await updateUserSettings({ tutorialCompleted: completed });
+    // Close the drawer when tutorial is marked as completed
+    if (completed) {
+      setIsTutorialOpen(false);
+    }
+  };
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
@@ -227,16 +254,28 @@ const Annotation = () => {
           </DrawerTrigger>
           <DrawerContent>
             <Tabs defaultValue="getting-started" className="w-full">
-              <TabsList className="w-full justify-start px-4">
-                <TabsTrigger value="getting-started">
-                  Getting Started
-                </TabsTrigger>
-                <TabsTrigger value="profiles">Profiles</TabsTrigger>
-                <TabsTrigger value="annotation">Annotation</TabsTrigger>
-                <TabsTrigger value="text-upload">Text Upload</TabsTrigger>
-                <TabsTrigger value="ai-setup">AI Setup</TabsTrigger>
-                <TabsTrigger value="tips">Tips & Tricks</TabsTrigger>
-              </TabsList>
+              <div className="flex items-center justify-between px-4">
+                <TabsList className="justify-start">
+                  <TabsTrigger value="getting-started">
+                    Getting Started
+                  </TabsTrigger>
+                  <TabsTrigger value="profiles">Profiles</TabsTrigger>
+                  <TabsTrigger value="annotation">Annotation</TabsTrigger>
+                  <TabsTrigger value="text-upload">Text Upload</TabsTrigger>
+                  <TabsTrigger value="ai-setup">AI Setup</TabsTrigger>
+                  <TabsTrigger value="tips">Tips & Tricks</TabsTrigger>
+                </TabsList>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="tutorial-settings"
+                    checked={tutorialCompleted}
+                    onCheckedChange={(checked) =>
+                      handleTutorialComplete(checked as boolean)
+                    }
+                  />
+                  <Label htmlFor="tutorial-settings">Tutorial Done</Label>
+                </div>
+              </div>
               <TabsContent value="getting-started" className="p-4">
                 <DrawerHeader>
                   <DrawerTitle>Welcome to Data Point Extraction</DrawerTitle>
