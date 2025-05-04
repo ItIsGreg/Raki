@@ -19,7 +19,7 @@ import TextList from "@/components/datasets/TextList";
 import { TASK_MODE } from "@/app/constants";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Trash2, Menu } from "lucide-react";
+import { ChevronLeft, Trash2, Menu, HelpCircle } from "lucide-react";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileDataPointList from "@/components/profiles/DataPointList";
@@ -210,35 +210,156 @@ const Annotation = () => {
       className="grid grid-cols-7 gap-4 h-full overflow-hidden"
       data-cy="annotation-container"
     >
-      <div className="absolute top-4 left-4 z-50">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
         <Drawer
           open={isTutorialOpen}
           onOpenChange={setIsTutorialOpen}
           modal={false}
         >
           <DrawerTrigger asChild>
-            <Button variant="outline" size="sm">
-              Tutorial
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            >
+              <HelpCircle className="h-4 w-4" />
             </Button>
           </DrawerTrigger>
           <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Welcome to Data Point Extraction</DrawerTitle>
-              <DrawerDescription>
-                Learn how to use the annotation tool effectively
-              </DrawerDescription>
-            </DrawerHeader>
-            <div className="p-4">
-              <h3 className="font-semibold mb-2">Getting Started</h3>
-              <ol className="list-decimal pl-4 space-y-2">
-                <li>Select a profile from the Profiles tab</li>
-                <li>Create data points for your profile</li>
-                <li>Upload texts in the Text Upload tab</li>
-                <li>
-                  Start annotating your texts with the created data points
-                </li>
-              </ol>
-            </div>
+            <Tabs defaultValue="getting-started" className="w-full">
+              <TabsList className="w-full justify-start px-4">
+                <TabsTrigger value="getting-started">
+                  Getting Started
+                </TabsTrigger>
+                <TabsTrigger value="profiles">Profiles</TabsTrigger>
+                <TabsTrigger value="annotation">Annotation</TabsTrigger>
+                <TabsTrigger value="text-upload">Text Upload</TabsTrigger>
+                <TabsTrigger value="ai-setup">AI Setup</TabsTrigger>
+                <TabsTrigger value="tips">Tips & Tricks</TabsTrigger>
+              </TabsList>
+              <TabsContent value="getting-started" className="p-4">
+                <DrawerHeader>
+                  <DrawerTitle>Welcome to Data Point Extraction</DrawerTitle>
+                  <DrawerDescription>
+                    Learn how to use the annotation tool effectively
+                  </DrawerDescription>
+                </DrawerHeader>
+                <h3 className="font-semibold mb-2">Getting Started</h3>
+                <ol className="list-decimal pl-4 space-y-2">
+                  <li>Select a profile from the Profiles tab</li>
+                  <li>Create data points for your profile</li>
+                  <li>Upload texts in the Text Upload tab</li>
+                  <li>
+                    Start annotating your texts with the created data points
+                  </li>
+                </ol>
+              </TabsContent>
+              <TabsContent value="profiles" className="p-4">
+                <DrawerHeader>
+                  <DrawerTitle>Working with Profiles</DrawerTitle>
+                  <DrawerDescription>
+                    Learn how to manage and use profiles effectively
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="space-y-4">
+                  <p>
+                    Profiles are collections of data points that define what you
+                    want to extract from your texts.
+                  </p>
+                  <div className="bg-muted p-3 rounded-md">
+                    <p className="text-sm">
+                      💡 Tip: Create specific profiles for different types of
+                      data you want to extract.
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="annotation" className="p-4">
+                <DrawerHeader>
+                  <DrawerTitle>Annotation Process</DrawerTitle>
+                  <DrawerDescription>
+                    Master the art of text annotation
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="space-y-4">
+                  <p>Learn how to effectively annotate your texts:</p>
+                  <ul className="list-disc pl-4 space-y-2">
+                    <li>Select text spans to annotate</li>
+                    <li>Choose the appropriate data point</li>
+                    <li>Review and edit annotations</li>
+                    <li>Save your progress</li>
+                  </ul>
+                </div>
+              </TabsContent>
+              <TabsContent value="text-upload" className="p-4">
+                <DrawerHeader>
+                  <DrawerTitle>Text Upload</DrawerTitle>
+                  <DrawerDescription>
+                    Learn how to manage and upload your texts
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="space-y-4">
+                  <p>Upload and manage your texts for annotation:</p>
+                  <ul className="list-disc pl-4 space-y-2">
+                    <li>Create a new dataset or select an existing one</li>
+                    <li>Upload individual texts or bulk import</li>
+                    <li>Organize texts within datasets</li>
+                    <li>Preview and edit text content</li>
+                  </ul>
+                  <div className="bg-muted p-3 rounded-md">
+                    <p className="text-sm">
+                      📁 Supported formats: TXT, CSV, JSON
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="ai-setup" className="p-4">
+                <DrawerHeader>
+                  <DrawerTitle>AI Setup</DrawerTitle>
+                  <DrawerDescription>
+                    Configure AI assistance for your annotation workflow
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="space-y-4">
+                  <p>Enhance your annotation process with AI:</p>
+                  <ul className="list-disc pl-4 space-y-2">
+                    <li>Configure AI model settings</li>
+                    <li>Set up automatic suggestions</li>
+                    <li>Adjust confidence thresholds</li>
+                    <li>Manage AI training data</li>
+                  </ul>
+                  <div className="bg-muted p-3 rounded-md">
+                    <p className="text-sm">
+                      🤖 AI suggestions can help speed up your annotation
+                      process
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="tips" className="p-4">
+                <DrawerHeader>
+                  <DrawerTitle>Tips & Tricks</DrawerTitle>
+                  <DrawerDescription>
+                    Pro tips to enhance your workflow
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="space-y-4">
+                  <div className="bg-muted p-3 rounded-md">
+                    <p className="text-sm">
+                      🎯 Use keyboard shortcuts for faster annotation
+                    </p>
+                  </div>
+                  <div className="bg-muted p-3 rounded-md">
+                    <p className="text-sm">
+                      📝 Keep your data points well-organized
+                    </p>
+                  </div>
+                  <div className="bg-muted p-3 rounded-md">
+                    <p className="text-sm">🔄 Regularly save your work</p>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
             <DrawerFooter>
               <DrawerClose asChild>
                 <Button variant="outline">Close</Button>
