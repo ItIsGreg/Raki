@@ -124,6 +124,11 @@ const Annotation = () => {
     }
   }, [activeAnnotatedDataset, profiles]);
 
+  // Add effect to log activeDataPoint changes
+  useEffect(() => {
+    console.log("Parent component - activeDataPoint changed:", activeDataPoint);
+  }, [activeDataPoint]);
+
   // Wrapper functions to handle type conversion
   const handleSetActiveAnnotatedDataset = (
     dataset: AnnotatedDataset | null
@@ -205,6 +210,7 @@ const Annotation = () => {
         mode={displayMode}
         activeText={activeText}
         setActiveTab={setActiveTab}
+        setActiveDataPoint={setActiveDataPoint}
       />
       <Tabs
         defaultValue="annotation"

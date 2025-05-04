@@ -91,15 +91,18 @@ export interface ResDataPoint {
 }
 
 export interface TextAnnotationProps {
-  activeAnnotatedDataset?: AnnotatedDataset;
-  setActiveAnnotatedDataset: (dataset: AnnotatedDataset | undefined) => void;
-  activeDataPointId?: string;
-  setActiveDataPointId: (id: string | undefined) => void;
-  activeAnnotatedText?: AnnotatedText;
-  setActiveAnnotatedText: (text: AnnotatedText | undefined) => void;
-  mode?: 'display' | 'annotation';
+  activeAnnotatedDataset: AnnotatedDataset | undefined;
+  setActiveAnnotatedDataset: (
+    annotatedDataset: AnnotatedDataset | undefined
+  ) => void;
+  activeDataPointId: string | undefined;
+  setActiveDataPointId: (dataPointId: string | undefined) => void;
+  activeAnnotatedText: AnnotatedText | undefined;
+  setActiveAnnotatedText: (annotatedText: AnnotatedText | undefined) => void;
+  mode?: "display" | "annotation";
   activeText?: Text;
   setActiveTab?: (tab: string) => void;
+  setActiveDataPoint?: (dataPoint: ProfilePoint | undefined) => void;
 }
 
 export interface AnnotationDataPointListProps {
@@ -150,6 +153,7 @@ export interface DataPointSliceProps {
   activeTooltipId: string | undefined;
   setActiveTooltipId: (id: string | undefined) => void;
   setActiveTab?: (tab: string) => void;
+  setActiveDataPoint?: (dataPoint: ProfilePoint | undefined) => void;
 }
 
 export interface LLMProviderSelectProps {

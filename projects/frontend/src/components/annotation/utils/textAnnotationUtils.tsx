@@ -16,6 +16,7 @@ interface GenerateHighlightedTextProps {
   activeTooltipId: string | undefined;
   setActiveTooltipId: (id: string | undefined) => void;
   setActiveTab?: (tab: string) => void;
+  setActiveDataPoint?: (dataPoint: ProfilePoint | undefined) => void;
 }
 
 export const generateHighlightedText = ({
@@ -31,6 +32,7 @@ export const generateHighlightedText = ({
   activeTooltipId,
   setActiveTooltipId,
   setActiveTab,
+  setActiveDataPoint,
 }: GenerateHighlightedTextProps) => {
   const matchedDataPoints = dataPoints.filter((dataPoint) => dataPoint.match);
   const sortedDataPoints = matchedDataPoints.sort(
@@ -65,6 +67,7 @@ export const generateHighlightedText = ({
         activeTooltipId={activeTooltipId}
         setActiveTooltipId={setActiveTooltipId}
         setActiveTab={setActiveTab}
+        setActiveDataPoint={setActiveDataPoint}
       />
     );
     lastEnd = dataPoint.match![1];

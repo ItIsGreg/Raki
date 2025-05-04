@@ -31,10 +31,13 @@ const TextAnnotation = (props: TextAnnotationProps) => {
     mode = "annotation",
     activeText,
     setActiveTab,
+    setActiveDataPoint,
   } = props;
 
   const [activeDataPointValue, setActiveDataPointValue] = useState<string>("");
-  const [activeTooltipId, setActiveTooltipId] = useState<string | null>(null);
+  const [activeTooltipId, setActiveTooltipId] = useState<string | undefined>(
+    undefined
+  );
   const [isReannotating, setIsReannotating] = useState(false);
 
   const {
@@ -158,6 +161,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
         activeTooltipId,
         setActiveTooltipId,
         setActiveTab,
+        setActiveDataPoint,
       }),
     [
       texts,
@@ -171,6 +175,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
       activeTooltipId,
       setActiveTooltipId,
       setActiveTab,
+      setActiveDataPoint,
     ]
   );
 

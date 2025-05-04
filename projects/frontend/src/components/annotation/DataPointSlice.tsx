@@ -26,6 +26,7 @@ interface ExtendedDataPointSliceProps extends DataPointSliceProps {
   activeTooltipId: string | undefined;
   setActiveTooltipId: (id: string | undefined) => void;
   setActiveTab?: (tab: string) => void;
+  setActiveDataPoint?: (dataPoint: ProfilePoint | undefined) => void;
 }
 
 const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
@@ -42,6 +43,7 @@ const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
     activeTooltipId,
     setActiveTooltipId,
     setActiveTab,
+    setActiveDataPoint,
   } = props;
 
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -114,6 +116,14 @@ const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
                 onClick={() => {
                   if (setActiveTab) {
                     setActiveTab("profiles");
+                  }
+                  if (setActiveDataPoint && dataPoint.profilePointId) {
+                    const profilePoint = activeProfilePoints?.find(
+                      (pp) => pp.id === dataPoint.profilePointId
+                    );
+                    if (profilePoint) {
+                      setActiveDataPoint(profilePoint);
+                    }
                   }
                 }}
               >
