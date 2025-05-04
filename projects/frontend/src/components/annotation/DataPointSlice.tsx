@@ -19,7 +19,8 @@ import {
 import { deleteDataPoint, updateDataPoint } from "@/lib/db/crud";
 import { DataPoint, ProfilePoint } from "@/lib/db/db";
 import { FaCheck } from "react-icons/fa6";
-import { TiDeleteOutline } from "react-icons/ti";
+import { Trash2 } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface ExtendedDataPointSliceProps extends DataPointSliceProps {
@@ -108,40 +109,43 @@ const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
             <CardHeader className="flex flex-row gap-2">
               <CardTitle data-cy="datapoint-title">{dataPoint.name}</CardTitle>
               <div className="flex-grow"></div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mr-2"
-                data-cy="open-profile-point-btn"
-                onClick={() => {
-                  if (setActiveTab) {
-                    setActiveTab("profiles");
-                  }
-                  if (setActiveDataPoint && dataPoint.profilePointId) {
-                    const profilePoint = activeProfilePoints?.find(
-                      (pp) => pp.id === dataPoint.profilePointId
-                    );
-                    if (profilePoint) {
-                      setActiveDataPoint(profilePoint);
-                    }
-                  }
-                }}
-              >
-                Open Profile Point
-              </Button>
+              {dataPoint.profilePointId && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 mr-2"
+                        data-cy="open-profile-point-btn"
+                        onClick={() => {
+                          if (setActiveTab) {
+                            setActiveTab("profiles");
+                          }
+                          if (setActiveDataPoint && dataPoint.profilePointId) {
+                            const profilePoint = activeProfilePoints?.find(
+                              (pp) => pp.id === dataPoint.profilePointId
+                            );
+                            if (profilePoint) {
+                              setActiveDataPoint(profilePoint);
+                            }
+                          }
+                        }}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Open Profile Point</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleTooltipClose}
-                className="h-6 w-6"
-                data-cy="close-datapoint-dialog-btn"
-              >
-                ✕
-              </Button>
-              <TiDeleteOutline
+                className="h-6 w-6 mr-2 hover:text-red-500"
                 data-cy="datapoint-delete-btn"
-                className="hover:text-red-500 cursor-pointer"
-                size={24}
                 onClick={() => {
                   if (!dataPoint.profilePointId) {
                     deleteDataPoint(dataPoint.id);
@@ -154,7 +158,18 @@ const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
                     });
                   }
                 }}
-              />
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                data-cy="close-datapoint-dialog-btn"
+                onClick={handleTooltipClose}
+              >
+                ✕
+              </Button>
             </CardHeader>
             <CardContent>
               {!dataPoint.profilePointId ? (
