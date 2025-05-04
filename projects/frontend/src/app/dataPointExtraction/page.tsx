@@ -57,6 +57,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useQuery } from "react-query";
 import { getProfiles } from "@/lib/db/crud";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -94,6 +104,7 @@ const Annotation = () => {
   );
   const [activeTab, setActiveTab] = useState("annotation");
   const [activeText, setActiveText] = useState<Text | undefined>(undefined);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
@@ -199,6 +210,43 @@ const Annotation = () => {
       className="grid grid-cols-7 gap-4 h-full overflow-hidden"
       data-cy="annotation-container"
     >
+      <div className="absolute top-4 left-4 z-50">
+        <Drawer
+          open={isTutorialOpen}
+          onOpenChange={setIsTutorialOpen}
+          modal={false}
+        >
+          <DrawerTrigger asChild>
+            <Button variant="outline" size="sm">
+              Tutorial
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Welcome to Data Point Extraction</DrawerTitle>
+              <DrawerDescription>
+                Learn how to use the annotation tool effectively
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="p-4">
+              <h3 className="font-semibold mb-2">Getting Started</h3>
+              <ol className="list-decimal pl-4 space-y-2">
+                <li>Select a profile from the Profiles tab</li>
+                <li>Create data points for your profile</li>
+                <li>Upload texts in the Text Upload tab</li>
+                <li>
+                  Start annotating your texts with the created data points
+                </li>
+              </ol>
+            </div>
+            <DrawerFooter>
+              <DrawerClose asChild>
+                <Button variant="outline">Close</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+      </div>
       <TextAnnotation
         data-cy="text-annotation"
         activeAnnotatedDataset={activeAnnotatedDataset}
