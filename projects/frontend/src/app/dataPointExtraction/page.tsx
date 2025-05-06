@@ -55,8 +55,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useQuery } from "react-query";
-import { getProfiles } from "@/lib/db/crud";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
