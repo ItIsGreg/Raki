@@ -43,26 +43,26 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
   };
 
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
       <Drawer open={isOpen} onOpenChange={onOpenChange} modal={false}>
         <DrawerTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground pointer-events-auto"
           >
             <HelpCircle className="h-4 w-4" />
           </Button>
         </DrawerTrigger>
-        <DrawerContent className="h-[50vh]">
+        <DrawerContent className="h-[50vh] pointer-events-auto">
           <Tabs defaultValue="welcome" className="w-full h-full flex flex-col">
             <div className="flex items-center justify-between px-4 border-b">
               <TabsList className="justify-start">
                 <TabsTrigger value="welcome">Welcome</TabsTrigger>
-                <TabsTrigger value="profiles">Profiles</TabsTrigger>
-                <TabsTrigger value="annotation">Annotation</TabsTrigger>
                 <TabsTrigger value="text-upload">Text Upload</TabsTrigger>
                 <TabsTrigger value="ai-setup">AI Setup</TabsTrigger>
+                <TabsTrigger value="profiles">Profiles</TabsTrigger>
+                <TabsTrigger value="annotation">Annotation</TabsTrigger>
                 <TabsTrigger value="tips">Tips & Tricks</TabsTrigger>
               </TabsList>
               <div className="flex items-center gap-2">

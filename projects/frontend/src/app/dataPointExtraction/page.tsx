@@ -106,7 +106,9 @@ const Annotation = () => {
     if (userSettings) {
       setTutorialCompleted(userSettings.tutorialCompleted);
       // Only open the tutorial if it hasn't been completed
-      setIsTutorialOpen(!userSettings.tutorialCompleted);
+      if (!userSettings.tutorialCompleted) {
+        setIsTutorialOpen(true);
+      }
     }
   }, [userSettings]);
 
