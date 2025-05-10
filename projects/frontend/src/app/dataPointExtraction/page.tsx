@@ -105,10 +105,6 @@ const Annotation = () => {
   useEffect(() => {
     if (userSettings) {
       setTutorialCompleted(userSettings.tutorialCompleted);
-      // Only open the tutorial if it hasn't been completed
-      if (!userSettings.tutorialCompleted) {
-        setIsTutorialOpen(true);
-      }
     }
   }, [userSettings]);
 
