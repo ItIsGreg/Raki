@@ -396,7 +396,7 @@ const Annotation = () => {
         >
           <div className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4 p-4">
-              <div className="flex gap-4 items-center">
+              <div className="flex flex-col gap-4">
                 <Select
                   value={activeDataset?.id}
                   onValueChange={(value) => {
@@ -405,7 +405,7 @@ const Annotation = () => {
                   }}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a dataset" />
+                    <SelectValue placeholder="Select a text set" />
                   </SelectTrigger>
                   <SelectContent>
                     {datasets?.map((dataset) => (
@@ -415,22 +415,24 @@ const Annotation = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <AddButton
+                <Button
                   onClick={() => setAddingDataset(true)}
-                  label="Dataset"
+                  className="w-full"
                   data-cy="add-dataset-button"
-                />
-                {activeDataset && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowDeleteDialog(true)}
-                    data-cy="delete-dataset-button"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                >
+                  New Text Set
+                </Button>
               </div>
+              {activeDataset && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowDeleteDialog(true)}
+                  data-cy="delete-dataset-button"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
               <AlertDialog
                 open={showDeleteDialog}
                 onOpenChange={setShowDeleteDialog}
