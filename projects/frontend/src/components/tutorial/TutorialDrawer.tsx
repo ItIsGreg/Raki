@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { HelpCircle, X } from "lucide-react";
+import { HelpCircle, X, Download } from "lucide-react";
 import { getUserSettings, updateUserSettings } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
 
@@ -175,22 +175,40 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                 <DrawerHeader>
                   <DrawerTitle>Text Upload</DrawerTitle>
                   <DrawerDescription>
-                    Learn how to manage and upload your texts
+                    Learn how to upload and manage your texts
                   </DrawerDescription>
                 </DrawerHeader>
                 <div className="space-y-4">
-                  <p>Upload and manage your texts for annotation:</p>
-                  <ul className="list-disc pl-4 space-y-2">
-                    <li>Create a new dataset or select an existing one</li>
-                    <li>Upload individual texts or bulk import</li>
-                    <li>Organize texts within datasets</li>
-                    <li>Preview and edit text content</li>
-                  </ul>
-                  <div className="bg-muted p-3 rounded-md">
-                    <p className="text-sm">
-                      📁 Supported formats: TXT, CSV, JSON
-                    </p>
-                  </div>
+                  <p>
+                    First of all in the upper right corner of your screen you
+                    should see three tabs:
+                  </p>
+                  <p className="font-medium">
+                    Annotation - Profiles - Text Upload
+                  </p>
+                  <p>Start by going to the text upload tab.</p>
+
+                  <p>
+                    Let's start the tutorial by uploading some data that we can
+                    annotate.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    className="flex items-center gap-2"
+                    onClick={() => {
+                      // TODO: Add actual download functionality
+                      console.log("Download example data");
+                    }}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Example Data
+                  </Button>
+
+                  <p>
+                    Do you have the table? You might want to open it and just
+                    take a look. After that come back to the tutorial.
+                  </p>
+                  <p>Alright, have you seen the table contents? Great.</p>
                 </div>
               </TabsContent>
               <TabsContent value="ai-setup" className="p-4">
