@@ -201,8 +201,12 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                     variant="secondary"
                     className="flex items-center gap-2"
                     onClick={() => {
-                      // TODO: Add actual download functionality
-                      console.log("Download example data");
+                      const link = document.createElement("a");
+                      link.href = "/example-echos.xlsx";
+                      link.download = "example-echos.xlsx";
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
                     }}
                   >
                     <Download className="h-4 w-4" />
