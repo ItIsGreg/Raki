@@ -261,29 +261,51 @@ const Annotation = () => {
           className="flex-1 min-h-0 mt-0 overflow-hidden"
         >
           <div className="h-full overflow-y-auto">
-            <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)] p-4">
-              <div className="col-span-1 overflow-y-auto">
-                <DataPointList
-                  data-cy="data-point-list"
-                  activeAnnotatedDataset={activeAnnotatedDataset}
-                  activeDataPointId={activeDataPointId}
-                  setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-                  setActiveDataPointId={setActiveDataPointId}
-                  activeAnnotatedText={activeAnnotatedText}
-                  mode={mode}
-                  isDatasetListOpen={isDatasetListOpen}
-                  activeProfilePoints={activeProfilePoints}
-                />
-              </div>
-              <div className="col-span-1 overflow-y-auto">
-                <AnnotatedTextList
-                  data-cy="annotated-text-list"
-                  activeAnnotatedDataset={activeAnnotatedDataset}
-                  activeAnnotatedText={activeAnnotatedText}
-                  setActiveAnnotatedText={setActiveAnnotatedText}
-                  setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-                  mode={mode}
-                />
+            <div className="flex flex-col gap-4 p-4">
+              <Select
+                value={activeAnnotatedDataset?.id}
+                onValueChange={(value) => {
+                  const dataset = dbAnnotatedDatasets?.find(
+                    (d) => d.id === value
+                  );
+                  setActiveAnnotatedDataset(dataset || undefined);
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a dataset" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dbAnnotatedDatasets?.map((dataset) => (
+                    <SelectItem key={dataset.id} value={dataset.id}>
+                      {dataset.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)]">
+                <div className="col-span-1 overflow-y-auto">
+                  <DataPointList
+                    data-cy="data-point-list"
+                    activeAnnotatedDataset={activeAnnotatedDataset}
+                    activeDataPointId={activeDataPointId}
+                    setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                    setActiveDataPointId={setActiveDataPointId}
+                    activeAnnotatedText={activeAnnotatedText}
+                    mode={mode}
+                    isDatasetListOpen={isDatasetListOpen}
+                    activeProfilePoints={activeProfilePoints}
+                  />
+                </div>
+                <div className="col-span-1 overflow-y-auto">
+                  <AnnotatedTextList
+                    data-cy="annotated-text-list"
+                    activeAnnotatedDataset={activeAnnotatedDataset}
+                    activeAnnotatedText={activeAnnotatedText}
+                    setActiveAnnotatedText={setActiveAnnotatedText}
+                    setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                    mode={mode}
+                  />
+                </div>
               </div>
             </div>
           </div>
