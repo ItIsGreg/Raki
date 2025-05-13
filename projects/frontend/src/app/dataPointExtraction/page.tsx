@@ -70,6 +70,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { AddDatasetForm } from "@/components/aiAnnotation/AddDatasetForm";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -278,26 +279,40 @@ const Annotation = () => {
         >
           <div className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4 p-4">
-              <Select
-                value={activeAnnotatedDataset?.id}
-                onValueChange={(value) => {
-                  const dataset = dbAnnotatedDatasets?.find(
-                    (d) => d.id === value
-                  );
-                  setActiveAnnotatedDataset(dataset || undefined);
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a dataset" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dbAnnotatedDatasets?.map((dataset) => (
-                    <SelectItem key={dataset.id} value={dataset.id}>
-                      {dataset.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-4 items-center">
+                <Select
+                  value={activeAnnotatedDataset?.id}
+                  onValueChange={(value) => {
+                    const dataset = dbAnnotatedDatasets?.find(
+                      (d) => d.id === value
+                    );
+                    setActiveAnnotatedDataset(dataset || undefined);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a dataset" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dbAnnotatedDatasets?.map((dataset) => (
+                      <SelectItem key={dataset.id} value={dataset.id}>
+                        {dataset.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <AddButton
+                  onClick={() => setAddingDataset(true)}
+                  label="Dataset"
+                  data-cy="add-dataset-button"
+                />
+              </div>
+              {addingDataset && (
+                <AddDatasetForm
+                  data-cy="add-dataset-form"
+                  onClose={() => setAddingDataset(false)}
+                  mode={mode}
+                />
+              )}
               {activeAnnotatedDataset && (
                 <Collapsible
                   open={isCardExpanded}
