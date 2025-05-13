@@ -90,17 +90,40 @@ export const AnnotatedDatasetCard = <
       onClick={onSelect}
     >
       <CardHeader className="flex flex-row gap-2">
-        <div className="flex-grow"></div>
-        <EditButton data-cy="edit-dataset-button" onClick={onEdit} />
-        <DeleteButton
-          data-cy="delete-dataset-button"
-          onDelete={() => deleteAnnotatedDataset(dataset.id)}
-          itemName={
-            mode === "datapoint_extraction"
-              ? "annotated dataset"
-              : "segmentation dataset"
-          }
-        />
+        {isActive && (
+          <div className="w-full">
+            {annotationState === "idle" ? (
+              <Button
+                data-cy="start-annotation-button"
+                onClick={onStart}
+                className="w-full"
+              >
+                {getActionText()}
+              </Button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Button
+                  data-cy="stop-annotation-button"
+                  onClick={onStop}
+                  className="w-full"
+                >
+                  {getActionText()}
+                </Button>
+                <div
+                  className="flex items-center gap-2"
+                  data-cy="annotation-status"
+                >
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-gray-500">
+                    {annotationState === "regular"
+                      ? getProgressText()
+                      : getFaultyText()}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <div className="grid grid-cols-2 gap-2">
@@ -178,41 +201,17 @@ export const AnnotatedDatasetCard = <
               className="w-full bg-green-200"
             />
           )}
-        {isActive && (
-          <div className="flex flex-col gap-2">
-            {annotationState === "idle" ? (
-              <Button
-                data-cy="start-annotation-button"
-                onClick={onStart}
-                className="w-full"
-              >
-                {getActionText()}
-              </Button>
-            ) : (
-              <>
-                <Button
-                  data-cy="stop-annotation-button"
-                  onClick={onStop}
-                  className="w-full"
-                >
-                  {getActionText()}
-                </Button>
-                <div
-                  className="flex items-center gap-2"
-                  data-cy="annotation-status"
-                >
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-gray-500">
-                    {annotationState === "regular"
-                      ? getProgressText()
-                      : getFaultyText()}
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-        <div className="absolute bottom-4 right-4">
+        <div className="flex justify-end gap-2 mt-2">
+          <EditButton data-cy="edit-dataset-button" onClick={onEdit} />
+          <DeleteButton
+            data-cy="delete-dataset-button"
+            onDelete={() => deleteAnnotatedDataset(dataset.id)}
+            itemName={
+              mode === "datapoint_extraction"
+                ? "annotated dataset"
+                : "segmentation dataset"
+            }
+          />
           <DownloadButton
             data-cy="download-dataset-button"
             dataset={dataset}
