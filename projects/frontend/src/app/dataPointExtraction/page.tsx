@@ -311,6 +311,10 @@ const Annotation = () => {
                   data-cy="add-dataset-form"
                   onClose={() => setAddingDataset(false)}
                   mode={mode}
+                  onDatasetCreated={(newDataset) => {
+                    setActiveAnnotatedDataset(newDataset);
+                    identifyActiveProfilePoints(newDataset.profileId);
+                  }}
                 />
               )}
               {activeAnnotatedDataset && (
