@@ -90,7 +90,6 @@ export const AnnotatedDatasetCard = <
       onClick={onSelect}
     >
       <CardHeader className="flex flex-row gap-2">
-        <CardTitle data-cy="dataset-title">{dataset.name}</CardTitle>
         <div className="flex-grow"></div>
         <EditButton data-cy="edit-dataset-button" onClick={onEdit} />
         <DeleteButton
@@ -103,10 +102,10 @@ export const AnnotatedDatasetCard = <
           }
         />
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-row gap-2">
+      <CardContent className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {dbProfiles && (
-            <CardDescription data-cy="profile-description">
+            <CardDescription data-cy="profile-description" className="truncate">
               {mode === "datapoint_extraction"
                 ? "Profile: "
                 : "Segmentation Profile: "}
@@ -116,9 +115,8 @@ export const AnnotatedDatasetCard = <
               }
             </CardDescription>
           )}
-          <div className="flex-grow"></div>
           {dbDatasets && (
-            <CardDescription data-cy="dataset-description">
+            <CardDescription data-cy="dataset-description" className="truncate">
               Dataset:{" "}
               {
                 dbDatasets.find(
@@ -127,13 +125,15 @@ export const AnnotatedDatasetCard = <
               }
             </CardDescription>
           )}
-          <div className="flex-grow"></div>
         </div>
-        <CardDescription data-cy="dataset-description-text">
+        <CardDescription
+          data-cy="dataset-description-text"
+          className="line-clamp-2"
+        >
           Description: {dataset.description}
         </CardDescription>
         {dbTexts && dbAnnotatedTexts && (
-          <>
+          <div className="grid grid-cols-2 gap-2">
             <CardDescription data-cy="annotated-texts-count">
               {mode === "datapoint_extraction" ? "Annotated" : "Segmented"}{" "}
               Texts:{" "}
@@ -159,7 +159,7 @@ export const AnnotatedDatasetCard = <
                 ).length
               }
             </CardDescription>
-          </>
+          </div>
         )}
         {isActive &&
           dbTexts &&
@@ -179,13 +179,17 @@ export const AnnotatedDatasetCard = <
             />
           )}
         {isActive && (
-          <>
+          <div className="flex flex-col gap-2">
             {annotationState === "idle" ? (
-              <Button data-cy="start-annotation-button" onClick={onStart}>
+              <Button
+                data-cy="start-annotation-button"
+                onClick={onStart}
+                className="w-full"
+              >
                 {getActionText()}
               </Button>
             ) : (
-              <div className="flex flex-col items-center gap-2">
+              <>
                 <Button
                   data-cy="stop-annotation-button"
                   onClick={onStop}
@@ -204,9 +208,9 @@ export const AnnotatedDatasetCard = <
                       : getFaultyText()}
                   </span>
                 </div>
-              </div>
+              </>
             )}
-          </>
+          </div>
         )}
         <div className="absolute bottom-4 right-4">
           <DownloadButton

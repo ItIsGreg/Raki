@@ -19,7 +19,13 @@ import TextList from "@/components/datasets/TextList";
 import { TASK_MODE } from "@/app/constants";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Trash2, Menu, HelpCircle } from "lucide-react";
+import {
+  ChevronLeft,
+  Trash2,
+  Menu,
+  HelpCircle,
+  ChevronDown,
+} from "lucide-react";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileDataPointList from "@/components/profiles/DataPointList";
@@ -58,6 +64,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import TutorialDrawer from "@/components/tutorial/TutorialDrawer";
+import { AnnotatedDatasetCard } from "@/components/aiAnnotation/AnnotatedDatasetCard";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -97,6 +109,10 @@ const Annotation = () => {
   const [activeText, setActiveText] = useState<Text | undefined>(undefined);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialCompleted, setTutorialCompleted] = useState(false);
+  const [isCardExpanded, setIsCardExpanded] = useState(true);
+  const [editingDataset, setEditingDataset] = useState<
+    AnnotatedDataset | undefined
+  >(undefined);
 
   // Get user settings from database
   const userSettings = useLiveQuery(() => getUserSettings(), []);
@@ -282,6 +298,39 @@ const Annotation = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {activeAnnotatedDataset && (
+                <Collapsible
+                  open={isCardExpanded}
+                  onOpenChange={setIsCardExpanded}
+                  className="w-full"
+                >
+                  <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-gray-100 rounded-t-lg hover:bg-gray-200">
+                    <span className="font-medium">Details</span>
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        isCardExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <AnnotatedDatasetCard
+                      dataset={activeAnnotatedDataset}
+                      isActive={true}
+                      annotationState={annotationState}
+                      onSelect={() => {}}
+                      onStart={() => {
+                        identifyActiveProfilePoints(
+                          activeAnnotatedDataset.profileId
+                        );
+                        handleStart();
+                      }}
+                      onStop={handleStop}
+                      onEdit={() => setEditingDataset(activeAnnotatedDataset)}
+                      mode={mode}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
               <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)]">
                 <div className="col-span-1 overflow-y-auto">
                   <DataPointList
