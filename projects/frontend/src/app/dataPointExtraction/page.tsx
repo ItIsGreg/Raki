@@ -14,18 +14,10 @@ import {
 import TextAnnotation from "@/components/annotation/TextAnnotation";
 import DataPointList from "@/components/annotation/DataPointList";
 import AnnotatedTextList from "@/components/annotation/AnnotatedTextList";
-import AnnotatedDatasetList from "@/components/aiAnnotation/AnnotatedDatasetList";
 import TextList from "@/components/datasets/TextList";
 import { TASK_MODE } from "@/app/constants";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  Trash2,
-  Menu,
-  HelpCircle,
-  ChevronDown,
-} from "lucide-react";
+import { Trash2, ChevronDown } from "lucide-react";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileDataPointList from "@/components/profiles/DataPointList";
@@ -71,6 +63,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { AddDatasetForm } from "@/components/aiAnnotation/AddDatasetForm";
+import { UploadDatasetButton } from "@/components/aiAnnotation/UploadDatasetButton";
+import { handleUploadAnnotatedDataset } from "@/components/aiAnnotation/annotationUtils";
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -240,6 +234,16 @@ const Annotation = () => {
     }
   };
 
+  const handleUploadDataset = async (file: File) => {
+    try {
+      const newDataset = await handleUploadAnnotatedDataset(file);
+      setActiveAnnotatedDataset(newDataset);
+    } catch (error) {
+      console.error("Error uploading dataset:", error);
+      // You might want to show an error message to the user here
+    }
+  };
+
   return (
     <div
       className="grid grid-cols-7 gap-4 h-full overflow-hidden"
@@ -310,6 +314,10 @@ const Annotation = () => {
                   onClick={() => setAddingDataset(true)}
                   label="Dataset"
                   data-cy="add-dataset-button"
+                />
+                <UploadDatasetButton
+                  data-cy="upload-dataset-button"
+                  onUpload={handleUploadDataset}
                 />
               </div>
               {addingDataset && (
@@ -571,41 +579,6 @@ const Annotation = () => {
           </div>
         </TabsContent>
       </Tabs>
-      <Sheet open={isDatasetListOpen} onOpenChange={setIsDatasetListOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
-            data-cy="toggle-dataset-list"
-          >
-            <ChevronLeft
-              className={`h-4 w-4 transition-transform ${
-                isDatasetListOpen ? "rotate-180" : "rotate-0"
-              }`}
-            />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="p-0 w-[400px]">
-          <div className="h-full overflow-y-auto">
-            <AnnotatedDatasetList<ProfilePoint>
-              data-cy="dataset-list"
-              activeAnnotatedDataset={activeAnnotatedDataset || null}
-              activeProfilePoints={activeProfilePoints}
-              setActiveAnnotatedDataset={handleSetActiveAnnotatedDataset}
-              setActiveProfilePoints={setActiveProfilePoints}
-              mode={mode}
-              addingDataset={annotationAddingDataset}
-              setAddingDataset={setAnnotationAddingDataset}
-              annotationState={annotationState}
-              handleStart={handleStart}
-              handleStop={handleStop}
-              identifyActiveProfilePoints={identifyActiveProfilePoints}
-              isOpen={isDatasetListOpen}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 };
