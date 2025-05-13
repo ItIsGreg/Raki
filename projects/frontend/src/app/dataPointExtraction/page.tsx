@@ -234,6 +234,12 @@ const Annotation = () => {
     }
   };
 
+  const handleDeleteAnnotatedDataset = () => {
+    if (activeAnnotatedDataset) {
+      setActiveAnnotatedDataset(undefined);
+    }
+  };
+
   return (
     <div
       className="grid grid-cols-7 gap-4 h-full overflow-hidden"
@@ -345,6 +351,7 @@ const Annotation = () => {
                       }}
                       onStop={handleStop}
                       onEdit={() => setEditingDataset(activeAnnotatedDataset)}
+                      onDelete={handleDeleteAnnotatedDataset}
                       mode={mode}
                     />
                   </CollapsibleContent>

@@ -36,6 +36,7 @@ interface AnnotatedDatasetCardProps<
   onStart: () => void;
   onStop: () => void;
   onEdit: () => void;
+  onDelete: () => void;
   mode: TaskMode;
 }
 
@@ -49,6 +50,7 @@ export const AnnotatedDatasetCard = <
   onStart,
   onStop,
   onEdit,
+  onDelete,
   mode,
 }: AnnotatedDatasetCardProps<T>) => {
   const dbProfiles = useLiveQuery(() => readAllProfiles());
@@ -205,7 +207,10 @@ export const AnnotatedDatasetCard = <
           <EditButton data-cy="edit-dataset-button" onClick={onEdit} />
           <DeleteButton
             data-cy="delete-dataset-button"
-            onDelete={() => deleteAnnotatedDataset(dataset.id)}
+            onDelete={() => {
+              deleteAnnotatedDataset(dataset.id);
+              onDelete();
+            }}
             itemName={
               mode === "datapoint_extraction"
                 ? "annotated dataset"
