@@ -19,6 +19,7 @@ import {
   SegmentationProfilePoint,
   SegmentDataPoint,
   UserSettings,
+  ProfilePoint,
 } from "./db";
 import { TaskMode } from "@/app/constants";
 import { getNextOrderNumber } from "./ordering";

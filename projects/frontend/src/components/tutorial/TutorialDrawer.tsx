@@ -68,7 +68,7 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                 <TabsTrigger value="ai-setup">AI Setup</TabsTrigger>
                 <TabsTrigger value="profiles">Profiles</TabsTrigger>
                 <TabsTrigger value="annotation">Annotation</TabsTrigger>
-                <TabsTrigger value="tips">Tips & Tricks</TabsTrigger>
+                <TabsTrigger value="tips">Tips &amp; Tricks</TabsTrigger>
               </TabsList>
               <div className="flex items-center gap-2">
                 <Label htmlFor="tutorial-settings">Tutorial Done</Label>
@@ -152,7 +152,7 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                       <Sparkles className="h-5 w-5 mt-1 text-primary" />
                       <div>
                         <p className="font-medium mb-2">
-                          Let's Start the Real Deal!
+                          Let&apos;s Start the Real Deal!
                         </p>
                         <p>
                           We want to extract data from our texts. We uploaded
@@ -226,10 +226,10 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                           🤖 Time to Use Our LLM!
                         </p>
                         <p>
-                          Now let's continue by creating the profile points that
-                          we want to extract from the texts. And this is the
-                          first time that our Large Language Model comes into
-                          play.
+                          Now let&apos;s continue by creating the profile points
+                          that we want to extract from the texts. And this is
+                          the first time that our Large Language Model comes
+                          into play.
                         </p>
                         <p className="mt-2">
                           In the{" "}
@@ -368,8 +368,8 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                       <p>
                         First, go to the{" "}
                         <span className="font-semibold">Annotation</span> tab in
-                        the main interface. You'll see a list of your uploaded
-                        texts on the left side.
+                        the main interface. You&apos;ll see a list of your
+                        uploaded texts on the left side.
                       </p>
                       <p>
                         Select one of the texts to begin the annotation process.
@@ -382,30 +382,23 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                         Using the LLM Assistant
                       </p>
                       <p>
-                        In the annotation interface, you'll find a chat button
-                        that lets you interact with the LLM. Click it to open
-                        the chat interface.
+                        In the annotation interface, you&apos;ll find a chat
+                        button that lets you interact with the LLM. Click it to
+                        open the chat interface.
                       </p>
                       <p className="mt-2">
                         You can ask the LLM to analyze the text and find
                         instances of our profile points. For example, you could
                         say:
                       </p>
-                      <div className="mt-2 p-3 bg-background rounded-md">
-                        <p className="text-sm italic">
-                          "Please analyze this text and find any mentions of
-                          LVEF, Pericardial Effusion, and valve
-                          insufficiencies."
-                        </p>
-                      </div>
                     </div>
 
                     <div className="space-y-4">
                       <p className="font-medium">Understanding the Results</p>
                       <p>
                         The LLM will analyze the text and provide suggestions
-                        for data points it finds. For each suggestion, you'll
-                        see:
+                        for data points it finds. For each suggestion,
+                        you&apos;ll see:
                       </p>
                       <ul className="list-disc pl-4 space-y-2">
                         <li>The extracted value</li>
@@ -414,9 +407,9 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                       </ul>
                       <p className="mt-2">
                         You can review each suggestion and either accept it or
-                        modify it as needed. The LLM's suggestions are based on
-                        the profile points we created, using the explanations
-                        and synonyms we provided.
+                        modify it as needed. The LLM&apos;s suggestions are
+                        based on the profile points we created, using the
+                        explanations and synonyms we provided.
                       </p>
                     </div>
 
@@ -428,22 +421,25 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                         <li>Be specific in your requests to the LLM</li>
                         <li>Review the extracted values carefully</li>
                         <li>Use the chat to ask for clarification if needed</li>
-                        <li>Don't hesitate to modify the LLM's suggestions</li>
+                        <li>
+                          Don&apos;t hesitate to modify the LLM&apos;s
+                          suggestions
+                        </li>
                       </ul>
                     </div>
 
                     <div className="space-y-4">
                       <p className="font-medium">Saving Your Work</p>
                       <p>
-                        As you accept or modify the LLM's suggestions, the
+                        As you accept or modify the LLM&apos;s suggestions, the
                         annotations are automatically saved. You can always come
                         back to a text later to review or modify the
                         annotations.
                       </p>
                       <p className="mt-2">
-                        Once you're satisfied with the annotations for a text,
-                        you can move on to the next one. The LLM will help you
-                        maintain consistency across all your texts.
+                        Once you&apos;re satisfied with the annotations for a
+                        text, you can move on to the next one. The LLM will help
+                        you maintain consistency across all your texts.
                       </p>
                     </div>
 
@@ -452,11 +448,12 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                       <p>
                         Select one of your uploaded texts and start the
                         annotation process. Remember, the LLM is here to help,
-                        but you're in control of the final annotations.
+                        but you&apos;re in control of the final annotations.
                       </p>
                       <p className="mt-2 text-primary font-medium">
-                        When you're ready to learn more about exporting your
-                        annotated data, switch to the Tips & Tricks tab!
+                        When you&apos;re ready to learn more about exporting
+                        your annotated data, switch to the Tips &amp; Tricks
+                        tab!
                       </p>
                     </div>
                   </div>
@@ -480,8 +477,8 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                   <p>Start by going to the text upload tab.</p>
 
                   <p>
-                    Let's start the tutorial by uploading some data that we can
-                    annotate.
+                    Let&apos;s start the tutorial by uploading some data that we
+                    can annotate.
                   </p>
                   <Button
                     variant="secondary"
@@ -505,8 +502,8 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                   </p>
                   <p>
                     Alright, have you seen the table contents? Great. It is just
-                    a bunch of echocardiography reports. Let's upload the text
-                    to the app.
+                    a bunch of echocardiography reports. Let&apos;s upload the
+                    text to the app.
                   </p>
 
                   <div className="space-y-4">
@@ -738,8 +735,8 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                             Now, the server the model is running on needs
                             electricity to run. So running the model actually
                             costs money. So naturally OpenAI wants to earn
-                            something by telling you what can't be missing on a
-                            hamburger.
+                            something by telling you what can&apos;t be missing
+                            on a hamburger.
                           </p>
                           <p>
                             The server needs a way to determine who that request
@@ -795,7 +792,7 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                               Ready to Configure Raki
                             </p>
                             <p>Alright, do you have your key ready? Great!</p>
-                            <p>Let's configure Raki to use it 😊</p>
+                            <p>Let&apos;s configure Raki to use it 😊</p>
                           </div>
 
                           <div className="space-y-3">
@@ -805,7 +802,7 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                               <span className="font-semibold">Setup</span>{" "}
                               again.
                             </p>
-                            <p>Now let's set all the required options:</p>
+                            <p>Now let&apos;s set all the required options:</p>
 
                             <div className="space-y-2 pl-4">
                               <p>
@@ -884,14 +881,14 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                                   . In there you copy the key you saved earlier.
                                 </p>
                                 <p>
-                                  Don't forget to press the{" "}
+                                  Don&apos;t forget to press the{" "}
                                   <span className="font-semibold">Set</span>{" "}
                                   buttons for the options to save your settings
                                   😊
                                 </p>
                                 <p>
-                                  Ok, the other options that are there we don't
-                                  need to change right now.
+                                  Ok, the other options that are there we
+                                  don&apos;t need to change right now.
                                 </p>
                               </div>
 
@@ -924,7 +921,7 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
               </TabsContent>
               <TabsContent value="tips" className="p-4">
                 <DrawerHeader>
-                  <DrawerTitle>Tips & Tricks</DrawerTitle>
+                  <DrawerTitle>Tips &amp; Tricks</DrawerTitle>
                   <DrawerDescription>
                     Pro tips to enhance your workflow
                   </DrawerDescription>
