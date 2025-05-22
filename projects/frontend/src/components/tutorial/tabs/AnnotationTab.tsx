@@ -3,7 +3,7 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { Bot } from "lucide-react";
+import { Bot, Plus, Save, Play, Download } from "lucide-react";
 
 const AnnotationTab = () => {
   return (
@@ -32,82 +32,119 @@ const AnnotationTab = () => {
             <p className="font-medium">Getting Started with Annotation</p>
             <p>
               First, go to the <span className="font-semibold">Annotation</span>{" "}
-              tab in the main interface. You&apos;ll see a list of your uploaded
-              texts on the left side.
-            </p>
-            <p>
-              Select one of the texts to begin the annotation process. The text
-              will be displayed in the main area.
-            </p>
-          </div>
-
-          <div className="bg-muted p-4 rounded-md">
-            <p className="font-medium mb-2">Using the LLM Assistant</p>
-            <p>
-              In the annotation interface, you&apos;ll find a chat button that
-              lets you interact with the LLM. Click it to open the chat
-              interface.
-            </p>
-            <p className="mt-2">
-              You can ask the LLM to analyze the text and find instances of our
-              profile points. For example, you could say:
+              tab in the main interface.
             </p>
           </div>
 
           <div className="space-y-4">
-            <p className="font-medium">Understanding the Results</p>
+            <p className="font-medium">Setting Up Your First Annotation</p>
             <p>
-              The LLM will analyze the text and provide suggestions for data
-              points it finds. For each suggestion, you&apos;ll see:
+              To start an AI-assisted annotation, we need to specify which text
+              set should be annotated and which profile should be used. Let's do
+              that! 🎯
             </p>
-            <ul className="list-disc pl-4 space-y-2">
-              <li>The extracted value</li>
-              <li>The relevant text span</li>
-              <li>The confidence level of the extraction</li>
-            </ul>
-            <p className="mt-2">
-              You can review each suggestion and either accept it or modify it
-              as needed. The LLM&apos;s suggestions are based on the profile
-              points we created, using the explanations and synonyms we
-              provided.
+            <p>
+              Right below the tabs in the upper right corner, you can select
+              existing datasets. Since this is our first time using the app,
+              there are no datasets to select yet. Let's create an annotated
+              dataset! 🆕
             </p>
-          </div>
-
-          <div className="bg-muted p-4 rounded-md">
-            <p className="font-medium mb-2">Tips for Better Results</p>
-            <ul className="list-disc pl-4 space-y-2">
-              <li>Be specific in your requests to the LLM</li>
-              <li>Review the extracted values carefully</li>
-              <li>Use the chat to ask for clarification if needed</li>
-              <li>Don&apos;t hesitate to modify the LLM&apos;s suggestions</li>
+            <p>
+              Click on the <Plus className="inline h-4 w-4" /> button next to
+              the select item. A field will open where you can enter the
+              following information:
+            </p>
+            <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
+              <li>
+                <span className="font-medium">Name:</span> Enter "Test Dataset"
+              </li>
+              <li>
+                <span className="font-medium">Description:</span> Add something
+                like "This is a test run, to learn the ins and outs of this app"
+              </li>
             </ul>
+            <p>
+              Now for the important part! You'll be asked to select a dataset -
+              these are the texts you uploaded earlier. Go ahead and select the
+              text dataset you created! 📚
+            </p>
+            <p>
+              Next up, select the profile we just created. Got it? Awesome! 🎉
+            </p>
+            <p>
+              Finally, click <Save className="inline h-4 w-4" /> to save your
+              new annotated dataset! 🚀
+            </p>
           </div>
 
           <div className="space-y-4">
-            <p className="font-medium">Saving Your Work</p>
+            <p className="font-medium">Starting the Annotation Process</p>
             <p>
-              As you accept or modify the LLM&apos;s suggestions, the
-              annotations are automatically saved. You can always come back to a
-              text later to review or modify the annotations.
+              After saving, you'll see a new field displaying basic information
+              about your newly created dataset. You can't miss the prominent{" "}
+              <span className="font-semibold">Start Annotation</span> button! 🎯
             </p>
-            <p className="mt-2">
-              Once you&apos;re satisfied with the annotations for a text, you
-              can move on to the next one. The LLM will help you maintain
-              consistency across all your texts.
+            <p>
+              When you click this button, the AI will begin processing your
+              uploaded texts. While it's running, let me explain what's
+              happening behind the scenes:
             </p>
+            <div className="bg-muted p-4 rounded-md space-y-2">
+              <p className="flex items-center gap-2">
+                <Play className="h-4 w-4 text-primary" />
+                <span className="font-medium">What's happening right now?</span>
+              </p>
+              <p className="text-muted-foreground">
+                Each text now gets sent to the LLM you specified earlier. The
+                backend is modified so that it tells the LLM what to do with the
+                information. In a first step the LLM is asked to look for
+                passages in the text that correspond to any of the profile
+                points that you specified and to output them in a machine
+                readable format.
+              </p>
+              <p className="text-muted-foreground">
+                After the LLM identified passages in the text, we then send
+                these passages back to the large language model and ask it to
+                identify the values to the best of its ability and also to
+                report them in a specific format, that we can continue working
+                with.
+              </p>
+              <p className="text-muted-foreground italic">
+                There are some pre and postprocessing steps that we left out for
+                brevity, but that is a quick sum up (:
+              </p>
+            </div>
           </div>
 
-          <div className="bg-muted p-4 rounded-md">
-            <p className="font-medium mb-2">Ready to Try?</p>
+          <div className="space-y-4">
+            <p className="font-medium">Reviewing the Results</p>
             <p>
-              Select one of your uploaded texts and start the annotation
-              process. Remember, the LLM is here to help, but you&apos;re in
-              control of the final annotations.
+              Let's check the state of the annotation. Has it finished? If not,
+              give it some time (: ⏳
             </p>
-            <p className="mt-2 text-primary font-medium">
-              When you&apos;re ready to learn more about exporting your
-              annotated data, switch to the Tips &amp; Tricks tab!
+            <p>
+              Now that the annotation has finished, let's take a look at the
+              results! Scroll down a little and you'll see a list with all the
+              annotated texts. Click on one of them to view the details.
             </p>
+            <p>
+              On the very left of your screen, you can now see the result of the
+              annotation process. All the profile points that got extracted are
+              highlighted in the text. Take some time to look through these
+              results - what do you think? 🤔
+            </p>
+            <div className="bg-muted p-4 rounded-md space-y-2">
+              <p className="flex items-center gap-2">
+                <Download className="h-4 w-4 text-primary" />
+                <span className="font-medium">Ready for Analysis?</span>
+              </p>
+              <p className="text-muted-foreground">
+                If you're happy with the annotations the AI provided, you can
+                download an Excel sheet with all the datapoints inside. Just
+                click the <Download className="inline h-4 w-4" /> button and
+                boom - ready to do some t-Tests! 📊
+              </p>
+            </div>
           </div>
         </div>
       </div>
