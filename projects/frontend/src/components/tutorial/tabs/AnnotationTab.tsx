@@ -40,14 +40,14 @@ const AnnotationTab = () => {
             <p className="font-medium">Setting Up Your First Annotation</p>
             <p>
               To start an AI-assisted annotation, we need to specify which text
-              set should be annotated and which profile should be used. Let's do
-              that! 🎯
+              set should be annotated and which profile should be used.
+              Let&apos;s do that! 🎯
             </p>
             <p>
               Right below the tabs in the upper right corner, you can select
               existing datasets. Since this is our first time using the app,
-              there are no datasets to select yet. Let's create an annotated
-              dataset! 🆕
+              there are no datasets to select yet. Let&apos;s create an
+              annotated dataset! 🆕
             </p>
             <p>
               Click on the <Plus className="inline h-4 w-4" /> button next to
@@ -56,17 +56,19 @@ const AnnotationTab = () => {
             </p>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
               <li>
-                <span className="font-medium">Name:</span> Enter "Test Dataset"
+                <span className="font-medium">Name:</span> Enter &quot;Test
+                Dataset&quot;
               </li>
               <li>
                 <span className="font-medium">Description:</span> Add something
-                like "This is a test run, to learn the ins and outs of this app"
+                like &quot;This is a test run, to learn the ins and outs of this
+                app&quot;
               </li>
             </ul>
             <p>
-              Now for the important part! You'll be asked to select a dataset -
-              these are the texts you uploaded earlier. Go ahead and select the
-              text dataset you created! 📚
+              Now for the important part! You&apos;ll be asked to select a
+              dataset - these are the texts you uploaded earlier. Go ahead and
+              select the text dataset you created! 📚
             </p>
             <p>
               Next up, select the profile we just created. Got it? Awesome! 🎉
@@ -80,19 +82,22 @@ const AnnotationTab = () => {
           <div className="space-y-4">
             <p className="font-medium">Starting the Annotation Process</p>
             <p>
-              After saving, you'll see a new field displaying basic information
-              about your newly created dataset. You can't miss the prominent{" "}
+              After saving, you&apos;ll see a new field displaying basic
+              information about your newly created dataset. You can&apos;t miss
+              the prominent{" "}
               <span className="font-semibold">Start Annotation</span> button! 🎯
             </p>
             <p>
               When you click this button, the AI will begin processing your
-              uploaded texts. While it's running, let me explain what's
-              happening behind the scenes:
+              uploaded texts. While it&apos;s running, let me explain
+              what&apos;s happening behind the scenes:
             </p>
             <div className="bg-muted p-4 rounded-md space-y-2">
               <p className="flex items-center gap-2">
                 <Play className="h-4 w-4 text-primary" />
-                <span className="font-medium">What's happening right now?</span>
+                <span className="font-medium">
+                  What&apos;s happening right now?
+                </span>
               </p>
               <p className="text-muted-foreground">
                 Each text now gets sent to the LLM you specified earlier. The
@@ -119,13 +124,13 @@ const AnnotationTab = () => {
           <div className="space-y-4">
             <p className="font-medium">Reviewing the Results</p>
             <p>
-              Let's check the state of the annotation. Has it finished? If not,
-              give it some time (: ⏳
+              Let&apos;s check the state of the annotation. Has it finished? If
+              not, give it some time (: ⏳
             </p>
             <p>
-              Now that the annotation has finished, let's take a look at the
-              results! Scroll down a little and you'll see a list with all the
-              annotated texts. Click on one of them to view the details.
+              Now that the annotation has finished, let&apos;s take a look at
+              the results! Scroll down a little and you&apos;ll see a list with
+              all the annotated texts. Click on one of them to view the details.
             </p>
             <p>
               On the very left of your screen, you can now see the result of the
@@ -139,8 +144,8 @@ const AnnotationTab = () => {
                 <span className="font-medium">Ready for Analysis?</span>
               </p>
               <p className="text-muted-foreground">
-                If you're happy with the annotations the AI provided, you can
-                download an Excel sheet with all the datapoints inside. Just
+                If you&apos;re happy with the annotations the AI provided, you
+                can download an Excel sheet with all the datapoints inside. Just
                 click the <Download className="inline h-4 w-4" /> button and
                 boom - ready to do some t-Tests! 📊
               </p>

@@ -19,15 +19,16 @@ const TipsTab = () => {
             <div>
               <p className="font-medium mb-2">Trust but Verify</p>
               <p className="text-muted-foreground">
-                You've completed your first AI-Annotation, but can you trust the
-                data that the LLM extracted? The simple answer is: you
-                shouldn't.
+                You&apos;ve completed your first AI-Annotation, but can you
+                trust the data that the LLM extracted? The simple answer is: you
+                shouldn&apos;t.
               </p>
               <p className="text-muted-foreground mt-2">
-                If you've used ChatGPT before, you know that its output isn't
-                always 100% true or accurate. The same applies to this app.
-                While Raki is designed to accelerate your data extraction, we're
-                not yet at the point where we can blindly trust the AI's output.
+                If you&apos;ve used ChatGPT before, you know that its output
+                isn&apos;t always 100% true or accurate. The same applies to
+                this app. While Raki is designed to accelerate your data
+                extraction, we&apos;re not yet at the point where we can blindly
+                trust the AI&apos;s output.
               </p>
             </div>
           </div>
@@ -37,7 +38,7 @@ const TipsTab = () => {
             <p className="text-muted-foreground">
               Raki is designed to make verification and modification of
               extracted data very efficient. The goal is to minimize mouse usage
-              and maximize keyboard productivity. Let's learn how:
+              and maximize keyboard productivity. Let&apos;s learn how:
             </p>
           </div>
 
