@@ -55,8 +55,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-<<<<<<< HEAD
-=======
 import TutorialDrawer from "@/components/tutorial/TutorialDrawer";
 import { AnnotatedDatasetCard } from "@/components/aiAnnotation/AnnotatedDatasetCard";
 import {
@@ -67,7 +65,6 @@ import {
 import { AddDatasetForm } from "@/components/aiAnnotation/AddDatasetForm";
 import { UploadDatasetButton } from "@/components/aiAnnotation/UploadDatasetButton";
 import { handleUploadAnnotatedDataset } from "@/components/aiAnnotation/annotationUtils";
->>>>>>> tutorial_drawer
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
