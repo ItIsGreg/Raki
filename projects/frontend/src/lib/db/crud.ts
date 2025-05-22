@@ -10,9 +10,6 @@ import {
   SegmentDataPointCreate,
   TextCreate,
   db,
-} from "./db";
-import {
-  ProfilePoint,
   Profile,
   Dataset,
   AnnotatedText,
@@ -21,6 +18,8 @@ import {
   DataPoint,
   SegmentationProfilePoint,
   SegmentDataPoint,
+  UserSettings,
+  ProfilePoint,
 } from "./db";
 import { TaskMode } from "@/app/constants";
 import { getNextOrderNumber } from "./ordering";
@@ -593,4 +592,26 @@ export const updateSegmentDataPoint = async (segmentDataPoint: SegmentDataPoint)
 
 export const deleteSegmentDataPoint = async (id: string) => {
   return db.SegmentDataPoints.delete(id);
+};
+
+// User Settings CRUD operations
+export const getUserSettings = async () => {
+  const settings = await db.userSettings.toArray();
+  return settings[0] || null;
+};
+
+export const createUserSettings = async (settings: Partial<UserSettings>) => {
+  const id = v4();
+  const newSettings = { id, tutorialCompleted: false, ...settings };
+  await db.userSettings.add(newSettings);
+  return newSettings;
+};
+
+export const updateUserSettings = async (settings: Partial<UserSettings>) => {
+  const existingSettings = await getUserSettings();
+  if (!existingSettings) {
+    return createUserSettings(settings);
+  }
+  await db.userSettings.update(existingSettings.id, settings);
+  return { ...existingSettings, ...settings };
 };

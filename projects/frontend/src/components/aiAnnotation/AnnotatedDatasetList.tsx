@@ -458,6 +458,7 @@ const AnnotatedDatasetList = <
                     }}
                     onStop={handleStop}
                     onEdit={() => setEditingDataset(dataset)}
+                    onDelete={() => setActiveAnnotatedDataset(null)}
                     mode={mode}
                   />
                 </div>

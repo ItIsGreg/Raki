@@ -14,12 +14,10 @@ import {
 import TextAnnotation from "@/components/annotation/TextAnnotation";
 import DataPointList from "@/components/annotation/DataPointList";
 import AnnotatedTextList from "@/components/annotation/AnnotatedTextList";
-import AnnotatedDatasetList from "@/components/aiAnnotation/AnnotatedDatasetList";
 import TextList from "@/components/datasets/TextList";
 import { TASK_MODE } from "@/app/constants";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Trash2, Menu } from "lucide-react";
+import { Trash2, ChevronDown } from "lucide-react";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileDataPointList from "@/components/profiles/DataPointList";
@@ -42,6 +40,8 @@ import {
   createDataset,
   deleteDataset,
   readTextsByDataset,
+  getUserSettings,
+  updateUserSettings,
 } from "@/lib/db/crud";
 import { AddButton } from "@/components/AddButton";
 import EntityForm from "@/components/EntityForm";
@@ -55,6 +55,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+<<<<<<< HEAD
+=======
+import TutorialDrawer from "@/components/tutorial/TutorialDrawer";
+import { AnnotatedDatasetCard } from "@/components/aiAnnotation/AnnotatedDatasetCard";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { AddDatasetForm } from "@/components/aiAnnotation/AddDatasetForm";
+import { UploadDatasetButton } from "@/components/aiAnnotation/UploadDatasetButton";
+import { handleUploadAnnotatedDataset } from "@/components/aiAnnotation/annotationUtils";
+>>>>>>> tutorial_drawer
 
 const Annotation = () => {
   // Since this is in the dataPointExtraction directory, we set the mode accordingly
@@ -72,7 +85,7 @@ const Annotation = () => {
   const [activeProfilePoints, setActiveProfilePoints] = useState<
     ProfilePoint[]
   >([]);
-  const [isDatasetListOpen, setIsDatasetListOpen] = useState(true);
+  const [isDatasetListOpen, setIsDatasetListOpen] = useState(false);
   const [autoRerunFaulty, setAutoRerunFaulty] = useState(true);
   const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
   const [activeDataPoint, setActiveDataPoint] = useState<
@@ -92,6 +105,32 @@ const Annotation = () => {
   );
   const [activeTab, setActiveTab] = useState("annotation");
   const [activeText, setActiveText] = useState<Text | undefined>(undefined);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [tutorialCompleted, setTutorialCompleted] = useState(false);
+  const [isCardExpanded, setIsCardExpanded] = useState(true);
+  const [editingDataset, setEditingDataset] = useState<
+    AnnotatedDataset | undefined
+  >(undefined);
+
+  // Get user settings from database
+  const userSettings = useLiveQuery(() => getUserSettings(), []);
+
+  // Update tutorial completed state when user settings change
+  useEffect(() => {
+    if (userSettings) {
+      setTutorialCompleted(userSettings.tutorialCompleted);
+    }
+  }, [userSettings]);
+
+  // Handle tutorial completion
+  const handleTutorialComplete = async (completed: boolean) => {
+    setTutorialCompleted(completed);
+    await updateUserSettings({ tutorialCompleted: completed });
+    // Close the drawer when tutorial is marked as completed
+    if (completed) {
+      setIsTutorialOpen(false);
+    }
+  };
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
@@ -192,11 +231,31 @@ const Annotation = () => {
     }
   };
 
+  const handleDeleteAnnotatedDataset = () => {
+    if (activeAnnotatedDataset) {
+      setActiveAnnotatedDataset(undefined);
+    }
+  };
+
+  const handleUploadDataset = async (file: File) => {
+    try {
+      const newDataset = await handleUploadAnnotatedDataset(file);
+      setActiveAnnotatedDataset(newDataset);
+    } catch (error) {
+      console.error("Error uploading dataset:", error);
+      // You might want to show an error message to the user here
+    }
+  };
+
   return (
     <div
       className="grid grid-cols-7 gap-4 h-full overflow-hidden"
       data-cy="annotation-container"
     >
+      <TutorialDrawer
+        isOpen={isTutorialOpen}
+        onOpenChange={setIsTutorialOpen}
+      />
       <TextAnnotation
         data-cy="text-annotation"
         activeAnnotatedDataset={activeAnnotatedDataset}
@@ -232,29 +291,107 @@ const Annotation = () => {
           className="flex-1 min-h-0 mt-0 overflow-hidden"
         >
           <div className="h-full overflow-y-auto">
-            <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)] p-4">
-              <div className="col-span-1 overflow-y-auto">
-                <DataPointList
-                  data-cy="data-point-list"
-                  activeAnnotatedDataset={activeAnnotatedDataset}
-                  activeDataPointId={activeDataPointId}
-                  setActiveAnnotatedDataset={setActiveAnnotatedDataset}
-                  setActiveDataPointId={setActiveDataPointId}
-                  activeAnnotatedText={activeAnnotatedText}
-                  mode={mode}
-                  isDatasetListOpen={isDatasetListOpen}
-                  activeProfilePoints={activeProfilePoints}
+            <div className="flex flex-col gap-4 p-4">
+              <div className="flex gap-4 items-center">
+                <Select
+                  value={activeAnnotatedDataset?.id}
+                  onValueChange={(value) => {
+                    const dataset = dbAnnotatedDatasets?.find(
+                      (d) => d.id === value
+                    );
+                    setActiveAnnotatedDataset(dataset || undefined);
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a dataset" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {dbAnnotatedDatasets?.map((dataset) => (
+                      <SelectItem key={dataset.id} value={dataset.id}>
+                        {dataset.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <AddButton
+                  onClick={() => setAddingDataset(true)}
+                  label="Dataset"
+                  data-cy="add-dataset-button"
+                />
+                <UploadDatasetButton
+                  data-cy="upload-dataset-button"
+                  onUpload={handleUploadDataset}
                 />
               </div>
-              <div className="col-span-1 overflow-y-auto">
-                <AnnotatedTextList
-                  data-cy="annotated-text-list"
-                  activeAnnotatedDataset={activeAnnotatedDataset}
-                  activeAnnotatedText={activeAnnotatedText}
-                  setActiveAnnotatedText={setActiveAnnotatedText}
-                  setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+              {addingDataset && (
+                <AddDatasetForm
+                  data-cy="add-dataset-form"
+                  onClose={() => setAddingDataset(false)}
                   mode={mode}
+                  onDatasetCreated={(newDataset) => {
+                    setActiveAnnotatedDataset(newDataset);
+                    identifyActiveProfilePoints(newDataset.profileId);
+                  }}
                 />
+              )}
+              {activeAnnotatedDataset && (
+                <Collapsible
+                  open={isCardExpanded}
+                  onOpenChange={setIsCardExpanded}
+                  className="w-full"
+                >
+                  <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-gray-100 rounded-t-lg hover:bg-gray-200">
+                    <span className="font-medium">Details</span>
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        isCardExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <AnnotatedDatasetCard
+                      dataset={activeAnnotatedDataset}
+                      isActive={true}
+                      annotationState={annotationState}
+                      onSelect={() => {}}
+                      onStart={() => {
+                        identifyActiveProfilePoints(
+                          activeAnnotatedDataset.profileId
+                        );
+                        handleStart();
+                      }}
+                      onStop={handleStop}
+                      onEdit={() => setEditingDataset(activeAnnotatedDataset)}
+                      onDelete={handleDeleteAnnotatedDataset}
+                      mode={mode}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+              <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)]">
+                <div className="col-span-1 overflow-y-auto">
+                  <DataPointList
+                    data-cy="data-point-list"
+                    activeAnnotatedDataset={activeAnnotatedDataset}
+                    activeDataPointId={activeDataPointId}
+                    setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                    setActiveDataPointId={setActiveDataPointId}
+                    activeAnnotatedText={activeAnnotatedText}
+                    mode={mode}
+                    isDatasetListOpen={isDatasetListOpen}
+                    activeProfilePoints={activeProfilePoints}
+                  />
+                </div>
+                <div className="col-span-1 overflow-y-auto">
+                  <AnnotatedTextList
+                    data-cy="annotated-text-list"
+                    activeAnnotatedDataset={activeAnnotatedDataset}
+                    activeAnnotatedText={activeAnnotatedText}
+                    setActiveAnnotatedText={setActiveAnnotatedText}
+                    setActiveAnnotatedDataset={setActiveAnnotatedDataset}
+                    mode={mode}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -367,7 +504,7 @@ const Annotation = () => {
         >
           <div className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4 p-4">
-              <div className="flex gap-4 items-center">
+              <div className="flex flex-col gap-4">
                 <Select
                   value={activeDataset?.id}
                   onValueChange={(value) => {
@@ -376,7 +513,7 @@ const Annotation = () => {
                   }}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a dataset" />
+                    <SelectValue placeholder="Select a text set" />
                   </SelectTrigger>
                   <SelectContent>
                     {datasets?.map((dataset) => (
@@ -386,22 +523,24 @@ const Annotation = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <AddButton
+                <Button
                   onClick={() => setAddingDataset(true)}
-                  label="Dataset"
+                  className="w-full"
                   data-cy="add-dataset-button"
-                />
-                {activeDataset && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowDeleteDialog(true)}
-                    data-cy="delete-dataset-button"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                >
+                  New Text Set
+                </Button>
               </div>
+              {activeDataset && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowDeleteDialog(true)}
+                  data-cy="delete-dataset-button"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
               <AlertDialog
                 open={showDeleteDialog}
                 onOpenChange={setShowDeleteDialog}
@@ -443,41 +582,6 @@ const Annotation = () => {
           </div>
         </TabsContent>
       </Tabs>
-      <Sheet open={isDatasetListOpen} onOpenChange={setIsDatasetListOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
-            data-cy="toggle-dataset-list"
-          >
-            <ChevronLeft
-              className={`h-4 w-4 transition-transform ${
-                isDatasetListOpen ? "rotate-180" : "rotate-0"
-              }`}
-            />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="p-0 w-[400px]">
-          <div className="h-full overflow-y-auto">
-            <AnnotatedDatasetList<ProfilePoint>
-              data-cy="dataset-list"
-              activeAnnotatedDataset={activeAnnotatedDataset || null}
-              activeProfilePoints={activeProfilePoints}
-              setActiveAnnotatedDataset={handleSetActiveAnnotatedDataset}
-              setActiveProfilePoints={setActiveProfilePoints}
-              mode={mode}
-              addingDataset={annotationAddingDataset}
-              setAddingDataset={setAnnotationAddingDataset}
-              annotationState={annotationState}
-              handleStart={handleStart}
-              handleStop={handleStop}
-              identifyActiveProfilePoints={identifyActiveProfilePoints}
-              isOpen={isDatasetListOpen}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 };
