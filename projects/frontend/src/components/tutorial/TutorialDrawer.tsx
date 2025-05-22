@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle, X, Download, Bot, Settings, Sparkles } from "lucide-react";
 import { getUserSettings, updateUserSettings } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
+import WelcomeTab from "./tabs/WelcomeTab";
 
 interface TutorialDrawerProps {
   isOpen: boolean;
@@ -90,54 +91,8 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto">
-              <TabsContent value="welcome" className="p-4 h-full">
-                <DrawerHeader className="px-0">
-                  <DrawerTitle>Welcome to Raki</DrawerTitle>
-                  <DrawerDescription>
-                    Extract structured data from your texts with ease
-                  </DrawerDescription>
-                </DrawerHeader>
-                <div className="space-y-6 pb-4">
-                  <div>
-                    <h3 className="font-semibold mb-2">What is Raki?</h3>
-                    <p className="text-muted-foreground">
-                      Raki is a specialized tool designed to help you extract
-                      tabular data from text documents. While it was initially
-                      developed for medical research, its flexible design makes
-                      it suitable for various data extraction tasks across
-                      different domains.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">
-                      AI-Powered Annotation
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Raki leverages advanced large language models to assist in
-                      the annotation process. The AI can suggest potential data
-                      points based on your defined profiles, making the
-                      annotation process faster and more efficient while
-                      maintaining high accuracy.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Key Features</h3>
-                    <ul className="list-disc pl-4 space-y-2 text-muted-foreground">
-                      <li>Define custom data points to extract</li>
-                      <li>Organize data points into reusable profiles</li>
-                      <li>Batch process multiple documents</li>
-                      <li>AI-assisted annotation suggestions</li>
-                      <li>Export data in structured formats</li>
-                    </ul>
-                  </div>
-                  <div className="bg-muted p-3 rounded-md">
-                    <p className="text-sm flex items-center gap-2">
-                      <HelpCircle className="h-4 w-4" />
-                      You can always access this tutorial by clicking the
-                      question mark icon at the bottom of the page.
-                    </p>
-                  </div>
-                </div>
+              <TabsContent value="welcome" className="h-full">
+                <WelcomeTab />
               </TabsContent>
               <TabsContent value="profiles" className="p-4">
                 <DrawerHeader>
