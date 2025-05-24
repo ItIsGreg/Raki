@@ -252,6 +252,7 @@ const Annotation = () => {
       <TutorialDrawer
         isOpen={isTutorialOpen}
         onOpenChange={setIsTutorialOpen}
+        data-cy="tutorial-drawer"
       />
       <TextAnnotation
         data-cy="text-annotation"
@@ -271,21 +272,35 @@ const Annotation = () => {
         className="col-span-3 h-full flex flex-col overflow-hidden"
         onValueChange={setActiveTab}
         value={activeTab}
+        data-cy="annotation-tabs"
       >
-        <TabsList className="w-full">
-          <TabsTrigger value="annotation" className="flex-1">
+        <TabsList className="w-full" data-cy="annotation-tabs-list">
+          <TabsTrigger
+            value="annotation"
+            className="flex-1"
+            data-cy="annotation-tab"
+          >
             Annotation
           </TabsTrigger>
-          <TabsTrigger value="profiles" className="flex-1">
+          <TabsTrigger
+            value="profiles"
+            className="flex-1"
+            data-cy="profiles-tab"
+          >
             Profiles
           </TabsTrigger>
-          <TabsTrigger value="text-upload" className="flex-1">
+          <TabsTrigger
+            value="text-upload"
+            className="flex-1"
+            data-cy="text-upload-tab"
+          >
             Text Upload
           </TabsTrigger>
         </TabsList>
         <TabsContent
           value="annotation"
           className="flex-1 min-h-0 mt-0 overflow-hidden"
+          data-cy="annotation-tab-content"
         >
           <div className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4 p-4">
@@ -298,13 +313,21 @@ const Annotation = () => {
                     );
                     setActiveAnnotatedDataset(dataset || undefined);
                   }}
+                  data-cy="dataset-select"
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger
+                    className="w-full"
+                    data-cy="dataset-select-trigger"
+                  >
                     <SelectValue placeholder="Select a dataset" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent data-cy="dataset-select-content">
                     {dbAnnotatedDatasets?.map((dataset) => (
-                      <SelectItem key={dataset.id} value={dataset.id}>
+                      <SelectItem
+                        key={dataset.id}
+                        value={dataset.id}
+                        data-cy={`dataset-option-${dataset.id}`}
+                      >
                         {dataset.name}
                       </SelectItem>
                     ))}
@@ -336,8 +359,12 @@ const Annotation = () => {
                   open={isCardExpanded}
                   onOpenChange={setIsCardExpanded}
                   className="w-full"
+                  data-cy="dataset-details-collapsible"
                 >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-gray-100 rounded-t-lg hover:bg-gray-200">
+                  <CollapsibleTrigger
+                    className="w-full flex items-center justify-between p-2 bg-gray-100 rounded-t-lg hover:bg-gray-200"
+                    data-cy="dataset-details-trigger"
+                  >
                     <span className="font-medium">Details</span>
                     <ChevronDown
                       className={`h-4 w-4 transition-transform ${
@@ -366,7 +393,10 @@ const Annotation = () => {
                 </Collapsible>
               )}
               <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)]">
-                <div className="col-span-1 overflow-y-auto">
+                <div
+                  className="col-span-1 overflow-y-auto"
+                  data-cy="datapoint-list-container"
+                >
                   <DataPointList
                     data-cy="data-point-list"
                     activeAnnotatedDataset={activeAnnotatedDataset}
@@ -379,7 +409,10 @@ const Annotation = () => {
                     activeProfilePoints={activeProfilePoints}
                   />
                 </div>
-                <div className="col-span-1 overflow-y-auto">
+                <div
+                  className="col-span-1 overflow-y-auto"
+                  data-cy="annotated-text-list-container"
+                >
                   <AnnotatedTextList
                     data-cy="annotated-text-list"
                     activeAnnotatedDataset={activeAnnotatedDataset}
@@ -406,13 +439,21 @@ const Annotation = () => {
                     const profile = profiles?.find((p) => p.id === value);
                     setActiveProfile(profile);
                   }}
+                  data-cy="profile-select"
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger
+                    className="w-full"
+                    data-cy="profile-select-trigger"
+                  >
                     <SelectValue placeholder="Select a profile" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent data-cy="profile-select-content">
                     {profiles?.map((profile) => (
-                      <SelectItem key={profile.id} value={profile.id}>
+                      <SelectItem
+                        key={profile.id}
+                        value={profile.id}
+                        data-cy={`profile-option-${profile.id}`}
+                      >
                         {profile.name}
                       </SelectItem>
                     ))}
@@ -437,8 +478,9 @@ const Annotation = () => {
               <AlertDialog
                 open={showDeleteProfileDialog}
                 onOpenChange={setShowDeleteProfileDialog}
+                data-cy="delete-profile-dialog"
               >
-                <AlertDialogContent>
+                <AlertDialogContent data-cy="delete-profile-dialog-content">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -447,10 +489,13 @@ const Annotation = () => {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel data-cy="delete-profile-cancel">
+                      Cancel
+                    </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeleteProfile}
                       className="bg-red-600 hover:bg-red-700"
+                      data-cy="delete-profile-confirm"
                     >
                       Delete
                     </AlertDialogAction>
@@ -466,7 +511,10 @@ const Annotation = () => {
                 />
               )}
               <div className="grid grid-cols-3 gap-4 h-[calc(100vh-12rem)]">
-                <div className="col-span-2 overflow-y-auto">
+                <div
+                  className="col-span-2 overflow-y-auto"
+                  data-cy="datapoint-editor-container"
+                >
                   <DataPointEditor
                     data-cy="profile-datapoint-editor"
                     activeProfile={activeProfile}
@@ -478,7 +526,10 @@ const Annotation = () => {
                     setCreatingNewDataPoint={setCreatingNewDataPoint}
                   />
                 </div>
-                <div className="col-span-1 overflow-y-auto">
+                <div
+                  className="col-span-1 overflow-y-auto"
+                  data-cy="profile-datapoint-list-container"
+                >
                   <ProfileDataPointList
                     data-cy="profile-datapoint-list"
                     activeProfile={activeProfile}
@@ -508,13 +559,21 @@ const Annotation = () => {
                     const dataset = datasets?.find((d) => d.id === value);
                     setActiveDataset(dataset);
                   }}
+                  data-cy="text-dataset-select"
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger
+                    className="w-full"
+                    data-cy="text-dataset-select-trigger"
+                  >
                     <SelectValue placeholder="Select a text set" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent data-cy="text-dataset-select-content">
                     {datasets?.map((dataset) => (
-                      <SelectItem key={dataset.id} value={dataset.id}>
+                      <SelectItem
+                        key={dataset.id}
+                        value={dataset.id}
+                        data-cy={`text-dataset-option-${dataset.id}`}
+                      >
                         {dataset.name}
                       </SelectItem>
                     ))}
@@ -541,8 +600,9 @@ const Annotation = () => {
               <AlertDialog
                 open={showDeleteDialog}
                 onOpenChange={setShowDeleteDialog}
+                data-cy="delete-dataset-dialog"
               >
-                <AlertDialogContent>
+                <AlertDialogContent data-cy="delete-dataset-dialog-content">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -551,10 +611,13 @@ const Annotation = () => {
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel data-cy="delete-dataset-cancel">
+                      Cancel
+                    </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeleteDataset}
                       className="bg-red-600 hover:bg-red-700"
+                      data-cy="delete-dataset-confirm"
                     >
                       Delete
                     </AlertDialogAction>
