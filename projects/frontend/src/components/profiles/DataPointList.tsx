@@ -203,56 +203,61 @@ const DataPointList = <T extends { id: string; profileId: string }>(
   return (
     <div className="overflow-y-scroll">
       <Card>
-        <CardHeader className="flex flex-row">
-          <CardTitle>Data Points</CardTitle>
-          <div className="flex-grow"></div>
-          {activeProfile && (
-            <div className="flex flex-row gap-3 justify-center items-center">
-              <AddButton
-                onClick={() => {
-                  setActiveDataPoint(undefined);
-                  setCreatingNewDataPoint(true);
-                }}
-                label="Data Point"
-                data-cy="new-datapoint-button"
-              />
-              <ProfileChatButton
-                onClick={() => setIsChatOpen(true)}
-                data-cy="profile-chat-button"
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={handleUploadButtonClick}
-                    data-cy="upload-datapoints-button"
-                  >
-                    <MdUpload className="mr-2 h-4 w-4" />
-                    Upload
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleDownloadDatapoints}
-                    data-cy="download-datapoints-button"
-                  >
-                    <MdDownload className="mr-2 h-4 w-4" />
-                    Download
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept=".json"
-                onChange={handleUploadDatapoints}
-                data-cy="upload-datapoints-input"
-              />
-            </div>
-          )}
+        <CardHeader>
+          <div className="flex flex-col gap-4">
+            <CardTitle>Data Points</CardTitle>
+            {activeProfile && (
+              <div className="flex flex-wrap gap-3 items-center">
+                <AddButton
+                  onClick={() => {
+                    setActiveDataPoint(undefined);
+                    setCreatingNewDataPoint(true);
+                  }}
+                  label="Data Point"
+                  data-cy="new-datapoint-button"
+                />
+                <ProfileChatButton
+                  onClick={() => setIsChatOpen(true)}
+                  data-cy="profile-chat-button"
+                />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      data-cy="more-options-button"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={handleUploadButtonClick}
+                      data-cy="upload-datapoints-button"
+                    >
+                      <MdUpload className="mr-2 h-4 w-4" />
+                      Upload
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleDownloadDatapoints}
+                      data-cy="download-datapoints-button"
+                    >
+                      <MdDownload className="mr-2 h-4 w-4" />
+                      Download
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept=".json"
+                  onChange={handleUploadDatapoints}
+                  data-cy="upload-datapoints-input"
+                />
+              </div>
+            )}
+          </div>
         </CardHeader>
         {dataPoints && (
           <CardContent
