@@ -10,9 +10,28 @@ function runTestSuiteWithProvider(providerType: ProviderType) {
       // Start from the homepage
       cy.visit('http://localhost:3000/dataPointExtraction')
 
-      // Configure LLM settings
-      cy.get('[data-cy="setup-card"]').click()
-      cy.get('[data-cy="settings-dialog"]').should('be.visible')
+      // Configure LLM settings using the robust approach
+      cy.get('[data-cy="burger-menu"]')
+        .should('be.visible')
+        .should('not.be.disabled')
+        .click({ force: true })
+      
+      cy.get('[data-cy="burger-menu-content"]')
+        .should('be.visible')
+        .should('exist')
+        .then($menu => {
+          if ($menu.length) {
+            cy.wrap($menu)
+              .find('[data-cy="menu-setup"]')
+              .should('be.visible')
+              .click({ force: true })
+          }
+        })
+
+      // Wait for settings dialog to appear with a longer timeout
+      cy.get('[data-cy="settings-dialog"]', { timeout: 10000 })
+        .should('be.visible')
+        .should('exist')
 
       if (providerType === 'OpenAI') {
         // Set OpenAI as provider
@@ -59,8 +78,12 @@ function runTestSuiteWithProvider(providerType: ProviderType) {
       cy.get('[data-cy="settings-dialog"]').should('not.exist')
 
       // Navigate to profiles page
-      cy.get('[data-cy="profile-card"]').click()
-      cy.url().should('include', '/profiles')
+      cy.get('[data-cy="profiles-tab"]')
+        .should('be.visible')
+        .click()
+      
+      // Add a small wait to ensure tab switch completes
+      cy.wait(500)
 
       // Create a new profile
       const profileName = `Test Chat Profile (${providerType})`
@@ -80,7 +103,14 @@ function runTestSuiteWithProvider(providerType: ProviderType) {
       cy.get('[data-cy="entity-save-button"]').click()
       
       // Select the created profile
-      cy.get('[data-cy="profile-card"]').click()
+      cy.get('[data-cy="profile-select-trigger"]')
+        .should('be.visible')
+        .click()
+      
+      cy.get('[data-cy="profile-select-content"]')
+        .should('be.visible')
+        .contains(profileName)
+        .click()
     })
     
     it(`should open the profile chat and handle messages (${providerType})`, () => {
