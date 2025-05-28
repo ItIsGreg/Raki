@@ -15,26 +15,13 @@ describe('Datasets page', () => {
     indexedDB.deleteDatabase('myDatabase')
     // Start from the homepage
     cy.visit('http://localhost:3000/dataPointExtraction')
+    // Click the text upload tab
+    cy.get('[data-cy="text-upload-tab"]').click()
   })
 
-  it('should navigate to datasets page', () => {
-    // Check if datasets card exists and is visible
-    cy.get('[data-cy="datasets-card"]')
-      .should('be.visible')
-      .should('contain', 'Datasets')
-      
-    // Click on the datasets card
-    cy.get('[data-cy="datasets-card"]').click()
-    
-    // Verify the datasets page components are present
-    cy.get('[data-cy="datasets-page"]').should('be.visible')
-  })
 
   it('should create a new dataset', () => {
-    // Navigate to datasets page
-    cy.get('[data-cy="datasets-card"]').click()
-
-    // Click the add dataset button
+    // Click the New Text Set button
     cy.get('[data-cy="add-dataset-button"]').click()
 
     // Fill in the dataset form
@@ -49,11 +36,11 @@ describe('Datasets page', () => {
     // Save the dataset
     cy.get('[data-cy="entity-save-button"]').click()
 
-    // Verify the new dataset appears in the list
-    cy.get('[data-cy="dataset-card"]')
+    // Verify the new dataset appears in the select component
+    cy.get('[data-cy="text-dataset-select-trigger"]').click()
+    cy.get('[data-cy="text-dataset-select-content"]')
       .should('be.visible')
       .should('contain', 'Test Dataset')
-      .should('contain', 'This is a test dataset')
   })
 
   it('should cancel dataset creation', () => {
