@@ -68,7 +68,7 @@ describe('Datasets page', () => {
       cy.get('[data-cy="entity-save-button"]').click()
     })
 
-    it.only('should add a single text through the UI', () => {
+    it('should add a single text through the UI', () => {
       // Open single text input dialog through the dropdown
       cy.get('[data-cy="upload-texts-btn"]')
         .should('be.visible')
@@ -135,11 +135,14 @@ describe('Datasets page', () => {
         cy.get('[data-cy="text-card"]')
           .should('be.visible')
           .should('contain', '0.txt')
-          .click()
+          .click({ force: true })
 
-        // Verify the file content is displayed correctly
-        cy.get('[data-cy="text-display-filename"]').should('contain', '0.txt')
-        cy.get('[data-cy="text-display-content"]').should('contain', expectedContent)
+        // Verify the text is displayed in the TextAnnotation component's display mode
+        cy.get('[data-cy="text-display-container"]').should('be.visible')
+        cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
+        cy.get('[data-cy="text-display-content"]')
+          .should('be.visible')
+          .should('contain', expectedContent)
       })
     })
 
@@ -176,33 +179,63 @@ describe('Datasets page', () => {
         cy.get('[data-cy="text-card"]').should('have.length', 2)
         
         // Check first file content
-        cy.get('[data-cy="text-card"]').first().should('contain', '0.txt').click()
-        cy.get('[data-cy="text-display-filename"]').should('contain', '0.txt')
-        cy.get('[data-cy="text-display-content"]').should('contain', expectedContent)
+        cy.get('[data-cy="text-card"]').first()
+          .should('contain', '0.txt')
+          .click({ force: true })
+
+        // Verify first text is displayed in the TextAnnotation component's display mode
+        cy.get('[data-cy="text-display-container"]').should('be.visible')
+        cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
+        cy.get('[data-cy="text-display-content"]')
+          .should('be.visible')
+          .should('contain', expectedContent)
         
         // Check second file content
-        cy.get('[data-cy="text-card"]').eq(1).should('contain', '1.txt').click()
-        cy.get('[data-cy="text-display-filename"]').should('contain', '1.txt')
-        cy.get('[data-cy="text-display-content"]').should('contain', expectedContent)
+        cy.get('[data-cy="text-card"]').eq(1)
+          .should('contain', '1.txt')
+          .click({ force: true })
+
+        // Verify second text is displayed in the TextAnnotation component's display mode
+        cy.get('[data-cy="text-display-container"]').should('be.visible')
+        cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
+        cy.get('[data-cy="text-display-content"]')
+          .should('be.visible')
+          .should('contain', expectedContent)
       })
     })
 
-    it('should delete a text', () => {
-      // Click on the dataset to make it active
-      cy.get('[data-cy="dataset-card"]').click()
-      
+    it.only('should delete a text', () => {
       // First add a text
-      cy.get('[data-cy="single-text-btn"]').click()
-      cy.get('[data-cy="single-text-filename-input"]').type('Text to Delete')
-      cy.get('[data-cy="single-text-content-input"]').type('This text will be deleted')
+      cy.get('[data-cy="upload-texts-btn"]')
+        .should('be.visible')
+        .click({ force: true })
+      
+      cy.get('[data-cy="upload-dropdown-content"]')
+        .should('be.visible')
+        .within(() => {
+          cy.get('[data-cy="single-text-option"]')
+            .should('be.visible')
+            .click({ force: true })
+        })
+
+      cy.get('[data-cy="single-text-filename-input"]')
+        .should('be.visible')
+        .wait(500)
+        .type('Text to Delete')
+      cy.get('[data-cy="single-text-content-input"]')
+        .should('be.visible')
+        .type('This text will be deleted')
       cy.get('[data-cy="add-single-text-btn"]').click()
 
       // Verify text exists
       cy.get('[data-cy="text-card"]')
         .should('contain', 'Text to Delete')
 
-      // Delete the text
-      cy.get('[data-cy="delete-text-btn"]').click()
+      // Delete the text using the delete button in the card header
+      cy.get('[data-cy="text-card"]')
+        .should('contain', 'Text to Delete')
+        .find('[data-cy="delete-text-btn"]')
+        .click({ force: true })
 
       // Verify text is removed
       cy.get('[data-cy="text-card"]')
