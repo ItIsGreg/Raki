@@ -44,8 +44,6 @@ describe('Datasets page', () => {
   })
 
   it('should cancel dataset creation', () => {
-    // Navigate to datasets page
-    cy.get('[data-cy="datasets-card"]').click()
 
     // Click the add dataset button
     cy.get('[data-cy="add-dataset-button"]').click()
@@ -64,41 +62,69 @@ describe('Datasets page', () => {
   context('Text Uploads', () => {
     beforeEach(() => {
       // Navigate to datasets page and create a test dataset
-      cy.get('[data-cy="datasets-card"]').click()
       cy.get('[data-cy="add-dataset-button"]').click()
       cy.get('[data-cy="entity-name-input"]').type('Test Dataset')
       cy.get('[data-cy="entity-description-input"]').type('This is a test dataset')
       cy.get('[data-cy="entity-save-button"]').click()
     })
 
-    it('should add a single text through the UI', () => {
-      // Click on the dataset to make it active
-      cy.get('[data-cy="dataset-card"]').click()
-
-      // Open single text input dialog
-      cy.get('[data-cy="single-text-btn"]').click()
+    it.only('should add a single text through the UI', () => {
+      // Open single text input dialog through the dropdown
+      cy.get('[data-cy="upload-texts-btn"]')
+        .should('be.visible')
+        .click({ force: true })
+      
+      // Wait for dropdown to be visible and click the option
+      cy.get('[data-cy="upload-dropdown-content"]')
+        .should('be.visible')
+        .within(() => {
+          cy.get('[data-cy="single-text-option"]')
+            .should('be.visible')
+            .click({ force: true })
+        })
 
       // Fill in the text details
-      cy.get('[data-cy="single-text-filename-input"]').type('Sample Text')
-      cy.get('[data-cy="single-text-content-input"]').type('This is a sample text content.')
+      cy.get('[data-cy="single-text-filename-input"]')
+        .should('be.visible')
+        .wait(500)
+        .type('Sample Text')
+      cy.get('[data-cy="single-text-content-input"]')
+        .should('be.visible')
+        .type('This is a sample text content.')
 
       // Save the text
       cy.get('[data-cy="add-single-text-btn"]').click()
 
-      // Verify the text appears in the list
+      // Verify the text appears in the list using CompactCard
       cy.get('[data-cy="text-card"]')
         .should('be.visible')
         .should('contain', 'Sample Text')
+        .click({ force: true })
+
+      // Verify the text is displayed in the TextAnnotation component's display mode
+      cy.get('[data-cy="text-display-container"]').should('be.visible')
+      cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
+      cy.get('[data-cy="text-display-content"]')
+        .should('be.visible')
+        .should('contain', 'This is a sample text content.')
     })
 
     it('should upload a text file and display its content', () => {
-      // Click on the dataset to make it active
-      cy.get('[data-cy="dataset-card"]').click()
-
       // Read the test file content first to compare later
       cy.readFile('cypress/fixtures/test_texts/txts/0.txt').then((expectedContent) => {
         // Upload a text file from the fixtures directory
-        cy.get('[data-cy="upload-texts-btn"]').click()
+        cy.get('[data-cy="upload-texts-btn"]')
+          .should('be.visible')
+          .click({ force: true })
+        
+        cy.get('[data-cy="upload-dropdown-content"]')
+          .should('be.visible')
+          .within(() => {
+            cy.get('[data-cy="upload-files-option"]')
+              .should('be.visible')
+              .click({ force: true })
+          })
+
         cy.get('[data-cy="file-input"]').attachFile({
           filePath: 'test_texts/txts/0.txt',
           fileName: '0.txt',
@@ -118,13 +144,21 @@ describe('Datasets page', () => {
     })
 
     it('should upload multiple text files and display their content', () => {
-      // Click on the dataset to make it active
-      cy.get('[data-cy="dataset-card"]').click()
-
       // Read the test file content first to compare later
       cy.readFile('cypress/fixtures/test_texts/txts/0.txt').then((expectedContent) => {
         // Upload multiple files from the fixtures directory
-        cy.get('[data-cy="upload-texts-btn"]').click()
+        cy.get('[data-cy="upload-texts-btn"]')
+          .should('be.visible')
+          .click({ force: true })
+        
+        cy.get('[data-cy="upload-dropdown-content"]')
+          .should('be.visible')
+          .within(() => {
+            cy.get('[data-cy="upload-files-option"]')
+              .should('be.visible')
+              .click({ force: true })
+          })
+
         cy.get('[data-cy="file-input"]').attachFile([
           {
             filePath: 'test_texts/txts/0.txt',

@@ -253,14 +253,23 @@ const TextList = (props: TextListProps) => {
                       Upload
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={handleUploadButtonClick}>
+                  <DropdownMenuContent data-cy="upload-dropdown-content">
+                    <DropdownMenuItem
+                      onClick={handleUploadButtonClick}
+                      data-cy="upload-files-option"
+                    >
                       Upload Files
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsSingleTextOpen(true)}>
+                    <DropdownMenuItem
+                      onClick={() => setIsSingleTextOpen(true)}
+                      data-cy="single-text-option"
+                    >
                       Single Text
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleUploadTableClick}>
+                    <DropdownMenuItem
+                      onClick={handleUploadTableClick}
+                      data-cy="upload-table-option"
+                    >
                       <FaTable className="mr-2" />
                       Upload Table
                     </DropdownMenuItem>
