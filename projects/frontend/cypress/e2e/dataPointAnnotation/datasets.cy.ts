@@ -204,7 +204,7 @@ describe('Datasets page', () => {
       })
     })
 
-    it.only('should delete a text', () => {
+    it('should delete a text', () => {
       // First add a text
       cy.get('[data-cy="upload-texts-btn"]')
         .should('be.visible')
@@ -249,9 +249,10 @@ describe('Datasets page', () => {
       indexedDB.deleteDatabase('myDatabase')
       // Start from the homepage
       cy.visit('http://localhost:3000/dataPointExtraction')
+      // Click the text upload tab
+      cy.get('[data-cy="text-upload-tab"]').click()
       
-      // Navigate to datasets page and create a test dataset
-      cy.get('[data-cy="datasets-card"]').click()
+      // Create a test dataset
       cy.get('[data-cy="add-dataset-button"]').click()
       cy.get('[data-cy="entity-name-input"]').type('Test Dataset')
       cy.get('[data-cy="entity-description-input"]').type('This is a test dataset')
@@ -261,11 +262,19 @@ describe('Datasets page', () => {
     it('should upload Excel file and import texts', () => {
       // First read the Excel file to get the expected row count
       cy.task('readExcelRowCount', 'cypress/fixtures/test_texts/claude-echos.xlsx').then((rowCount) => {
-        // Click on the dataset to make it active
-        cy.get('[data-cy="dataset-card"]').click()
-        
         // Upload Excel file
-        cy.get('[data-cy="upload-table-btn"]').click()
+        cy.get('[data-cy="upload-texts-btn"]')
+          .should('be.visible')
+          .click({ force: true })
+        
+        cy.get('[data-cy="upload-dropdown-content"]')
+          .should('be.visible')
+          .within(() => {
+            cy.get('[data-cy="upload-table-option"]')
+              .should('be.visible')
+              .click({ force: true })
+          })
+
         cy.get('[data-cy="table-file-input"]').attachFile({
           filePath: 'test_texts/claude-echos.xlsx',
           fileName: 'claude-echos.xlsx',
@@ -296,7 +305,9 @@ describe('Datasets page', () => {
           })
 
         // Verify content of first text
-        cy.get('[data-cy="text-card"]').first().click()
+        cy.get('[data-cy="text-card"]').first().click({ force: true })
+        cy.get('[data-cy="text-display-container"]').should('be.visible')
+        cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
         cy.get('[data-cy="text-display-content"]').should('not.be.empty')
       })
     })
