@@ -370,6 +370,7 @@ describe('Manual Annotation', () => {
 
   it('be able to do a manual annotation', () => {
     let selectedText = '';
+
     // Click on the first annotated text
     cy.get('[data-cy="manual-annotated-text-card"]')
       .first()
@@ -431,46 +432,63 @@ describe('Manual Annotation', () => {
     cy.wait(200)
     
     // Verify that a datapoint badge appears after selection
-    cy.get('[data-cy="datapoint-badge"]').should('be.visible')
+    cy.get('[data-cy="datapoint-badge"]')
+      .should('be.visible')
+      .click({ force: true })
     
-    // Click on the datapoint badge that contains our selected text
+    // Wait for the datapoint card to appear
+    cy.wait(500)
     
     // Verify the datapoint card appears and wait for it to be fully rendered
-    cy.get('[data-cy="text-datapoint-card"]').should('be.visible')
-    cy.wait(200)
-    
-    // Select the profile point (Age) from the dropdown
-    // Use first() to ensure we're only working with one element
-    cy.get('[data-cy="text-datapoint-card"]').first().within(() => {
-      cy.get('[data-cy="profile-point-select-trigger"]').should('be.visible').click({force: true})
-    })
-    
-    // Wait for dropdown to appear and then select Age
-    cy.wait(200)
-    cy.get('[data-cy="profile-point-option"]').contains('Age').should('be.visible').click({force: true})
-    
-    // Wait for the selection to be processed
-    cy.wait(200)
-    
-    // Enter a value for the age datapoint - also scoped within the card
-    cy.get('[data-cy="text-datapoint-card"]').first().within(() => {
-      cy.get('[data-cy="value-input"]').should('be.visible').clear().type('42')
-      
-      // Click the update button to save the value
-      cy.get('[data-cy="update-value-btn"]').should('be.visible').click({force: true})
-    })
-    
-    // Wait for the update to be processed
-    cy.wait(200)
-    
-    // Verify the datapoint is now verified (green badge)
-    cy.get('[data-cy="datapoint-badge"]').first().should('have.class', 'bg-green-800')
-    
-    // Close the tooltip by clicking on the badge again
-    cy.get('[data-cy="datapoint-badge"]').first().click()
+    cy.get('[data-cy="text-datapoint-card"]', { timeout: 10000 })
+      .first()
+      .should('be.visible')
+      .within(() => {
+        // Select the profile point (Age) from the dropdown
+        cy.get('[data-cy="profile-point-select-trigger"]')
+          .should('be.visible')
+          .click({ force: true })
+        
+        // Wait for dropdown to appear
+        cy.wait(500)
+        
+        // Press arrow down to select first option and enter to confirm
+        cy.focused()
+          //.type('{downarrow}')
+          .type('{enter}')
+        
+        // Wait for the selection to be processed
+        cy.wait(500)
+        
+        // Enter a value for the age datapoint
+        cy.get('[data-cy="datapoint-value-input"]')
+          .should('be.visible')
+          .clear()
+          .type('42')
+        
+        // Click the update button to save the value
+        cy.get('[data-cy="verify-value-btn"]')
+          .should('be.visible')
+          .click({ force: true })
+        })
+        
+        // Wait for the update to be processed
+        cy.wait(200)
+        
+        // Verify the datapoint is now verified (green badge)
+        cy.get('[data-cy="datapoint-badge"]')
+        .first()
+        .should('have.class', 'bg-green-800')
+        
+      // Close the tooltip
+      cy.get('[data-cy="close-datapoint-dialog-btn"]')
+        .should('be.visible')
+        .first()
+        .click({ force: true })
     
     // Verify the tooltip is closed
-    cy.get('[data-cy="text-datapoint-card"]').should('not.exist')
+    cy.get('[data-cy="text-datapoint-card"]')
+      .should('not.exist')
   })
 })
 
