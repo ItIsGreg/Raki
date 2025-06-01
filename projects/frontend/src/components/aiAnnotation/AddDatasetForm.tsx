@@ -22,13 +22,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TaskMode } from "@/app/constants";
+import { AnnotatedDataset } from "@/lib/db/db";
 
 interface AddDatasetFormProps {
   onClose: () => void;
   mode: TaskMode;
+  onDatasetCreated?: (dataset: AnnotatedDataset) => void;
 }
 
-export const AddDatasetForm = ({ onClose, mode }: AddDatasetFormProps) => {
+export const AddDatasetForm = ({
+  onClose,
+  mode,
+  onDatasetCreated,
+}: AddDatasetFormProps) => {
   const [addDatasetName, setAddDatasetName] = useState<string>("");
   const [addDatasetDescription, setAddDatasetDescription] =
     useState<string>("");
@@ -58,8 +64,10 @@ export const AddDatasetForm = ({ onClose, mode }: AddDatasetFormProps) => {
       datasetId: addDatasetDatasetId,
       profileId: addDatasetProfileId,
       mode: mode,
+    }).then((newDataset) => {
+      onDatasetCreated?.(newDataset);
+      onClose();
     });
-    onClose();
   };
 
   const getFormTitle = () => {
@@ -99,7 +107,11 @@ export const AddDatasetForm = ({ onClose, mode }: AddDatasetFormProps) => {
           <SelectTrigger data-cy="dataset-select-trigger">
             <SelectValue placeholder="Select a dataset" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            data-cy="dataset-select-content"
+            position="popper"
+            sideOffset={5}
+          >
             {dbDatasets?.map((dataset) => (
               <SelectItem
                 key={dataset.id}
@@ -123,7 +135,11 @@ export const AddDatasetForm = ({ onClose, mode }: AddDatasetFormProps) => {
               }profile`}
             />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            data-cy="profile-select-content"
+            position="popper"
+            sideOffset={5}
+          >
             {dbProfiles?.map((profile) => (
               <SelectItem
                 key={profile.id}

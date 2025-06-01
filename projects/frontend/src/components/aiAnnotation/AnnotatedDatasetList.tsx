@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddDatasetForm } from "./AddDatasetForm";
 import { AnnotatedDatasetCard } from "./AnnotatedDatasetCard";
-import { useAnnotationState } from "./hooks/useAnnotationState";
 import EntityForm from "@/components/EntityForm";
 import {
   AnnotatedDataset,
@@ -29,14 +28,6 @@ import SettingsButton from "../llmSettings/SettingsButton";
 import { TaskMode } from "@/app/constants";
 import { useLiveQuery } from "dexie-react-hooks";
 import * as XLSX from "xlsx";
-import { TiDownloadOutline } from "react-icons/ti";
-import { Table } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 // Update the props interface to include the mode and make it generic
 interface AnnotatedDatasetListProps<
@@ -458,6 +449,7 @@ const AnnotatedDatasetList = <
                     }}
                     onStop={handleStop}
                     onEdit={() => setEditingDataset(dataset)}
+                    onDelete={() => setActiveAnnotatedDataset(null)}
                     mode={mode}
                   />
                 </div>

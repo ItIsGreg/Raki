@@ -1,13 +1,6 @@
 import React from "react";
 import { TiDownloadOutline } from "react-icons/ti";
-import { downloadAnnotatedDataset } from "./annotationUtils";
 import { AnnotatedDataset } from "@/lib/db/db";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,

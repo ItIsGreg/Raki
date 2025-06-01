@@ -8,20 +8,17 @@ describe('Profiles page', () => {
   })
 
   it('should navigate to profiles page and show all components', () => {
-    // Check if profile card exists and is visible
-    cy.get('[data-cy="profile-card"]')
+    // Click on the Profiles tab
+    cy.get('[data-cy="profiles-tab"]')
       .should('be.visible')
-      .should('contain', 'Profile')
-      
-    // Click on the profile card and wait for navigation
-    cy.get('[data-cy="profile-card"]').click()
+      .click()
     
-    // Add a small wait to ensure navigation completes
+    // Add a small wait to ensure tab switch completes
     cy.wait(500)
     
     // Verify the profiles page components are present
-    cy.get('[data-cy="profiles-page"]').should('be.visible')
-    cy.get('[data-cy="profile-list-container"]').should('be.visible')
+    cy.get('[data-cy="profile-select-trigger"]').should('be.visible')
+    cy.get('[data-cy="add-profile-button"]').should('be.visible')
   })
 
   it('should create a new profile and select it', () => {
@@ -29,7 +26,7 @@ describe('Profiles page', () => {
     const profileDescription = 'Test Profile Description'
 
     // Navigate to profiles page
-    cy.get('[data-cy="profile-card"]').click()
+    cy.get('[data-cy="profiles-tab"]').click()
     
     // Click add profile button
     cy.get('[data-cy="add-profile-button"]').click()
@@ -46,21 +43,19 @@ describe('Profiles page', () => {
     // Save the profile
     cy.get('[data-cy="entity-save-button"]').click()
     
-    // Wait for the profile to be created and verify it appears in the list
-    cy.get('[data-cy="profile-card"]')
-      .within(() => {
-        cy.get('.truncate')  // This targets the CardTitle with truncate class
-          .should('contain', profileName)
-      })
+    // Wait for the profile to be created and verify it appears in the select
+    cy.get('[data-cy="profile-select-trigger"]')
       .should('be.visible')
+      .click()
+    
+    cy.get('[data-cy="profile-select-content"]')
+      .should('be.visible')
+      .contains(profileName)
       .click()
       
     // Verify the profile is selected
-    cy.get('[data-cy="profile-card"]')
-      .should('have.class', 'bg-gray-100')
-      .within(() => {
-        cy.get('.truncate').should('contain', profileName)
-      })
+    cy.get('[data-cy="profile-select-trigger"]')
+      .should('contain', profileName)
   })
 
   it('should create a new data point', () => {
@@ -71,17 +66,16 @@ describe('Profiles page', () => {
     const synonym = 'Test Synonym'
 
     // Navigate to profiles page and create a profile first
-    cy.get('[data-cy="profile-card"]').click()
+    cy.get('[data-cy="profiles-tab"]').click()
     cy.get('[data-cy="add-profile-button"]').click()
     cy.get('[data-cy="entity-name-input"]').type(profileName)
     cy.get('[data-cy="entity-description-input"]').type(profileDescription)
     cy.get('[data-cy="entity-save-button"]').click()
 
     // Select the created profile
-    cy.get('[data-cy="profile-card"]')
-      .within(() => {
-        cy.get('.truncate').should('contain', profileName)
-      })
+    cy.get('[data-cy="profile-select-trigger"]').click()
+    cy.get('[data-cy="profile-select-content"]')
+      .contains(profileName)
       .click()
 
     // Create a new data point
@@ -121,9 +115,10 @@ describe('Profiles page', () => {
       .click()
 
     // Verify the data point appears in the list
-    cy.get('[data-cy="datapoint-card"]')
+    cy.get('[data-cy="datapoints-container"]')
       .should('be.visible')
-      .and('contain', datapointName)
+      .find('[data-cy="datapoint-card"]')
+      .should('contain', datapointName)
       .click()
 
     // Verify all the content after clicking
@@ -150,7 +145,7 @@ describe('Profiles page', () => {
       const expectedCount = dataPoints.length
 
       // Navigate to profiles page
-      cy.get('[data-cy="profile-card"]').click()
+      cy.get('[data-cy="profiles-tab"]').click()
       
       // Click add profile button
       cy.get('[data-cy="add-profile-button"]').click()
@@ -168,20 +163,22 @@ describe('Profiles page', () => {
       cy.get('[data-cy="entity-save-button"]').click()
       
       // Select the created profile
-      cy.get('[data-cy="profile-card"]')
-        .within(() => {
-          cy.get('.truncate').should('contain', profileName)
-        })
+      cy.get('[data-cy="profile-select-trigger"]').click()
+      cy.get('[data-cy="profile-select-content"]')
+        .contains(profileName)
         .click()
 
-      // Click the upload button and upload the file
+      // Click the three dot menu and then the upload button
+      cy.get('[data-cy="datapoints-container"]').should('be.visible')
+      cy.get('[data-cy="more-options-button"]')
+        .should('be.visible')
+        .click()
       cy.get('[data-cy="upload-datapoints-button"]').click()
       
       // Use the selectFile command to upload the JSON file
       cy.get('[data-cy="upload-datapoints-input"]')
         .selectFile('cypress/fixtures/upload_test/uploadProfilePoints.json', { force: true })
       
-
       // Verify the data points container is visible and contains uploaded points
       cy.get('[data-cy="datapoints-container"]')
         .should('be.visible')

@@ -71,6 +71,16 @@ export const useAnnotationState = <T extends ProfilePointType>({
   const dbBatchSize = useLiveQuery(() => readAllBatchSizes());
   const dbMaxTokens = useLiveQuery(() => readAllMaxTokens());
 
+  // Add effect to update activeProfilePoints when dataset or profile points change
+  useEffect(() => {
+    if (activeAnnotatedDataset?.profileId && dbProfilePoints) {
+      const activePoints = dbProfilePoints.filter(
+        (profilePoint) => profilePoint.profileId === activeAnnotatedDataset.profileId
+      );
+      setActiveProfilePoints(activePoints as T[]);
+    }
+  }, [activeAnnotatedDataset?.profileId, dbProfilePoints, setActiveProfilePoints]);
+
   const prepareFaultyBatches = useCallback(() => {
     if (!activeAnnotatedDataset || !dbAnnotatedTexts || !dbBatchSize?.[0])
       return;

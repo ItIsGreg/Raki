@@ -275,6 +275,7 @@ const DataPointSlice = (props: ExtendedDataPointSliceProps) => {
                     value={activeDataPointValue}
                     onChange={(e) => setActiveDataPointValue(e.target.value)}
                     placeholder={dataPoint.value?.toString() ?? "Value"}
+                    data-cy="datapoint-value-input"
                   />
                   <div className="flex flex-row gap-1">
                     <div className="flex-grow"></div>

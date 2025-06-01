@@ -15,26 +15,13 @@ describe('Datasets page', () => {
     indexedDB.deleteDatabase('myDatabase')
     // Start from the homepage
     cy.visit('http://localhost:3000/dataPointExtraction')
+    // Click the text upload tab
+    cy.get('[data-cy="text-upload-tab"]').click()
   })
 
-  it('should navigate to datasets page', () => {
-    // Check if datasets card exists and is visible
-    cy.get('[data-cy="datasets-card"]')
-      .should('be.visible')
-      .should('contain', 'Datasets')
-      
-    // Click on the datasets card
-    cy.get('[data-cy="datasets-card"]').click()
-    
-    // Verify the datasets page components are present
-    cy.get('[data-cy="datasets-page"]').should('be.visible')
-  })
 
   it('should create a new dataset', () => {
-    // Navigate to datasets page
-    cy.get('[data-cy="datasets-card"]').click()
-
-    // Click the add dataset button
+    // Click the New Text Set button
     cy.get('[data-cy="add-dataset-button"]').click()
 
     // Fill in the dataset form
@@ -49,16 +36,14 @@ describe('Datasets page', () => {
     // Save the dataset
     cy.get('[data-cy="entity-save-button"]').click()
 
-    // Verify the new dataset appears in the list
-    cy.get('[data-cy="dataset-card"]')
+    // Verify the new dataset appears in the select component
+    cy.get('[data-cy="text-dataset-select-trigger"]').click()
+    cy.get('[data-cy="text-dataset-select-content"]')
       .should('be.visible')
       .should('contain', 'Test Dataset')
-      .should('contain', 'This is a test dataset')
   })
 
   it('should cancel dataset creation', () => {
-    // Navigate to datasets page
-    cy.get('[data-cy="datasets-card"]').click()
 
     // Click the add dataset button
     cy.get('[data-cy="add-dataset-button"]').click()
@@ -77,7 +62,6 @@ describe('Datasets page', () => {
   context('Text Uploads', () => {
     beforeEach(() => {
       // Navigate to datasets page and create a test dataset
-      cy.get('[data-cy="datasets-card"]').click()
       cy.get('[data-cy="add-dataset-button"]').click()
       cy.get('[data-cy="entity-name-input"]').type('Test Dataset')
       cy.get('[data-cy="entity-description-input"]').type('This is a test dataset')
@@ -85,33 +69,62 @@ describe('Datasets page', () => {
     })
 
     it('should add a single text through the UI', () => {
-      // Click on the dataset to make it active
-      cy.get('[data-cy="dataset-card"]').click()
-
-      // Open single text input dialog
-      cy.get('[data-cy="single-text-btn"]').click()
+      // Open single text input dialog through the dropdown
+      cy.get('[data-cy="upload-texts-btn"]')
+        .should('be.visible')
+        .click({ force: true })
+      
+      // Wait for dropdown to be visible and click the option
+      cy.get('[data-cy="upload-dropdown-content"]')
+        .should('be.visible')
+        .within(() => {
+          cy.get('[data-cy="single-text-option"]')
+            .should('be.visible')
+            .click({ force: true })
+        })
 
       // Fill in the text details
-      cy.get('[data-cy="single-text-filename-input"]').type('Sample Text')
-      cy.get('[data-cy="single-text-content-input"]').type('This is a sample text content.')
+      cy.get('[data-cy="single-text-filename-input"]')
+        .should('be.visible')
+        .wait(500)
+        .type('Sample Text')
+      cy.get('[data-cy="single-text-content-input"]')
+        .should('be.visible')
+        .type('This is a sample text content.')
 
       // Save the text
       cy.get('[data-cy="add-single-text-btn"]').click()
 
-      // Verify the text appears in the list
+      // Verify the text appears in the list using CompactCard
       cy.get('[data-cy="text-card"]')
         .should('be.visible')
         .should('contain', 'Sample Text')
+        .click({ force: true })
+
+      // Verify the text is displayed in the TextAnnotation component's display mode
+      cy.get('[data-cy="text-display-container"]').should('be.visible')
+      cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
+      cy.get('[data-cy="text-display-content"]')
+        .should('be.visible')
+        .should('contain', 'This is a sample text content.')
     })
 
     it('should upload a text file and display its content', () => {
-      // Click on the dataset to make it active
-      cy.get('[data-cy="dataset-card"]').click()
-
       // Read the test file content first to compare later
       cy.readFile('cypress/fixtures/test_texts/txts/0.txt').then((expectedContent) => {
         // Upload a text file from the fixtures directory
-        cy.get('[data-cy="upload-texts-btn"]').click()
+        cy.get('[data-cy="upload-texts-btn"]')
+          .should('be.visible')
+          .click({ force: true })
+        
+        cy.get('[data-cy="upload-dropdown-content"]')
+          .should('be.visible')
+          .within(() => {
+            cy.get('[data-cy="upload-files-option"]')
+              .should('be.visible')
+              .click({ force: true })
+          })
+
         cy.get('[data-cy="file-input"]').attachFile({
           filePath: 'test_texts/txts/0.txt',
           fileName: '0.txt',
@@ -122,22 +135,33 @@ describe('Datasets page', () => {
         cy.get('[data-cy="text-card"]')
           .should('be.visible')
           .should('contain', '0.txt')
-          .click()
+          .click({ force: true })
 
-        // Verify the file content is displayed correctly
-        cy.get('[data-cy="text-display-filename"]').should('contain', '0.txt')
-        cy.get('[data-cy="text-display-content"]').should('contain', expectedContent)
+        // Verify the text is displayed in the TextAnnotation component's display mode
+        cy.get('[data-cy="text-display-container"]').should('be.visible')
+        cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
+        cy.get('[data-cy="text-display-content"]')
+          .should('be.visible')
+          .should('contain', expectedContent)
       })
     })
 
     it('should upload multiple text files and display their content', () => {
-      // Click on the dataset to make it active
-      cy.get('[data-cy="dataset-card"]').click()
-
       // Read the test file content first to compare later
       cy.readFile('cypress/fixtures/test_texts/txts/0.txt').then((expectedContent) => {
         // Upload multiple files from the fixtures directory
-        cy.get('[data-cy="upload-texts-btn"]').click()
+        cy.get('[data-cy="upload-texts-btn"]')
+          .should('be.visible')
+          .click({ force: true })
+        
+        cy.get('[data-cy="upload-dropdown-content"]')
+          .should('be.visible')
+          .within(() => {
+            cy.get('[data-cy="upload-files-option"]')
+              .should('be.visible')
+              .click({ force: true })
+          })
+
         cy.get('[data-cy="file-input"]').attachFile([
           {
             filePath: 'test_texts/txts/0.txt',
@@ -155,33 +179,63 @@ describe('Datasets page', () => {
         cy.get('[data-cy="text-card"]').should('have.length', 2)
         
         // Check first file content
-        cy.get('[data-cy="text-card"]').first().should('contain', '0.txt').click()
-        cy.get('[data-cy="text-display-filename"]').should('contain', '0.txt')
-        cy.get('[data-cy="text-display-content"]').should('contain', expectedContent)
+        cy.get('[data-cy="text-card"]').first()
+          .should('contain', '0.txt')
+          .click({ force: true })
+
+        // Verify first text is displayed in the TextAnnotation component's display mode
+        cy.get('[data-cy="text-display-container"]').should('be.visible')
+        cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
+        cy.get('[data-cy="text-display-content"]')
+          .should('be.visible')
+          .should('contain', expectedContent)
         
         // Check second file content
-        cy.get('[data-cy="text-card"]').eq(1).should('contain', '1.txt').click()
-        cy.get('[data-cy="text-display-filename"]').should('contain', '1.txt')
-        cy.get('[data-cy="text-display-content"]').should('contain', expectedContent)
+        cy.get('[data-cy="text-card"]').eq(1)
+          .should('contain', '1.txt')
+          .click({ force: true })
+
+        // Verify second text is displayed in the TextAnnotation component's display mode
+        cy.get('[data-cy="text-display-container"]').should('be.visible')
+        cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
+        cy.get('[data-cy="text-display-content"]')
+          .should('be.visible')
+          .should('contain', expectedContent)
       })
     })
 
     it('should delete a text', () => {
-      // Click on the dataset to make it active
-      cy.get('[data-cy="dataset-card"]').click()
-      
       // First add a text
-      cy.get('[data-cy="single-text-btn"]').click()
-      cy.get('[data-cy="single-text-filename-input"]').type('Text to Delete')
-      cy.get('[data-cy="single-text-content-input"]').type('This text will be deleted')
+      cy.get('[data-cy="upload-texts-btn"]')
+        .should('be.visible')
+        .click({ force: true })
+      
+      cy.get('[data-cy="upload-dropdown-content"]')
+        .should('be.visible')
+        .within(() => {
+          cy.get('[data-cy="single-text-option"]')
+            .should('be.visible')
+            .click({ force: true })
+        })
+
+      cy.get('[data-cy="single-text-filename-input"]')
+        .should('be.visible')
+        .wait(500)
+        .type('Text to Delete')
+      cy.get('[data-cy="single-text-content-input"]')
+        .should('be.visible')
+        .type('This text will be deleted')
       cy.get('[data-cy="add-single-text-btn"]').click()
 
       // Verify text exists
       cy.get('[data-cy="text-card"]')
         .should('contain', 'Text to Delete')
 
-      // Delete the text
-      cy.get('[data-cy="delete-text-btn"]').click()
+      // Delete the text using the delete button in the card header
+      cy.get('[data-cy="text-card"]')
+        .should('contain', 'Text to Delete')
+        .find('[data-cy="delete-text-btn"]')
+        .click({ force: true })
 
       // Verify text is removed
       cy.get('[data-cy="text-card"]')
@@ -195,9 +249,10 @@ describe('Datasets page', () => {
       indexedDB.deleteDatabase('myDatabase')
       // Start from the homepage
       cy.visit('http://localhost:3000/dataPointExtraction')
+      // Click the text upload tab
+      cy.get('[data-cy="text-upload-tab"]').click()
       
-      // Navigate to datasets page and create a test dataset
-      cy.get('[data-cy="datasets-card"]').click()
+      // Create a test dataset
       cy.get('[data-cy="add-dataset-button"]').click()
       cy.get('[data-cy="entity-name-input"]').type('Test Dataset')
       cy.get('[data-cy="entity-description-input"]').type('This is a test dataset')
@@ -207,11 +262,19 @@ describe('Datasets page', () => {
     it('should upload Excel file and import texts', () => {
       // First read the Excel file to get the expected row count
       cy.task('readExcelRowCount', 'cypress/fixtures/test_texts/claude-echos.xlsx').then((rowCount) => {
-        // Click on the dataset to make it active
-        cy.get('[data-cy="dataset-card"]').click()
-        
         // Upload Excel file
-        cy.get('[data-cy="upload-table-btn"]').click()
+        cy.get('[data-cy="upload-texts-btn"]')
+          .should('be.visible')
+          .click({ force: true })
+        
+        cy.get('[data-cy="upload-dropdown-content"]')
+          .should('be.visible')
+          .within(() => {
+            cy.get('[data-cy="upload-table-option"]')
+              .should('be.visible')
+              .click({ force: true })
+          })
+
         cy.get('[data-cy="table-file-input"]').attachFile({
           filePath: 'test_texts/claude-echos.xlsx',
           fileName: 'claude-echos.xlsx',
@@ -242,7 +305,9 @@ describe('Datasets page', () => {
           })
 
         // Verify content of first text
-        cy.get('[data-cy="text-card"]').first().click()
+        cy.get('[data-cy="text-card"]').first().click({ force: true })
+        cy.get('[data-cy="text-display-container"]').should('be.visible')
+        cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
         cy.get('[data-cy="text-display-content"]').should('not.be.empty')
       })
     })

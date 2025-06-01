@@ -213,18 +213,25 @@ const TextAnnotation = (props: TextAnnotationProps) => {
                 <Menu className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => router.push("/")}>
+            <DropdownMenuContent align="start" data-cy="burger-menu-content">
+              <DropdownMenuItem
+                onClick={() => router.push("/")}
+                data-cy="menu-home"
+              >
                 <Home className="mr-2 h-4 w-4" />
                 <span>Home</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push("/textSegmentation")}
+                data-cy="menu-text-segmentation"
               >
                 <FileText className="mr-2 h-4 w-4" />
                 <span>Text Segmentation</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+              <DropdownMenuItem
+                onClick={() => setIsSettingsOpen(true)}
+                data-cy="menu-setup"
+              >
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Setup</span>
               </DropdownMenuItem>
@@ -243,6 +250,7 @@ const TextAnnotation = (props: TextAnnotationProps) => {
               disabled={
                 !activeAnnotatedText || !activeAnnotatedDataset || !dataPoints
               }
+              data-cy="save-example-button"
             >
               Save as Example
             </Button>

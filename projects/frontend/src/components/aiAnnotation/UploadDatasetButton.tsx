@@ -6,9 +6,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { handleUploadAnnotatedDataset } from "./annotationUtils";
 
-export const UploadDatasetButton = () => {
+interface UploadDatasetButtonProps {
+  onUpload?: (file: File) => void;
+  "data-cy"?: string;
+}
+
+export const UploadDatasetButton = ({
+  onUpload,
+  "data-cy": dataCy,
+}: UploadDatasetButtonProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUploadButtonClick = () => {
@@ -23,8 +30,7 @@ export const UploadDatasetButton = () => {
     if (!file) return;
 
     try {
-      await handleUploadAnnotatedDataset(file);
-      // You might want to refresh the list of annotated datasets here
+      onUpload?.(file);
     } catch (error) {
       console.error("Error uploading annotated dataset:", error);
       // You might want to show an error message to the user here
@@ -38,6 +44,7 @@ export const UploadDatasetButton = () => {
           <button
             className="p-0 bg-transparent border-none cursor-pointer"
             onClick={handleUploadButtonClick}
+            data-cy={dataCy}
           >
             <TiUpload className="h-6 w-6 hover:text-gray-500" />
           </button>

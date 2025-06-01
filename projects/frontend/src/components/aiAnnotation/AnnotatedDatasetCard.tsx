@@ -16,7 +16,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import DeleteButton from "@/components/DeleteButton";
@@ -36,6 +35,7 @@ interface AnnotatedDatasetCardProps<
   onStart: () => void;
   onStop: () => void;
   onEdit: () => void;
+  onDelete: () => void;
   mode: TaskMode;
 }
 
@@ -49,6 +49,7 @@ export const AnnotatedDatasetCard = <
   onStart,
   onStop,
   onEdit,
+  onDelete,
   mode,
 }: AnnotatedDatasetCardProps<T>) => {
   const dbProfiles = useLiveQuery(() => readAllProfiles());
@@ -90,23 +91,45 @@ export const AnnotatedDatasetCard = <
       onClick={onSelect}
     >
       <CardHeader className="flex flex-row gap-2">
-        <CardTitle data-cy="dataset-title">{dataset.name}</CardTitle>
-        <div className="flex-grow"></div>
-        <EditButton data-cy="edit-dataset-button" onClick={onEdit} />
-        <DeleteButton
-          data-cy="delete-dataset-button"
-          onDelete={() => deleteAnnotatedDataset(dataset.id)}
-          itemName={
-            mode === "datapoint_extraction"
-              ? "annotated dataset"
-              : "segmentation dataset"
-          }
-        />
+        {isActive && (
+          <div className="w-full">
+            {annotationState === "idle" ? (
+              <Button
+                data-cy="start-annotation-button"
+                onClick={onStart}
+                className="w-full"
+              >
+                {getActionText()}
+              </Button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Button
+                  data-cy="stop-annotation-button"
+                  onClick={onStop}
+                  className="w-full"
+                >
+                  {getActionText()}
+                </Button>
+                <div
+                  className="flex items-center gap-2"
+                  data-cy="annotation-status"
+                >
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-gray-500">
+                    {annotationState === "regular"
+                      ? getProgressText()
+                      : getFaultyText()}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-row gap-2">
+      <CardContent className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {dbProfiles && (
-            <CardDescription data-cy="profile-description">
+            <CardDescription data-cy="profile-description" className="truncate">
               {mode === "datapoint_extraction"
                 ? "Profile: "
                 : "Segmentation Profile: "}
@@ -116,9 +139,8 @@ export const AnnotatedDatasetCard = <
               }
             </CardDescription>
           )}
-          <div className="flex-grow"></div>
           {dbDatasets && (
-            <CardDescription data-cy="dataset-description">
+            <CardDescription data-cy="dataset-description" className="truncate">
               Dataset:{" "}
               {
                 dbDatasets.find(
@@ -127,13 +149,15 @@ export const AnnotatedDatasetCard = <
               }
             </CardDescription>
           )}
-          <div className="flex-grow"></div>
         </div>
-        <CardDescription data-cy="dataset-description-text">
+        <CardDescription
+          data-cy="dataset-description-text"
+          className="line-clamp-2"
+        >
           Description: {dataset.description}
         </CardDescription>
         {dbTexts && dbAnnotatedTexts && (
-          <>
+          <div className="grid grid-cols-2 gap-2">
             <CardDescription data-cy="annotated-texts-count">
               {mode === "datapoint_extraction" ? "Annotated" : "Segmented"}{" "}
               Texts:{" "}
@@ -159,7 +183,7 @@ export const AnnotatedDatasetCard = <
                 ).length
               }
             </CardDescription>
-          </>
+          </div>
         )}
         {isActive &&
           dbTexts &&
@@ -178,37 +202,20 @@ export const AnnotatedDatasetCard = <
               className="w-full bg-green-200"
             />
           )}
-        {isActive && (
-          <>
-            {annotationState === "idle" ? (
-              <Button data-cy="start-annotation-button" onClick={onStart}>
-                {getActionText()}
-              </Button>
-            ) : (
-              <div className="flex flex-col items-center gap-2">
-                <Button
-                  data-cy="stop-annotation-button"
-                  onClick={onStop}
-                  className="w-full"
-                >
-                  {getActionText()}
-                </Button>
-                <div
-                  className="flex items-center gap-2"
-                  data-cy="annotation-status"
-                >
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-gray-500">
-                    {annotationState === "regular"
-                      ? getProgressText()
-                      : getFaultyText()}
-                  </span>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-        <div className="absolute bottom-4 right-4">
+        <div className="flex justify-end gap-2 mt-2">
+          <EditButton data-cy="edit-dataset-button" onClick={onEdit} />
+          <DeleteButton
+            data-cy="delete-dataset-button"
+            onDelete={() => {
+              deleteAnnotatedDataset(dataset.id);
+              onDelete();
+            }}
+            itemName={
+              mode === "datapoint_extraction"
+                ? "annotated dataset"
+                : "segmentation dataset"
+            }
+          />
           <DownloadButton
             data-cy="download-dataset-button"
             dataset={dataset}

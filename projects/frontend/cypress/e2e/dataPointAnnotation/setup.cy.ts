@@ -8,9 +8,32 @@ describe('Setup user journey', () => {
   })
 
   it('should configure LLM settings', () => {
-    // Open settings dialog
-    cy.get('[data-cy="setup-card"]').click()
-    cy.get('[data-cy="settings-dialog"]').should('be.visible')
+    // Wait for the page to be fully loaded
+    cy.get('[data-cy="annotation-container"]').should('be.visible')
+    
+    // Open settings dialog through burger menu with explicit checks
+    cy.get('[data-cy="burger-menu"]')
+      .should('be.visible')
+      .should('not.be.disabled')
+      .click({ force: true })
+    
+    // Wait for menu content to be visible and click setup
+    cy.get('[data-cy="burger-menu-content"]')
+      .should('be.visible')
+      .should('exist')
+      .then($menu => {
+        if ($menu.length) {
+          cy.wrap($menu)
+            .find('[data-cy="menu-setup"]')
+            .should('be.visible')
+            .click({ force: true })
+        }
+      })
+
+    // Wait for settings dialog to appear with a longer timeout
+    cy.get('[data-cy="settings-dialog"]', { timeout: 10000 })
+      .should('be.visible')
+      .should('exist')
 
     // Configure LLM Provider using data-cy attributes
     cy.get('[data-cy="llm-provider-trigger"]').click()
@@ -78,9 +101,32 @@ describe('Setup user journey', () => {
     cy.get('[data-cy="settings-close-button"]').click()
     cy.get('[data-cy="settings-dialog"]').should('not.exist')
 
-    // Reopen settings to verify persistence
-    cy.get('[data-cy="setup-card"]').click()
-    cy.get('[data-cy="settings-dialog"]').should('be.visible')
+    // Wait a moment for the dialog to fully close
+    cy.wait(500)
+
+    // Reopen settings to verify persistence with the same reliable approach
+    cy.get('[data-cy="burger-menu"]')
+      .should('be.visible')
+      .should('not.be.disabled')
+      .click({ force: true })
+    
+    // Wait for menu content to be visible and click setup
+    cy.get('[data-cy="burger-menu-content"]')
+      .should('be.visible')
+      .should('exist')
+      .then($menu => {
+        if ($menu.length) {
+          cy.wrap($menu)
+            .find('[data-cy="menu-setup"]')
+            .should('be.visible')
+            .click({ force: true })
+        }
+      })
+
+    // Wait for settings dialog to appear with a longer timeout
+    cy.get('[data-cy="settings-dialog"]', { timeout: 10000 })
+      .should('be.visible')
+      .should('exist')
 
     // Verify LLM Provider
     cy.get('[data-cy="llm-provider-trigger"]')
