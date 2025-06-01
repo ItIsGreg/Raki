@@ -107,7 +107,11 @@ export const AddDatasetForm = ({
           <SelectTrigger data-cy="dataset-select-trigger">
             <SelectValue placeholder="Select a dataset" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            data-cy="dataset-select-content"
+            position="popper"
+            sideOffset={5}
+          >
             {dbDatasets?.map((dataset) => (
               <SelectItem
                 key={dataset.id}
@@ -131,7 +135,11 @@ export const AddDatasetForm = ({
               }profile`}
             />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent
+            data-cy="profile-select-content"
+            position="popper"
+            sideOffset={5}
+          >
             {dbProfiles?.map((profile) => (
               <SelectItem
                 key={profile.id}

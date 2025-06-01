@@ -313,15 +313,19 @@ const Annotation = () => {
                     );
                     setActiveAnnotatedDataset(dataset || undefined);
                   }}
-                  data-cy="dataset-select"
+                  data-cy="annotation-dataset-select"
                 >
                   <SelectTrigger
                     className="w-full"
-                    data-cy="dataset-select-trigger"
+                    data-cy="annotation-dataset-select-trigger"
                   >
                     <SelectValue placeholder="Select a dataset" />
                   </SelectTrigger>
-                  <SelectContent data-cy="dataset-select-content">
+                  <SelectContent
+                    data-cy="annotated-dataset-select-content"
+                    position="popper"
+                    sideOffset={5}
+                  >
                     {dbAnnotatedDatasets?.map((dataset) => (
                       <SelectItem
                         key={dataset.id}
