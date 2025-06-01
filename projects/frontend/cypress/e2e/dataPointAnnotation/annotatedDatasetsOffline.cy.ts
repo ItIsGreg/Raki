@@ -301,7 +301,7 @@ describe('Annotated Datasets', () => {
     cy.wait(2000) // Increased wait time to allow for processing
     
     // Check that the annotated text cards exist
-    cy.get('[data-cy="annotated-text-card"]')
+    cy.get('[data-cy="manual-annotated-text-card"]')
       .should('exist')
       .should('have.length.at.least', 1);
     
