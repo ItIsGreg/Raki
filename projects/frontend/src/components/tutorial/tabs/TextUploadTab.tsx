@@ -104,7 +104,9 @@ const TextUploadTab = () => {
               Then you select the{" "}
               <span className="font-semibold">text column</span>. This is the
               column that the texts are actually stored in. In this table it is
-              just named <span className="font-semibold">Text</span>.
+              just named <span className="font-semibold">Text English</span> or{" "}
+              <span className="font-semibold">Text German</span> if you prefer
+              German.
             </p>
             <p>
               After you selected both columns, you can use import the Texts by
