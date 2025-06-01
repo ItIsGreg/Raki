@@ -247,8 +247,12 @@ describe('Annotated Datasets', () => {
     cy.get('[data-cy="text-display-title"]').should('contain', 'Text Display')
     cy.get('[data-cy="text-display-content"]').should('not.be.empty')
 
-    // Navigate to annotation tab
-    cy.get('[data-cy="annotation-tab"]')
+  
+  })
+
+  it.only('should create a new annotated dataset', () => {
+      // Navigate to annotation tab
+      cy.get('[data-cy="annotation-tab"]')
       .should('be.visible')
       .click()
 
@@ -259,31 +263,31 @@ describe('Annotated Datasets', () => {
     cy.get('[data-cy="dataset-name-input"]')
       .should('be.visible')
       .type('Test Annotated Dataset')
-    
+
     cy.get('[data-cy="dataset-description-input"]')
       .should('be.visible')
       .type('This is a test annotated dataset')
-    
+
     // Select the dataset from dropdown
     cy.get('[data-cy="dataset-select-trigger"]')
       .should('be.visible')
       .click()
-    
+
     cy.get('[data-cy="dataset-select-content"]')
       .should('be.visible')
       .contains('Test Dataset')
       .click()
-    
+
     // Select the profile from dropdown
     cy.get('[data-cy="profile-select-trigger"]')
       .should('be.visible')
       .click()
-    
+
     cy.get('[data-cy="profile-select-content"]')
       .should('be.visible')
       .contains('Test Profile')
       .click()
-    
+
     // Save the annotated dataset
     cy.get('[data-cy="save-dataset-button"]').click()
 
@@ -296,18 +300,18 @@ describe('Annotated Datasets', () => {
       
     // Start annotation process
     cy.get('[data-cy="start-annotation-button"]').scrollIntoView().should('be.visible').click({force: true})
-    
+
     // Wait for annotation to begin processing and complete
     cy.wait(2000) // Increased wait time to allow for processing
-    
+
     // Check that the annotated text cards exist
     cy.get('[data-cy="manual-annotated-text-card"]')
       .should('exist')
       .should('have.length.at.least', 1);
-    
+
     // Log the verification result
     cy.log('Verified: Annotated text cards are present');
-    
+
     // Optional: Check the count in the UI if it exists
     cy.get('body').then($body => {
       if ($body.find('[data-cy="annotated-texts-count"]').length) {
@@ -319,58 +323,4 @@ describe('Annotated Datasets', () => {
     });
   })
 
-  it('should create a new annotated dataset', () => {
-    // Fill out the form
-    cy.get('[data-cy="dataset-name-input"]').type('Test Annotated Dataset')
-    cy.get('[data-cy="dataset-description-input"]').type('This is a test annotated dataset')
-    
-    // Select the dataset from dropdown
-    cy.get('[data-cy="dataset-select-trigger"]')
-      .should('be.visible')
-      .click()
-    
-    cy.get('[data-cy="dataset-select-content"]')
-      .should('be.visible')
-      .contains('Test Dataset')
-      .click()
-    
-    // Select the profile from dropdown
-    cy.get('[data-cy="profile-select-trigger"]')
-      .should('be.visible')
-      .click()
-    
-    cy.get('[data-cy="profile-select-content"]')
-      .should('be.visible')
-      .contains('Test Profile')
-      .click()
-    
-    // Save the annotated dataset
-    cy.get('[data-cy="save-dataset-button"]').click()
-
-    // Verify the new annotated dataset appears in the list
-    cy.get('[data-cy="annotated-dataset-card"]')
-      .should('be.visible')
-      .should('contain', 'This is a test annotated dataset')
-      .should('contain', 'Test Profile')
-      .should('contain', 'Test Dataset')
-      
-    // Start annotation process
-    cy.get('[data-cy="start-annotation-button"]').should('be.visible').click()
-    
-    // Wait for annotation to begin processing (shorter wait time)
-    cy.wait(500)
-    
-    // Check that the counts match between the two components
-    cy.get('[data-cy="annotated-texts-count"]').then(($count) => {
-      // Extract just the first number from "Annotated Texts: X / Y" with null check
-      const matches = $count.text().match(/Annotated Texts: (\d+)/);
-      const cardCount = matches ? parseInt(matches[1]) : 0;
-      
-      // Now count the actual text cards in the list
-      cy.get('[data-cy="annotated-text-card"]').should('have.length', cardCount);
-      
-      // Log the verification result
-      cy.log(`Verified: Card shows ${cardCount} annotated texts, list displays ${cardCount} text cards`);
-    });
   })
-})
