@@ -82,7 +82,7 @@ const TableView: React.FC<TableViewProps> = ({
 
   // Custom header component for clickable headers
   const CustomHeader = React.useMemo(() => {
-    return (props: any) => {
+    const HeaderComponent = (props: any) => {
       const { displayName, column } = props;
       const fieldName = column.getColId();
 
@@ -124,6 +124,9 @@ const TableView: React.FC<TableViewProps> = ({
         </div>
       );
     };
+
+    HeaderComponent.displayName = "CustomHeader";
+    return HeaderComponent;
   }, [
     headerSelectionMode,
     indexColumn,
@@ -164,7 +167,7 @@ const TableView: React.FC<TableViewProps> = ({
     columnNames,
     indexColumn,
     textColumn,
-    isAnonymisationMode,
+    headerSelectionMode,
     selectedAnonymisationColumns,
     CustomHeader,
   ]);
@@ -229,15 +232,7 @@ const TableView: React.FC<TableViewProps> = ({
     });
 
     onClose(); // Close the dialog after import
-  }, [
-    activeDataset,
-    indexColumn,
-    textColumn,
-    data,
-    onClose,
-    anonymiseText,
-    selectedAnonymisationColumns,
-  ]);
+  }, [activeDataset, indexColumn, textColumn, data, onClose, anonymiseText]);
 
   const hasData = data && data.length > 0;
 
