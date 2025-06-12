@@ -40,6 +40,9 @@ const TableView: React.FC<TableViewProps> = ({
 }) => {
   const [indexColumn, setIndexColumn] = useState<string | null>(null);
   const [textColumn, setTextColumn] = useState<string | null>(null);
+  const [isAnonymisationMode, setIsAnonymisationMode] = useState(false);
+  const [selectedAnonymisationColumns, setSelectedAnonymisationColumns] =
+    useState<Set<string>>(new Set());
   const gridRef = useRef(null);
 
   const columnNames = useMemo(() => {
@@ -47,28 +50,125 @@ const TableView: React.FC<TableViewProps> = ({
     return Object.keys(data[0]);
   }, [data]);
 
+  const handleColumnHeaderClick = useCallback(
+    (field: string) => {
+      if (!isAnonymisationMode) {
+        return;
+      }
+
+      setSelectedAnonymisationColumns((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(field)) {
+          newSet.delete(field);
+        } else {
+          newSet.add(field);
+        }
+        return newSet;
+      });
+    },
+    [isAnonymisationMode]
+  );
+
+  // Custom header component for clickable headers
+  const CustomHeader = React.useMemo(() => {
+    return (props: any) => {
+      const { displayName, column } = props;
+      const fieldName = column.getColId();
+
+      const handleClick = () => {
+        if (isAnonymisationMode) {
+          handleColumnHeaderClick(fieldName);
+        }
+      };
+
+      return (
+        <div
+          onClick={handleClick}
+          className={`w-full h-full flex items-center justify-center cursor-pointer ${
+            isAnonymisationMode ? "hover:bg-yellow-100" : ""
+          }`}
+          style={{
+            fontWeight: selectedAnonymisationColumns.has(fieldName)
+              ? "bold"
+              : "normal",
+          }}
+        >
+          {displayName}
+        </div>
+      );
+    };
+  }, [
+    isAnonymisationMode,
+    selectedAnonymisationColumns,
+    handleColumnHeaderClick,
+  ]);
+
   const columnDefs = useMemo(() => {
     if (!data || data.length === 0) return [];
     return columnNames.map((key) => ({
       field: key,
+      headerName: key,
       sortable: false,
       filter: false,
       resizable: false,
       suppressMovable: true,
-      headerClass:
-        indexColumn === key
-          ? "highlighted-column-index"
-          : textColumn === key
-          ? "highlighted-column-text"
-          : "",
-      cellClass:
-        indexColumn === key
-          ? "highlighted-column-index"
-          : textColumn === key
-          ? "highlighted-column-text"
-          : "",
+      headerComponent: isAnonymisationMode ? CustomHeader : undefined,
+      headerClass: [
+        indexColumn === key ? "highlighted-column-index" : "",
+        textColumn === key ? "highlighted-column-text" : "",
+        isAnonymisationMode ? "anonymisation-selectable" : "",
+        selectedAnonymisationColumns.has(key) ? "anonymisation-selected" : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
+      cellClass: [
+        indexColumn === key ? "highlighted-column-index" : "",
+        textColumn === key ? "highlighted-column-text" : "",
+        selectedAnonymisationColumns.has(key) ? "anonymisation-selected" : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
     }));
-  }, [data, columnNames, indexColumn, textColumn]);
+  }, [
+    data,
+    columnNames,
+    indexColumn,
+    textColumn,
+    isAnonymisationMode,
+    selectedAnonymisationColumns,
+    CustomHeader,
+  ]);
+
+  const anonymiseText = useCallback(
+    (text: string, row: any): string => {
+      if (selectedAnonymisationColumns.size === 0) {
+        return text; // No anonymisation needed
+      }
+
+      let anonymisedText = text;
+
+      // Get all values from selected anonymisation columns for this row
+      const sensitiveValues = Array.from(selectedAnonymisationColumns)
+        .map((column) => row[column])
+        .filter((value) => value && String(value).trim() !== "")
+        .map((value) => String(value).trim());
+
+      // Remove each sensitive value from the text
+      sensitiveValues.forEach((sensitiveValue) => {
+        if (sensitiveValue.length > 0) {
+          // Create a case-insensitive regex with word boundaries
+          const regex = new RegExp(
+            `\\b${sensitiveValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+            "gi"
+          );
+          anonymisedText = anonymisedText.replace(regex, "[REDACTED]");
+        }
+      });
+
+      return anonymisedText;
+    },
+    [selectedAnonymisationColumns]
+  );
 
   const handleImportTexts = useCallback(() => {
     if (
@@ -84,19 +184,30 @@ const TableView: React.FC<TableViewProps> = ({
     // Process all rows including the first row
     data.forEach((row) => {
       const filename = row[indexColumn];
-      const text = row[textColumn];
+      const originalText = row[textColumn];
 
-      if (filename && text) {
+      if (filename && originalText) {
+        // Apply anonymisation if columns are selected
+        const processedText = anonymiseText(String(originalText), row);
+
         createText({
           datasetId: activeDataset.id,
           filename: String(filename),
-          text: String(text),
+          text: processedText,
         });
       }
     });
 
     onClose(); // Close the dialog after import
-  }, [activeDataset, indexColumn, textColumn, data, onClose]);
+  }, [
+    activeDataset,
+    indexColumn,
+    textColumn,
+    data,
+    onClose,
+    anonymiseText,
+    selectedAnonymisationColumns,
+  ]);
 
   const hasData = data && data.length > 0;
 
@@ -211,7 +322,80 @@ const TableView: React.FC<TableViewProps> = ({
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        onClick={() => {
+                          setIsAnonymisationMode(!isAnonymisationMode);
+                          if (!isAnonymisationMode) {
+                            setSelectedAnonymisationColumns(new Set());
+                          }
+                        }}
+                        disabled={!hasData}
+                        variant={isAnonymisationMode ? "default" : "outline"}
+                        data-cy="start-anonymisation-btn"
+                      >
+                        {isAnonymisationMode
+                          ? "Exit Anonymisation"
+                          : "Start Anonymisation"}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      Anonymise the text content in the selected column before
+                      importing. This will help protect sensitive information in
+                      medical reports.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
+
+            {isAnonymisationMode && (
+              <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-900 mb-2">
+                  Anonymisation Mode Active
+                </h4>
+                <p className="text-sm text-blue-700 mb-3">
+                  Click on column headers to select which columns to anonymise.
+                </p>
+                {selectedAnonymisationColumns.size > 0 && (
+                  <div className="mb-3">
+                    <p className="text-sm font-medium text-blue-900 mb-1">
+                      Selected columns for anonymisation:
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {Array.from(selectedAnonymisationColumns).map(
+                        (column) => (
+                          <span
+                            key={column}
+                            className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium"
+                          >
+                            {column}
+                          </span>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+                <Button
+                  onClick={() => {
+                    // Placeholder for future anonymisation logic
+                  }}
+                  disabled={selectedAnonymisationColumns.size === 0}
+                  size="sm"
+                  data-cy="proceed-anonymisation-btn"
+                >
+                  Proceed with Anonymisation (
+                  {selectedAnonymisationColumns.size} columns)
+                </Button>
+              </div>
+            )}
+
             <div
               className="ag-theme-alpine"
               style={{ height: 400, width: "100%" }}
@@ -258,6 +442,21 @@ const TableView: React.FC<TableViewProps> = ({
         }
         .highlighted-column-text {
           background-color: #e6ffe6 !important;
+        }
+        .anonymisation-selectable {
+          cursor: pointer !important;
+          transition: background-color 0.2s ease !important;
+        }
+        .anonymisation-selectable:hover {
+          background-color: #fef3c7 !important;
+        }
+        .anonymisation-selected {
+          background-color: #fbbf24 !important;
+          color: #92400e !important;
+          font-weight: bold !important;
+        }
+        .anonymisation-selected:hover {
+          background-color: #f59e0b !important;
         }
       `}</style>
     </Dialog>
