@@ -43,6 +43,9 @@ const TableView: React.FC<TableViewProps> = ({
   const [isAnonymisationMode, setIsAnonymisationMode] = useState(false);
   const [selectedAnonymisationColumns, setSelectedAnonymisationColumns] =
     useState<Set<string>>(new Set());
+  const [headerSelectionMode, setHeaderSelectionMode] = useState<
+    "none" | "index" | "text" | "anonymisation"
+  >("none");
   const gridRef = useRef(null);
 
   const columnNames = useMemo(() => {
@@ -52,21 +55,29 @@ const TableView: React.FC<TableViewProps> = ({
 
   const handleColumnHeaderClick = useCallback(
     (field: string) => {
-      if (!isAnonymisationMode) {
+      if (headerSelectionMode === "none") {
         return;
       }
 
-      setSelectedAnonymisationColumns((prev) => {
-        const newSet = new Set(prev);
-        if (newSet.has(field)) {
-          newSet.delete(field);
-        } else {
-          newSet.add(field);
-        }
-        return newSet;
-      });
+      if (headerSelectionMode === "index") {
+        setIndexColumn(field);
+        setHeaderSelectionMode("none");
+      } else if (headerSelectionMode === "text") {
+        setTextColumn(field);
+        setHeaderSelectionMode("none");
+      } else if (headerSelectionMode === "anonymisation") {
+        setSelectedAnonymisationColumns((prev) => {
+          const newSet = new Set(prev);
+          if (newSet.has(field)) {
+            newSet.delete(field);
+          } else {
+            newSet.add(field);
+          }
+          return newSet;
+        });
+      }
     },
-    [isAnonymisationMode]
+    [headerSelectionMode]
   );
 
   // Custom header component for clickable headers
@@ -76,29 +87,47 @@ const TableView: React.FC<TableViewProps> = ({
       const fieldName = column.getColId();
 
       const handleClick = () => {
-        if (isAnonymisationMode) {
+        if (headerSelectionMode !== "none") {
           handleColumnHeaderClick(fieldName);
         }
+      };
+
+      const getHeaderStyle = () => {
+        const isSelected =
+          indexColumn === fieldName ||
+          textColumn === fieldName ||
+          selectedAnonymisationColumns.has(fieldName);
+
+        return {
+          fontWeight: isSelected ? "bold" : "normal",
+        };
+      };
+
+      const getHoverClass = () => {
+        if (headerSelectionMode === "none") return "";
+        if (headerSelectionMode === "index") return "hover:bg-blue-100";
+        if (headerSelectionMode === "text") return "hover:bg-green-100";
+        if (headerSelectionMode === "anonymisation")
+          return "hover:bg-yellow-100";
+        return "";
       };
 
       return (
         <div
           onClick={handleClick}
-          className={`w-full h-full flex items-center justify-center cursor-pointer ${
-            isAnonymisationMode ? "hover:bg-yellow-100" : ""
-          }`}
-          style={{
-            fontWeight: selectedAnonymisationColumns.has(fieldName)
-              ? "bold"
-              : "normal",
-          }}
+          className={`w-full h-full flex items-center justify-center ${
+            headerSelectionMode !== "none" ? "cursor-pointer" : ""
+          } ${getHoverClass()}`}
+          style={getHeaderStyle()}
         >
           {displayName}
         </div>
       );
     };
   }, [
-    isAnonymisationMode,
+    headerSelectionMode,
+    indexColumn,
+    textColumn,
     selectedAnonymisationColumns,
     handleColumnHeaderClick,
   ]);
@@ -112,11 +141,12 @@ const TableView: React.FC<TableViewProps> = ({
       filter: false,
       resizable: false,
       suppressMovable: true,
-      headerComponent: isAnonymisationMode ? CustomHeader : undefined,
+      headerComponent:
+        headerSelectionMode !== "none" ? CustomHeader : undefined,
       headerClass: [
         indexColumn === key ? "highlighted-column-index" : "",
         textColumn === key ? "highlighted-column-text" : "",
-        isAnonymisationMode ? "anonymisation-selectable" : "",
+        headerSelectionMode !== "none" ? "header-selectable" : "",
         selectedAnonymisationColumns.has(key) ? "anonymisation-selected" : "",
       ]
         .filter(Boolean)
@@ -234,33 +264,37 @@ const TableView: React.FC<TableViewProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div>
-                      <Select onValueChange={setIndexColumn}>
-                        <SelectTrigger
-                          className="w-[180px]"
-                          data-cy="index-column-select"
-                        >
-                          <SelectValue placeholder="Select index column" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {columnNames.map((name) => (
-                            <SelectItem
-                              key={name}
-                              value={name}
-                              data-cy={`index-column-option-${name}`}
-                            >
-                              {name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm font-medium">
+                        Index Column: {indexColumn || "None selected"}
+                      </span>
+                      <Button
+                        onClick={() => {
+                          if (headerSelectionMode === "index") {
+                            setHeaderSelectionMode("none");
+                          } else {
+                            setHeaderSelectionMode("index");
+                          }
+                        }}
+                        variant={
+                          headerSelectionMode === "index"
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        data-cy="select-index-column-btn"
+                      >
+                        {headerSelectionMode === "index"
+                          ? "Cancel Selection"
+                          : "Select Index Column"}
+                      </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>
-                      Choose the column that uniquely identifies each text
-                      entry, such as an ID or name. This will help organize and
-                      reference your data efficiently.
+                      Click the button then click a column header to select the
+                      index column. This column uniquely identifies each text
+                      entry.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -269,33 +303,35 @@ const TableView: React.FC<TableViewProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div>
-                      <Select onValueChange={setTextColumn}>
-                        <SelectTrigger
-                          className="w-[180px]"
-                          data-cy="text-column-select"
-                        >
-                          <SelectValue placeholder="Select text column" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {columnNames.map((name) => (
-                            <SelectItem
-                              key={name}
-                              value={name}
-                              data-cy={`text-column-option-${name}`}
-                            >
-                              {name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm font-medium">
+                        Text Column: {textColumn || "None selected"}
+                      </span>
+                      <Button
+                        onClick={() => {
+                          if (headerSelectionMode === "text") {
+                            setHeaderSelectionMode("none");
+                          } else {
+                            setHeaderSelectionMode("text");
+                          }
+                        }}
+                        variant={
+                          headerSelectionMode === "text" ? "default" : "outline"
+                        }
+                        size="sm"
+                        data-cy="select-text-column-btn"
+                      >
+                        {headerSelectionMode === "text"
+                          ? "Cancel Selection"
+                          : "Select Text Column"}
+                      </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>
-                      Select the column containing the main text content. This
-                      text will be processed and converted into a structured,
-                      tabular format for further analysis.
+                      Click the button then click a column header to select the
+                      text column. This column contains the main content to be
+                      processed.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -329,16 +365,24 @@ const TableView: React.FC<TableViewProps> = ({
                     <span>
                       <Button
                         onClick={() => {
-                          setIsAnonymisationMode(!isAnonymisationMode);
-                          if (!isAnonymisationMode) {
+                          if (headerSelectionMode === "anonymisation") {
+                            setHeaderSelectionMode("none");
+                            setIsAnonymisationMode(false);
+                          } else {
+                            setHeaderSelectionMode("anonymisation");
+                            setIsAnonymisationMode(true);
                             setSelectedAnonymisationColumns(new Set());
                           }
                         }}
                         disabled={!hasData}
-                        variant={isAnonymisationMode ? "default" : "outline"}
+                        variant={
+                          headerSelectionMode === "anonymisation"
+                            ? "default"
+                            : "outline"
+                        }
                         data-cy="start-anonymisation-btn"
                       >
-                        {isAnonymisationMode
+                        {headerSelectionMode === "anonymisation"
                           ? "Exit Anonymisation"
                           : "Start Anonymisation"}
                       </Button>
@@ -355,44 +399,79 @@ const TableView: React.FC<TableViewProps> = ({
               </TooltipProvider>
             </div>
 
-            {isAnonymisationMode && (
-              <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-blue-900 mb-2">
-                  Anonymisation Mode Active
-                </h4>
-                <p className="text-sm text-blue-700 mb-3">
-                  Click on column headers to select which columns to anonymise.
-                </p>
-                {selectedAnonymisationColumns.size > 0 && (
-                  <div className="mb-3">
-                    <p className="text-sm font-medium text-blue-900 mb-1">
-                      Selected columns for anonymisation:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {Array.from(selectedAnonymisationColumns).map(
-                        (column) => (
-                          <span
-                            key={column}
-                            className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium"
-                          >
-                            {column}
-                          </span>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-                <Button
-                  onClick={() => {
-                    // Placeholder for future anonymisation logic
-                  }}
-                  disabled={selectedAnonymisationColumns.size === 0}
-                  size="sm"
-                  data-cy="proceed-anonymisation-btn"
+            {headerSelectionMode !== "none" && (
+              <div
+                className={`mb-4 p-4 rounded-lg border ${
+                  headerSelectionMode === "index"
+                    ? "bg-blue-50 border-blue-200"
+                    : headerSelectionMode === "text"
+                    ? "bg-green-50 border-green-200"
+                    : "bg-yellow-50 border-yellow-200"
+                }`}
+              >
+                <h4
+                  className={`font-medium mb-2 ${
+                    headerSelectionMode === "index"
+                      ? "text-blue-900"
+                      : headerSelectionMode === "text"
+                      ? "text-green-900"
+                      : "text-yellow-900"
+                  }`}
                 >
-                  Proceed with Anonymisation (
-                  {selectedAnonymisationColumns.size} columns)
-                </Button>
+                  {headerSelectionMode === "index"
+                    ? "Index Column Selection"
+                    : headerSelectionMode === "text"
+                    ? "Text Column Selection"
+                    : "Anonymisation Mode Active"}
+                </h4>
+                <p
+                  className={`text-sm mb-3 ${
+                    headerSelectionMode === "index"
+                      ? "text-blue-700"
+                      : headerSelectionMode === "text"
+                      ? "text-green-700"
+                      : "text-yellow-700"
+                  }`}
+                >
+                  {headerSelectionMode === "index"
+                    ? "Click on a column header to select it as the index column."
+                    : headerSelectionMode === "text"
+                    ? "Click on a column header to select it as the text column."
+                    : "Click on column headers to select which columns to anonymise."}
+                </p>
+                {headerSelectionMode === "anonymisation" &&
+                  selectedAnonymisationColumns.size > 0 && (
+                    <div className="mb-3">
+                      <p className="text-sm font-medium text-blue-900 mb-1">
+                        Selected columns for anonymisation:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {Array.from(selectedAnonymisationColumns).map(
+                          (column) => (
+                            <span
+                              key={column}
+                              className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium"
+                            >
+                              {column}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+                {headerSelectionMode === "anonymisation" && (
+                  <Button
+                    onClick={() => {
+                      // Placeholder for future anonymisation logic
+                    }}
+                    disabled={selectedAnonymisationColumns.size === 0}
+                    size="sm"
+                    data-cy="proceed-anonymisation-btn"
+                  >
+                    Proceed with Anonymisation (
+                    {selectedAnonymisationColumns.size} columns)
+                  </Button>
+                )}
               </div>
             )}
 
@@ -443,12 +522,9 @@ const TableView: React.FC<TableViewProps> = ({
         .highlighted-column-text {
           background-color: #e6ffe6 !important;
         }
-        .anonymisation-selectable {
+        .header-selectable {
           cursor: pointer !important;
           transition: background-color 0.2s ease !important;
-        }
-        .anonymisation-selectable:hover {
-          background-color: #fef3c7 !important;
         }
         .anonymisation-selected {
           background-color: #fbbf24 !important;
