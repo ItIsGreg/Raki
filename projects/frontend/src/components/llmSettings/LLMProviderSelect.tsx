@@ -43,7 +43,7 @@ export const LLMProviderSelect = () => {
         <SelectTrigger data-cy="llm-provider-trigger">
           <SelectValue placeholder="Select provider" />
         </SelectTrigger>
-        <SelectContent data-cy="llm-provider-content">
+        <SelectContent data-cy="llm-provider-content" className="z-[70]">
           <SelectItem value="openai" data-cy="llm-provider-openai">
             OpenAI
           </SelectItem>

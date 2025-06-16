@@ -1,5 +1,5 @@
 // frontend/src/components/llmSettings/MaxTokensInput.tsx
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,14 +15,15 @@ export const MaxTokensInput = () => {
   const dbMaxTokens = useLiveQuery(() => readAllMaxTokens());
   const [newMaxTokens, setNewMaxTokens] = useState<string>("");
   const [showMaxTokens, setShowMaxTokens] = useState(false);
+  const isInitializedRef = useRef(false);
 
   React.useEffect(() => {
-    console.log("useEffect triggered with dbMaxTokens:", dbMaxTokens);
-    if (dbMaxTokens) {
+    // Only initialize once when component mounts and data is available
+    if (dbMaxTokens && !isInitializedRef.current) {
       const shouldShow =
         dbMaxTokens.length > 0 && dbMaxTokens[0].value !== undefined;
-      console.log("Setting showMaxTokens to:", shouldShow);
       setShowMaxTokens(shouldShow);
+      isInitializedRef.current = true;
     }
   }, [dbMaxTokens]);
 

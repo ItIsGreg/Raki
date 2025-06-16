@@ -50,17 +50,7 @@ const ProfileChatView = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => {
-    console.log("Database values:", {
-      provider: dbLlmProvider?.[0]?.provider,
-      model: dbLlmModel?.[0]?.name,
-      url: dbLlmUrl?.[0]?.url,
-      maxTokens: dbMaxTokens?.[0]?.value,
-    });
-  }, [dbLlmProvider, dbLlmModel, dbLlmUrl, dbMaxTokens]);
-
   const callProfileChatAPI = async (messages: Message[]) => {
-    console.log("Calling API with messages:", messages);
     if (
       !dbLlmProvider ||
       !dbLlmModel ||
@@ -111,7 +101,6 @@ const ProfileChatView = ({
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    console.log("Sending message:", input);
     const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
@@ -133,15 +122,10 @@ const ProfileChatView = ({
         while (true) {
           const { done, value } = await reader.read();
           if (done) {
-            console.log(
-              "Stream complete. Final assistant message:",
-              assistantMessage.content
-            );
             break;
           }
 
           const chunk = decoder.decode(value);
-          console.log("Received chunk:", chunk);
           assistantMessage.content += chunk;
           setMessages((prev) => [
             ...prev.slice(0, -1),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   AnnotatedDataset,
   AnnotatedText,
@@ -157,11 +157,6 @@ const Annotation = () => {
       }
     }
   }, [activeAnnotatedDataset, profiles]);
-
-  // Add effect to log activeDataPoint changes
-  useEffect(() => {
-    console.log("Parent component - activeDataPoint changed:", activeDataPoint);
-  }, [activeDataPoint]);
 
   // Wrapper functions to handle type conversion
   const handleSetActiveAnnotatedDataset = (

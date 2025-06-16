@@ -40,6 +40,12 @@ const TableView: React.FC<TableViewProps> = ({
 }) => {
   const [indexColumn, setIndexColumn] = useState<string | null>(null);
   const [textColumn, setTextColumn] = useState<string | null>(null);
+  const [isAnonymisationMode, setIsAnonymisationMode] = useState(false);
+  const [selectedAnonymisationColumns, setSelectedAnonymisationColumns] =
+    useState<Set<string>>(new Set());
+  const [headerSelectionMode, setHeaderSelectionMode] = useState<
+    "none" | "index" | "text" | "anonymisation"
+  >("none");
   const gridRef = useRef(null);
 
   const columnNames = useMemo(() => {
@@ -47,28 +53,155 @@ const TableView: React.FC<TableViewProps> = ({
     return Object.keys(data[0]);
   }, [data]);
 
+  const handleColumnHeaderClick = useCallback(
+    (field: string) => {
+      if (headerSelectionMode === "none") {
+        return;
+      }
+
+      if (headerSelectionMode === "index") {
+        setIndexColumn(field);
+        setHeaderSelectionMode("none");
+      } else if (headerSelectionMode === "text") {
+        setTextColumn(field);
+        setHeaderSelectionMode("none");
+      } else if (headerSelectionMode === "anonymisation") {
+        setSelectedAnonymisationColumns((prev) => {
+          const newSet = new Set(prev);
+          if (newSet.has(field)) {
+            newSet.delete(field);
+          } else {
+            newSet.add(field);
+          }
+          return newSet;
+        });
+      }
+    },
+    [headerSelectionMode]
+  );
+
+  // Custom header component for clickable headers
+  const CustomHeader = React.useMemo(() => {
+    const HeaderComponent = (props: any) => {
+      const { displayName, column } = props;
+      const fieldName = column.getColId();
+
+      const handleClick = () => {
+        if (headerSelectionMode !== "none") {
+          handleColumnHeaderClick(fieldName);
+        }
+      };
+
+      const getHeaderStyle = () => {
+        const isSelected =
+          indexColumn === fieldName ||
+          textColumn === fieldName ||
+          selectedAnonymisationColumns.has(fieldName);
+
+        return {
+          fontWeight: isSelected ? "bold" : "normal",
+        };
+      };
+
+      const getHoverClass = () => {
+        if (headerSelectionMode === "none") return "";
+        if (headerSelectionMode === "index") return "hover:bg-blue-100";
+        if (headerSelectionMode === "text") return "hover:bg-green-100";
+        if (headerSelectionMode === "anonymisation")
+          return "hover:bg-yellow-100";
+        return "";
+      };
+
+      return (
+        <div
+          onClick={handleClick}
+          className={`w-full h-full flex items-center justify-center ${
+            headerSelectionMode !== "none" ? "cursor-pointer" : ""
+          } ${getHoverClass()}`}
+          style={getHeaderStyle()}
+        >
+          {displayName}
+        </div>
+      );
+    };
+
+    HeaderComponent.displayName = "CustomHeader";
+    return HeaderComponent;
+  }, [
+    headerSelectionMode,
+    indexColumn,
+    textColumn,
+    selectedAnonymisationColumns,
+    handleColumnHeaderClick,
+  ]);
+
   const columnDefs = useMemo(() => {
     if (!data || data.length === 0) return [];
     return columnNames.map((key) => ({
       field: key,
+      headerName: key,
       sortable: false,
       filter: false,
       resizable: false,
       suppressMovable: true,
-      headerClass:
-        indexColumn === key
-          ? "highlighted-column-index"
-          : textColumn === key
-          ? "highlighted-column-text"
-          : "",
-      cellClass:
-        indexColumn === key
-          ? "highlighted-column-index"
-          : textColumn === key
-          ? "highlighted-column-text"
-          : "",
+      headerComponent:
+        headerSelectionMode !== "none" ? CustomHeader : undefined,
+      headerClass: [
+        indexColumn === key ? "highlighted-column-index" : "",
+        textColumn === key ? "highlighted-column-text" : "",
+        headerSelectionMode !== "none" ? "header-selectable" : "",
+        selectedAnonymisationColumns.has(key) ? "anonymisation-selected" : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
+      cellClass: [
+        indexColumn === key ? "highlighted-column-index" : "",
+        textColumn === key ? "highlighted-column-text" : "",
+        selectedAnonymisationColumns.has(key) ? "anonymisation-selected" : "",
+      ]
+        .filter(Boolean)
+        .join(" "),
     }));
-  }, [data, columnNames, indexColumn, textColumn]);
+  }, [
+    data,
+    columnNames,
+    indexColumn,
+    textColumn,
+    headerSelectionMode,
+    selectedAnonymisationColumns,
+    CustomHeader,
+  ]);
+
+  const anonymiseText = useCallback(
+    (text: string, row: any): string => {
+      if (selectedAnonymisationColumns.size === 0) {
+        return text; // No anonymisation needed
+      }
+
+      let anonymisedText = text;
+
+      // Get all values from selected anonymisation columns for this row
+      const sensitiveValues = Array.from(selectedAnonymisationColumns)
+        .map((column) => row[column])
+        .filter((value) => value && String(value).trim() !== "")
+        .map((value) => String(value).trim());
+
+      // Remove each sensitive value from the text
+      sensitiveValues.forEach((sensitiveValue) => {
+        if (sensitiveValue.length > 0) {
+          // Create a case-insensitive regex with word boundaries
+          const regex = new RegExp(
+            `\\b${sensitiveValue.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+            "gi"
+          );
+          anonymisedText = anonymisedText.replace(regex, "[REDACTED]");
+        }
+      });
+
+      return anonymisedText;
+    },
+    [selectedAnonymisationColumns]
+  );
 
   const handleImportTexts = useCallback(() => {
     if (
@@ -84,19 +217,22 @@ const TableView: React.FC<TableViewProps> = ({
     // Process all rows including the first row
     data.forEach((row) => {
       const filename = row[indexColumn];
-      const text = row[textColumn];
+      const originalText = row[textColumn];
 
-      if (filename && text) {
+      if (filename && originalText) {
+        // Apply anonymisation if columns are selected
+        const processedText = anonymiseText(String(originalText), row);
+
         createText({
           datasetId: activeDataset.id,
           filename: String(filename),
-          text: String(text),
+          text: processedText,
         });
       }
     });
 
     onClose(); // Close the dialog after import
-  }, [activeDataset, indexColumn, textColumn, data, onClose]);
+  }, [activeDataset, indexColumn, textColumn, data, onClose, anonymiseText]);
 
   const hasData = data && data.length > 0;
 
@@ -123,33 +259,37 @@ const TableView: React.FC<TableViewProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div>
-                      <Select onValueChange={setIndexColumn}>
-                        <SelectTrigger
-                          className="w-[180px]"
-                          data-cy="index-column-select"
-                        >
-                          <SelectValue placeholder="Select index column" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {columnNames.map((name) => (
-                            <SelectItem
-                              key={name}
-                              value={name}
-                              data-cy={`index-column-option-${name}`}
-                            >
-                              {name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm font-medium">
+                        Index Column: {indexColumn || "None selected"}
+                      </span>
+                      <Button
+                        onClick={() => {
+                          if (headerSelectionMode === "index") {
+                            setHeaderSelectionMode("none");
+                          } else {
+                            setHeaderSelectionMode("index");
+                          }
+                        }}
+                        variant={
+                          headerSelectionMode === "index"
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        data-cy="select-index-column-btn"
+                      >
+                        {headerSelectionMode === "index"
+                          ? "Cancel Selection"
+                          : "Select Index Column"}
+                      </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>
-                      Choose the column that uniquely identifies each text
-                      entry, such as an ID or name. This will help organize and
-                      reference your data efficiently.
+                      Click the button then click a column header to select the
+                      index column. This column uniquely identifies each text
+                      entry.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -158,33 +298,35 @@ const TableView: React.FC<TableViewProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div>
-                      <Select onValueChange={setTextColumn}>
-                        <SelectTrigger
-                          className="w-[180px]"
-                          data-cy="text-column-select"
-                        >
-                          <SelectValue placeholder="Select text column" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {columnNames.map((name) => (
-                            <SelectItem
-                              key={name}
-                              value={name}
-                              data-cy={`text-column-option-${name}`}
-                            >
-                              {name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm font-medium">
+                        Text Column: {textColumn || "None selected"}
+                      </span>
+                      <Button
+                        onClick={() => {
+                          if (headerSelectionMode === "text") {
+                            setHeaderSelectionMode("none");
+                          } else {
+                            setHeaderSelectionMode("text");
+                          }
+                        }}
+                        variant={
+                          headerSelectionMode === "text" ? "default" : "outline"
+                        }
+                        size="sm"
+                        data-cy="select-text-column-btn"
+                      >
+                        {headerSelectionMode === "text"
+                          ? "Cancel Selection"
+                          : "Select Text Column"}
+                      </Button>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>
-                      Select the column containing the main text content. This
-                      text will be processed and converted into a structured,
-                      tabular format for further analysis.
+                      Click the button then click a column header to select the
+                      text column. This column contains the main content to be
+                      processed.
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -211,7 +353,123 @@ const TableView: React.FC<TableViewProps> = ({
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        onClick={() => {
+                          if (headerSelectionMode === "anonymisation") {
+                            setHeaderSelectionMode("none");
+                            setIsAnonymisationMode(false);
+                          } else {
+                            setHeaderSelectionMode("anonymisation");
+                            setIsAnonymisationMode(true);
+                            setSelectedAnonymisationColumns(new Set());
+                          }
+                        }}
+                        disabled={!hasData}
+                        variant={
+                          headerSelectionMode === "anonymisation"
+                            ? "default"
+                            : "outline"
+                        }
+                        data-cy="start-anonymisation-btn"
+                      >
+                        {headerSelectionMode === "anonymisation"
+                          ? "Exit Anonymisation"
+                          : "Start Anonymisation"}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      Anonymise the text content in the selected column before
+                      importing. This will help protect sensitive information in
+                      medical reports.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
+
+            {headerSelectionMode !== "none" && (
+              <div
+                className={`mb-4 p-4 rounded-lg border ${
+                  headerSelectionMode === "index"
+                    ? "bg-blue-50 border-blue-200"
+                    : headerSelectionMode === "text"
+                    ? "bg-green-50 border-green-200"
+                    : "bg-yellow-50 border-yellow-200"
+                }`}
+              >
+                <h4
+                  className={`font-medium mb-2 ${
+                    headerSelectionMode === "index"
+                      ? "text-blue-900"
+                      : headerSelectionMode === "text"
+                      ? "text-green-900"
+                      : "text-yellow-900"
+                  }`}
+                >
+                  {headerSelectionMode === "index"
+                    ? "Index Column Selection"
+                    : headerSelectionMode === "text"
+                    ? "Text Column Selection"
+                    : "Anonymisation Mode Active"}
+                </h4>
+                <p
+                  className={`text-sm mb-3 ${
+                    headerSelectionMode === "index"
+                      ? "text-blue-700"
+                      : headerSelectionMode === "text"
+                      ? "text-green-700"
+                      : "text-yellow-700"
+                  }`}
+                >
+                  {headerSelectionMode === "index"
+                    ? "Click on a column header to select it as the index column."
+                    : headerSelectionMode === "text"
+                    ? "Click on a column header to select it as the text column."
+                    : "Click on column headers to select which columns to anonymise."}
+                </p>
+                {headerSelectionMode === "anonymisation" &&
+                  selectedAnonymisationColumns.size > 0 && (
+                    <div className="mb-3">
+                      <p className="text-sm font-medium text-blue-900 mb-1">
+                        Selected columns for anonymisation:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {Array.from(selectedAnonymisationColumns).map(
+                          (column) => (
+                            <span
+                              key={column}
+                              className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium"
+                            >
+                              {column}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+                {headerSelectionMode === "anonymisation" && (
+                  <Button
+                    onClick={() => {
+                      // Placeholder for future anonymisation logic
+                    }}
+                    disabled={selectedAnonymisationColumns.size === 0}
+                    size="sm"
+                    data-cy="proceed-anonymisation-btn"
+                  >
+                    Proceed with Anonymisation (
+                    {selectedAnonymisationColumns.size} columns)
+                  </Button>
+                )}
+              </div>
+            )}
+
             <div
               className="ag-theme-alpine"
               style={{ height: 400, width: "100%" }}
@@ -258,6 +516,18 @@ const TableView: React.FC<TableViewProps> = ({
         }
         .highlighted-column-text {
           background-color: #e6ffe6 !important;
+        }
+        .header-selectable {
+          cursor: pointer !important;
+          transition: background-color 0.2s ease !important;
+        }
+        .anonymisation-selected {
+          background-color: #fbbf24 !important;
+          color: #92400e !important;
+          font-weight: bold !important;
+        }
+        .anonymisation-selected:hover {
+          background-color: #f59e0b !important;
         }
       `}</style>
     </Dialog>

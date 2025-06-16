@@ -229,7 +229,10 @@ const TextAnnotation = (props: TextAnnotationProps) => {
                 <span>Text Segmentation</span>
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setIsSettingsOpen(true)}
+                onClick={() => {
+                  // Add delay to ensure DropdownMenu cleanup finishes first
+                  setTimeout(() => setIsSettingsOpen(true), 100);
+                }}
                 data-cy="menu-setup"
               >
                 <Settings className="mr-2 h-4 w-4" />

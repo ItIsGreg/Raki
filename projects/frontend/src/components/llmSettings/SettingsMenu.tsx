@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Sheet,
   SheetContent,
@@ -29,6 +29,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({
   autoRerunFaulty,
   setAutoRerunFaulty,
 }) => {
+  // No longer needed - fixed at source in dropdown menu
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
