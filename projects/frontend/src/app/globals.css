@@ -112,4 +112,37 @@
       code { @apply bg-gray-100 px-1 py-0.5 rounded font-mono text-sm dark:bg-gray-800 dark:text-gray-200; }
       pre { @apply bg-gray-100 p-3 rounded my-3 overflow-auto dark:bg-gray-800; }
     }
+
+    /* Fix text selection in tutorial drawer for Chrome compatibility */
+    .tutorial-drawer-content .tutorial-content {
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+    }
+
+    /* Ensure text content within tutorial is selectable */
+    .tutorial-content p,
+    .tutorial-content div,
+    .tutorial-content span,
+    .tutorial-content li,
+    .tutorial-content h1,
+    .tutorial-content h2,
+    .tutorial-content h3,
+    .tutorial-content h4,
+    .tutorial-content h5,
+    .tutorial-content h6 {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    /* Keep interactive elements non-selectable */
+    .tutorial-content button,
+    .tutorial-content input,
+    .tutorial-content [role="tab"],
+    .tutorial-content [role="tablist"],
+    .tutorial-content [role="checkbox"] {
+      user-select: none;
+      -webkit-user-select: none;
+    }
   }

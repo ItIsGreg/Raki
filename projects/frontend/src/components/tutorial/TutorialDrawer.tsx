@@ -55,6 +55,8 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
         onOpenChange={onOpenChange}
         modal={false}
         shouldScaleBackground={false}
+        // Disable drag-to-dismiss to allow text selection in Chrome
+        dismissible={false}
       >
         <DrawerTrigger asChild>
           <Button
@@ -65,7 +67,7 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
             <HelpCircle className="h-4 w-4" />
           </Button>
         </DrawerTrigger>
-        <DrawerContent className="h-[50vh]">
+        <DrawerContent className="h-[50vh] tutorial-drawer-content">
           <Tabs defaultValue="welcome" className="w-full h-full flex flex-col">
             <div className="flex items-center justify-between px-4 border-b">
               <TabsList className="justify-start">
@@ -95,7 +97,7 @@ const TutorialDrawer = ({ isOpen, onOpenChange }: TutorialDrawerProps) => {
                 </Button>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto tutorial-content">
               <TabsContent value="welcome" className="h-full">
                 <WelcomeTab />
               </TabsContent>
