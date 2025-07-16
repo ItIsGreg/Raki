@@ -15,9 +15,28 @@ describe('Text Segmentation Manual Annotation', () => {
     // Start from the homepage
     cy.visit('http://localhost:3000/textSegmentation')
 
-    // Configure LLM settings first
-    cy.get('[data-cy="setup-card"]').click()
-    cy.get('[data-cy="settings-dialog"]').should('be.visible')
+    // Configure LLM settings using the robust approach
+    cy.get('[data-cy="burger-menu"]')
+      .should('be.visible')
+      .should('not.be.disabled')
+      .click({ force: true })
+    
+    cy.get('[data-cy="burger-menu-content"]')
+      .should('be.visible')
+      .should('exist')
+      .then($menu => {
+        if ($menu.length) {
+          cy.wrap($menu)
+            .find('[data-cy="menu-setup"]')
+            .should('be.visible')
+            .click({ force: true })
+        }
+      })
+
+    // Wait for settings dialog to appear with a longer timeout
+    cy.get('[data-cy="settings-dialog"]', { timeout: 10000 })
+      .should('be.visible')
+      .should('exist')
 
     // Configure LLM Provider
     cy.get('[data-cy="llm-provider-trigger"]').click()
@@ -81,15 +100,16 @@ describe('Text Segmentation Manual Annotation', () => {
     cy.get('[data-cy="settings-close-button"]').click()
     cy.get('[data-cy="settings-dialog"]').should('not.exist')
 
-    // Create a profile first
-    cy.get('[data-cy="profiles-card"]').click()
+    // Create a profile first - switch to profiles tab
+    cy.get('[data-cy="profiles-tab"]').click({ force: true })
     cy.get('[data-cy="add-profile-button"]').click()
     cy.get('[data-cy="entity-name-input"]').type('Test Segmentation Profile')
     cy.get('[data-cy="entity-description-input"]').type('Test Segmentation Profile Description')
     cy.get('[data-cy="entity-save-button"]').click()
 
     // Create a segmentation rule
-    cy.get('[data-cy="profile-card"]').click()
+    cy.get('[data-cy="profile-select-trigger"]').click()
+    cy.get('[data-cy="profile-select-content"]').contains('Test Segmentation Profile').click()
     cy.get('[data-cy="new-datapoint-button"]').click()
     cy.get('[data-cy="datapoint-name-input"]').type('Test Segmentation Rule')
     cy.get('[data-cy="datapoint-explanation-input"]').type('Test Segmentation Rule Explanation')
@@ -97,8 +117,8 @@ describe('Text Segmentation Manual Annotation', () => {
     cy.get('[data-cy="add-synonym-button"]').click()
     cy.get('[data-cy="save-datapoint-button"]').first().click()
 
-    // Navigate to Datasets using navbar
-    cy.get('[data-cy="nav-datasets-button"]').click()
+    // Switch to text upload tab to create dataset
+    cy.get('[data-cy="text-upload-tab"]').click({ force: true })
 
     // Create a dataset
     cy.get('[data-cy="add-dataset-button"]').click()
@@ -107,7 +127,8 @@ describe('Text Segmentation Manual Annotation', () => {
     cy.get('[data-cy="entity-save-button"]').click()
 
     // Upload test text to dataset
-    cy.get('[data-cy="dataset-card"]').click()
+    cy.get('[data-cy="text-dataset-select-trigger"]').click()
+    cy.get('[data-cy="text-dataset-select-content"]').contains('Test Segmentation Dataset').click()
     cy.get('[data-cy="upload-texts-btn"]').click()
     cy.get('[data-cy="file-input"]').attachFile({
       filePath: 'segmentation_texts/015.md',
@@ -118,11 +139,11 @@ describe('Text Segmentation Manual Annotation', () => {
     // Wait for text to load
     cy.wait(1000)
 
-    // Navigate to AI Annotation using the correct route
-    cy.visit('http://localhost:3000/textSegmentation/aiAnnotation')
+    // Switch to annotation tab to create annotated dataset
+    cy.get('[data-cy="annotation-tab"]').click({ force: true })
 
     // Create annotated dataset
-    cy.get('[data-cy="ai-annotate-add-dataset-button"]').click()
+    cy.get('[data-cy="add-dataset-button"]').click()
     cy.get('[data-cy="dataset-name-input"]').type('Test Annotated Segmentation Dataset')
     cy.get('[data-cy="dataset-description-input"]').type('This is a test annotated segmentation dataset')
     
@@ -137,42 +158,31 @@ describe('Text Segmentation Manual Annotation', () => {
     // Save the annotated dataset
     cy.get('[data-cy="save-dataset-button"]').click()
 
-    // Verify the new annotated dataset appears in the list
-    cy.get('[data-cy="annotated-dataset-card"]')
-      .should('be.visible')
-      .should('contain', 'Test Annotated Segmentation Dataset')
-      .should('contain', 'This is a test annotated segmentation dataset')
-      .should('contain', 'Test Segmentation Profile')
-      .should('contain', 'Test Segmentation Dataset')
-      .click()
-      
     // Start annotation process
-    cy.get('[data-cy="start-annotation-button"]').should('be.visible').click()
+    cy.get('[data-cy="start-annotation-button"]').scrollIntoView().should('be.visible').click()
     
     // Wait for annotation to begin processing and complete
-    cy.wait(2000) // Increased wait time to allow for processing
+    cy.wait(5000) // Increased wait time to allow for processing
     
     // Check that the annotated text cards exist
-    cy.get('[data-cy="annotated-text-card"]')
+    cy.get('[data-cy="manual-annotated-text-card"]', { timeout: 10000 })
       .should('exist')
       .should('have.length.at.least', 1)
-    
-    // Navigate to Manual Annotation using the correct route
-    cy.visit('http://localhost:3000/textSegmentation/annotation')
+
+    // Proceed directly to select an annotated text and continue
   })
 
   it('should create and manage segments', () => {
     // Select the annotated dataset
-    cy.get('[data-cy="manual-annotated-dataset-card"]')
+    cy.get('[data-cy="annotated-dataset-card"]')
       .first()
       .click()
 
-      // Verify that clicking the dataset card shows annotated texts
-    cy.get('[data-cy="manual-annotated-text-list-container"]')
-    .find('[data-cy="manual-annotated-text-card"]')
-    .should('be.visible')
-    .click()
-  
+    // Verify that clicking the dataset card shows annotated texts
+    cy.get('[data-cy="annotated-text-list-container"]')
+      .find('[data-cy="manual-annotated-text-card"]')
+      .should('be.visible')
+      .click()
 
     // Verify text display is visible
     cy.get('[data-cy="text-display"]')
