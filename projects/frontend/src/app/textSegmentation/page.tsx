@@ -185,13 +185,17 @@ const TextSegmentation = () => {
   });
 
   // Get text content from database
-  const text = useLiveQuery<Text | undefined>(
-    () =>
-      activeAnnotatedText?.textId
-        ? readText(activeAnnotatedText.textId)
-        : undefined,
-    [activeAnnotatedText?.textId]
-  );
+  const text = useLiveQuery<Text | undefined>(() => {
+    // In text upload tab, use activeText directly
+    if (activeTab === "text-upload" && activeText) {
+      return Promise.resolve(activeText);
+    }
+    // In annotation tab, get text from activeAnnotatedText
+    if (activeAnnotatedText?.textId) {
+      return readText(activeAnnotatedText.textId);
+    }
+    return Promise.resolve(undefined);
+  }, [activeAnnotatedText?.textId, activeText, activeTab]);
 
   const handleUpdateSegment = async (segment: any) => {
     console.log("Updating segment:", segment);
@@ -275,6 +279,7 @@ const TextSegmentation = () => {
             activeAnnotatedDataset={activeAnnotatedDataset}
             setActiveSegmentId={setActiveSegmentId}
             onUpdateSegment={handleUpdateSegment}
+            isReadOnly={activeTab === "text-upload"}
           />
         </div>
       </div>

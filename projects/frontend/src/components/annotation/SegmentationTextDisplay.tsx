@@ -32,6 +32,7 @@ interface TextDisplayProps {
   activeSegmentId?: string;
   setActiveSegmentId: (id: string | undefined) => void;
   onUpdateSegment?: (segment: SegmentDataPoint) => void;
+  isReadOnly?: boolean; // New prop to indicate if text should be read-only (no annotation features)
 }
 
 export const TextDisplay = ({
@@ -41,6 +42,7 @@ export const TextDisplay = ({
   activeSegmentId,
   setActiveSegmentId,
   onUpdateSegment,
+  isReadOnly = false,
 }: TextDisplayProps) => {
   const [selectionInfo, setSelectionInfo] = useState<{
     startIndex: number;
@@ -112,6 +114,11 @@ export const TextDisplay = ({
   }, [selectionInfo]);
 
   const handleTextSelection = useCallback(() => {
+    // Don't handle text selection in read-only mode
+    if (isReadOnly) {
+      return;
+    }
+
     const selection = window.getSelection();
     if (!selection || selection.toString().trim().length === 0) {
       return;
@@ -227,6 +234,11 @@ export const TextDisplay = ({
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
+      // Don't handle context menu in read-only mode
+      if (isReadOnly) {
+        return;
+      }
+
       e.preventDefault();
 
       // Get text selection
@@ -400,6 +412,11 @@ export const TextDisplay = ({
   };
 
   const renderedContent = useMemo(() => {
+    // In read-only mode, just display the text without any annotation features
+    if (isReadOnly) {
+      return <div className="whitespace-pre-wrap break-words">{text}</div>;
+    }
+
     let lastIndex = 0;
     const textParts = [];
     let partCounter = 0;
@@ -563,15 +580,19 @@ export const TextDisplay = ({
     <ScrollArea className="h-screen w-full">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Text Segmentation</CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={logTextParts}
-            data-cy="debug-text-parts-btn"
-          >
-            Debug Text Parts
-          </Button>
+          <CardTitle>
+            {isReadOnly ? "Text Display" : "Text Segmentation"}
+          </CardTitle>
+          {!isReadOnly && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={logTextParts}
+              data-cy="debug-text-parts-btn"
+            >
+              Debug Text Parts
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           <div
@@ -584,7 +605,7 @@ export const TextDisplay = ({
         </CardContent>
       </Card>
 
-      {selectionInfo && (
+      {selectionInfo && !isReadOnly && (
         <TooltipProvider>
           <Tooltip open={true}>
             <TooltipTrigger asChild>
