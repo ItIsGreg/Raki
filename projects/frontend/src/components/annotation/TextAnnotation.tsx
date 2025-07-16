@@ -186,8 +186,46 @@ const TextAnnotation = (props: TextAnnotationProps) => {
         data-cy="text-display-container"
       >
         <Card>
-          <CardHeader>
-            <CardTitle data-cy="text-display-title">Text Display</CardTitle>
+          <CardHeader className="flex flex-row items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" data-cy="burger-menu">
+                  <Menu className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" data-cy="burger-menu-content">
+                <DropdownMenuItem
+                  onClick={() => router.push("/")}
+                  data-cy="menu-home"
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Home</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => router.push("/textSegmentation")}
+                  data-cy="menu-text-segmentation"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  <span>Text Segmentation</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    // Add delay to ensure DropdownMenu cleanup finishes first
+                    setTimeout(() => setIsSettingsOpen(true), 100);
+                  }}
+                  data-cy="menu-setup"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Setup</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <CardTitle
+              data-cy="text-display-title"
+              className="flex-1 text-center"
+            >
+              Text Display
+            </CardTitle>
           </CardHeader>
           <CardContent
             className="whitespace-pre-wrap"
