@@ -26,19 +26,28 @@ const SingleTextInput: React.FC<SingleTextInputProps> = ({
   const [filename, setFilename] = useState("");
   const [text, setText] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    console.log("handleSubmit called", { activeDataset, filename, text });
     if (!activeDataset || !filename || !text) return;
 
-    createText({
-      datasetId: activeDataset.id,
-      filename,
-      text,
-    });
+    try {
+      console.log("Creating text...");
+      await createText({
+        datasetId: activeDataset.id,
+        filename,
+        text,
+      });
+      console.log("Text created successfully");
 
-    // Reset form and close modal
-    setFilename("");
-    setText("");
-    onClose();
+      // Reset form and close modal
+      setFilename("");
+      setText("");
+      onClose();
+      console.log("Modal closed");
+    } catch (error) {
+      console.error("Error creating text:", error);
+      // Optionally show an error message to the user
+    }
   };
 
   return (

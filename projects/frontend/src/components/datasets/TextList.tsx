@@ -30,10 +30,10 @@ import {
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
 
-  const dbTexts = useLiveQuery(
-    () => readTextsByDataset(activeDataset?.id),
-    [activeDataset]
-  );
+  const dbTexts = useLiveQuery(() => {
+    console.log("useLiveQuery running for dataset:", activeDataset?.id);
+    return readTextsByDataset(activeDataset?.id);
+  }, [activeDataset]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tableFileInputRef = useRef<HTMLInputElement>(null);
