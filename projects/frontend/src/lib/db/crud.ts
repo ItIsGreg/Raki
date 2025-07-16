@@ -320,9 +320,9 @@ export const updateText = async (text: Text) => {
 export const deleteText = async (id: string) => {
   // delete all annotated texts that belong to the text
   const annotatedTexts = await readAnnotatedTextsByText(id);
-  annotatedTexts.forEach((annotatedText) => {
-    deleteAnnotatedText(annotatedText.id);
-  });
+  await Promise.all(annotatedTexts.map((annotatedText) => 
+    deleteAnnotatedText(annotatedText.id)
+  ));
   return db.Texts.delete(id);
 };
 

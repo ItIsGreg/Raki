@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   readAllAnnotatedDatasets,
+  readAnnotatedDatasetsByMode,
   readAllApiKeys,
   readAllTexts,
   readAllAnnotatedTexts,
@@ -56,7 +57,7 @@ export const useAnnotationState = <T extends ProfilePointType>({
   const [faultyBatchIndex, setFaultyBatchIndex] = useState(0);
 
   // db queries
-  const dbAnnotatedDatasets = useLiveQuery(() => readAllAnnotatedDatasets());
+  const dbAnnotatedDatasets = useLiveQuery(() => readAnnotatedDatasetsByMode(mode), [mode]);
   const dbApiKeys = useLiveQuery(() => readAllApiKeys());
   const dbTexts = useLiveQuery(() => readAllTexts());
   const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
