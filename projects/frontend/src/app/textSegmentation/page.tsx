@@ -39,8 +39,6 @@ import {
   createDataset,
   deleteDataset,
   readTextsByDataset,
-  getUserSettings,
-  updateUserSettings,
   readText,
   updateSegmentDataPoint,
 } from "@/lib/db/crud";
@@ -56,7 +54,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import TutorialDrawer from "@/components/tutorial/TutorialDrawer";
+
 import { AnnotatedDatasetCard } from "@/components/aiAnnotation/AnnotatedDatasetCard";
 import {
   Collapsible,
@@ -103,32 +101,11 @@ const TextSegmentation = () => {
   );
   const [activeTab, setActiveTab] = useState("annotation");
   const [activeText, setActiveText] = useState<Text | undefined>(undefined);
-  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
-  const [tutorialCompleted, setTutorialCompleted] = useState(false);
+
   const [isCardExpanded, setIsCardExpanded] = useState(true);
   const [editingDataset, setEditingDataset] = useState<
     AnnotatedDataset | undefined
   >(undefined);
-
-  // Get user settings from database
-  const userSettings = useLiveQuery(() => getUserSettings(), []);
-
-  // Update tutorial completed state when user settings change
-  useEffect(() => {
-    if (userSettings) {
-      setTutorialCompleted(userSettings.tutorialCompleted);
-    }
-  }, [userSettings]);
-
-  // Handle tutorial completion
-  const handleTutorialComplete = async (completed: boolean) => {
-    setTutorialCompleted(completed);
-    await updateUserSettings({ tutorialCompleted: completed });
-    // Close the drawer when tutorial is marked as completed
-    if (completed) {
-      setIsTutorialOpen(false);
-    }
-  };
 
   // Get profiles from database
   const profiles = useLiveQuery(() => readProfilesByMode(mode), [mode]);
@@ -263,12 +240,6 @@ const TextSegmentation = () => {
       className="grid grid-cols-7 gap-4 h-full overflow-hidden"
       data-cy="segmentation-container"
     >
-      <TutorialDrawer
-        isOpen={isTutorialOpen}
-        onOpenChange={setIsTutorialOpen}
-        data-cy="tutorial-drawer"
-      />
-
       {/* Left side - Text Display */}
       <div className="col-span-4 flex flex-col h-full" data-cy="text-display">
         <div className="flex-1 h-full">
