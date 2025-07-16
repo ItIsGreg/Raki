@@ -1,5 +1,5 @@
 // frontend/src/app/(navbarRoutes)/datasets/SingleTextInput.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,33 @@ const SingleTextInput: React.FC<SingleTextInputProps> = ({
 }) => {
   const [filename, setFilename] = useState("");
   const [text, setText] = useState("");
+
+  // Clean up body styles when modal opens/closes
+  useEffect(() => {
+    // Always ensure body is not locked when our modal is active
+    if (isOpen) {
+      document.body.removeAttribute("data-scroll-locked");
+      document.body.style.pointerEvents = "";
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.removeAttribute("data-scroll-locked");
+      document.body.style.pointerEvents = "";
+    };
+  }, [isOpen]);
+
+  // Aggressive cleanup - constantly remove scroll lock when modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const interval = setInterval(() => {
+      document.body.removeAttribute("data-scroll-locked");
+      document.body.style.pointerEvents = "";
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [isOpen]);
 
   const handleSubmit = async () => {
     if (!activeDataset || !filename || !text) return;

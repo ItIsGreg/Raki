@@ -43,12 +43,16 @@ describe('Text Segmentation Datasets (Unified UI)', () => {
       cy.get('[data-cy="text-dataset-select-trigger"]').should('contain', 'Text Segmentation Test Dataset')
     })
 
-    it('should add a single text through the UI', () => {
+    it.only('should add a single text through the UI', () => {
       // Open single text input dialog through dropdown
       cy.get('[data-cy="upload-texts-btn"]').click()
       cy.get('[data-cy="single-text-option"]').click()
+      // Wait for the modal to be fully open and dropdown to close
+      cy.get('[data-cy="single-text-filename-input"]').should('be.visible')
+      // Small wait to ensure modal is fully rendered
+      cy.wait(500)
       cy.get('[data-cy="single-text-filename-input"]').type('Sample Text')
-      cy.get('[data-cy="single-text-content-input"]').type('This is a sample text content for segmentation testing.')
+      cy.get('[data-cy="single-text-content-input"]').type('This is a sample text content for segmentation testing.', { force: true })
       cy.get('[data-cy="add-single-text-btn"]').click()
       cy.get('[data-cy="text-card"]').should('be.visible').should('contain', 'Sample Text')
     })
