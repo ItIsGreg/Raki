@@ -7,7 +7,6 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { createText, deleteText, readTextsByDataset } from "@/lib/db/crud";
-import { useLiveQuery } from "dexie-react-hooks";
 import { TextListProps } from "../../app/types";
 import { TiDeleteOutline } from "react-icons/ti";
 import { useRef, useState, useEffect } from "react";
@@ -30,10 +29,8 @@ import {
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
 
-  const dbTexts = useLiveQuery(() => {
-    console.log("useLiveQuery running for dataset:", activeDataset?.id);
-    return readTextsByDataset(activeDataset?.id);
-  }, [activeDataset]);
+  const [dbTexts, setDbTexts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tableFileInputRef = useRef<HTMLInputElement>(null);
@@ -41,6 +38,44 @@ const TextList = (props: TextListProps) => {
   const [isTableViewOpen, setIsTableViewOpen] = useState(false);
   const [tableData, setTableData] = useState<any[]>([]);
   const [isSingleTextOpen, setIsSingleTextOpen] = useState(false);
+
+  // Function to refresh texts
+  const refreshTexts = async () => {
+    if (!activeDataset?.id) {
+      setDbTexts([]);
+      return;
+    }
+
+    try {
+      const texts = await readTextsByDataset(activeDataset.id);
+      setDbTexts(texts || []);
+    } catch (error) {
+      console.error("Error refreshing texts:", error);
+    }
+  };
+
+  // Load texts when activeDataset changes
+  useEffect(() => {
+    const loadTexts = async () => {
+      if (!activeDataset?.id) {
+        setDbTexts([]);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const texts = await readTextsByDataset(activeDataset.id);
+        setDbTexts(texts || []);
+      } catch (error) {
+        console.error("Error loading texts:", error);
+        setDbTexts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTexts();
+  }, [activeDataset?.id]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -90,6 +125,7 @@ const TextList = (props: TextListProps) => {
             filename: file.name,
             text,
           });
+          await refreshTexts();
         } catch (error) {
           console.error("Error processing PDF:", error);
         }
@@ -103,6 +139,7 @@ const TextList = (props: TextListProps) => {
             filename: file.name,
             text,
           });
+          await refreshTexts();
         };
         reader.readAsText(file);
       } else {
@@ -115,6 +152,7 @@ const TextList = (props: TextListProps) => {
             filename: file.name,
             text,
           });
+          await refreshTexts();
         };
         reader.readAsText(file);
       }
@@ -320,9 +358,10 @@ const TextList = (props: TextListProps) => {
                 <TiDeleteOutline
                   className="hover:text-red-500 cursor-pointer"
                   size={20}
-                  onClick={(e) => {
+                  onClick={async (e) => {
                     e.stopPropagation();
-                    deleteText(text.id);
+                    await deleteText(text.id);
+                    await refreshTexts();
                   }}
                   data-cy="delete-text-btn"
                 />
@@ -342,6 +381,7 @@ const TextList = (props: TextListProps) => {
         isOpen={isSingleTextOpen}
         onClose={() => setIsSingleTextOpen(false)}
         activeDataset={activeDataset}
+        onTextCreated={refreshTexts}
       />
     </div>
   );

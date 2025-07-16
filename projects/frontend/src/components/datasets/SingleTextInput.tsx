@@ -16,12 +16,14 @@ interface SingleTextInputProps {
   isOpen: boolean;
   onClose: () => void;
   activeDataset: Dataset | undefined;
+  onTextCreated?: () => Promise<void>;
 }
 
 const SingleTextInput: React.FC<SingleTextInputProps> = ({
   isOpen,
   onClose,
   activeDataset,
+  onTextCreated,
 }) => {
   const [filename, setFilename] = useState("");
   const [text, setText] = useState("");
@@ -38,6 +40,11 @@ const SingleTextInput: React.FC<SingleTextInputProps> = ({
         text,
       });
       console.log("Text created successfully");
+
+      // Refresh the texts list if callback provided
+      if (onTextCreated) {
+        await onTextCreated();
+      }
 
       // Reset form and close modal
       setFilename("");
