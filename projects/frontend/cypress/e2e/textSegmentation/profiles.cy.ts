@@ -1,36 +1,23 @@
-describe('Text Segmentation Profiles page', () => {
+describe('Text Segmentation Profiles (Unified UI)', () => {
   beforeEach(() => {
     // Clear IndexedDB (Dexie) before each test
     indexedDB.deleteDatabase('myDatabase')
     
-    // Start from the homepage before each test
+    // Start from the text segmentation page and switch to profiles tab
     cy.visit('http://localhost:3000/textSegmentation')
+    cy.get('[data-cy="profiles-tab"]').click()
   })
 
-  it('should navigate to profiles page and show all components', () => {
-    // Check if profiles card exists and is visible
-    cy.get('[data-cy="profiles-card"]')
-      .should('be.visible')
-      .should('contain', 'Profiles')
-      
-    // Click on the profiles card and wait for navigation
-    cy.get('[data-cy="profiles-card"]').click()
-    
-    // Add a small wait to ensure navigation completes
-    cy.wait(500)
-    
-    // Verify the profiles page components are present
-    cy.get('[data-cy="profiles-page"]').should('be.visible')
-    cy.get('[data-cy="profile-list-container"]').should('be.visible')
+  it('should show all profile components in the unified UI', () => {
+    // Verify the profiles tab content is present
+    cy.get('[data-cy="profiles-tab"]').should('have.attr', 'data-state', 'active')
+    cy.get('[data-cy="add-profile-button"]').should('be.visible')
   })
 
   it('should create a new profile and select it', () => {
     const profileName = 'Text Segmentation Profile'
     const profileDescription = 'Test Profile for Text Segmentation'
 
-    // Navigate to profiles page
-    cy.get('[data-cy="profiles-card"]').click()
-    
     // Click add profile button
     cy.get('[data-cy="add-profile-button"]').click()
     
@@ -46,14 +33,19 @@ describe('Text Segmentation Profiles page', () => {
     // Save the profile
     cy.get('[data-cy="entity-save-button"]').click()
     
-    // Wait for the profile to be created and verify it appears in the list
-    cy.get('[data-cy="profile-card"]')
+    // Wait for the profile to be created and verify it appears in the select
+    cy.get('[data-cy="profile-select-trigger"]')
       .should('be.visible')
+      .click()
+    
+    cy.get('[data-cy="profile-select-content"]')
+      .should('be.visible')
+      .contains(profileName)
       .click()
       
     // Verify the profile is selected
-    cy.get('[data-cy="profile-card"]')
-      .should('have.class', 'bg-gray-100')
+    cy.get('[data-cy="profile-select-trigger"]')
+      .should('contain', profileName)
   })
 
   it('should create a new segmentation rule', () => {
@@ -63,16 +55,16 @@ describe('Text Segmentation Profiles page', () => {
     const ruleDescription = 'Test Segmentation Rule Description'
     const synonym = 'Test Synonym'
 
-    // Navigate to profiles page and create a profile first
-    cy.get('[data-cy="profiles-card"]').click()
+    // Create a profile first
     cy.get('[data-cy="add-profile-button"]').click()
     cy.get('[data-cy="entity-name-input"]').type(profileName)
     cy.get('[data-cy="entity-description-input"]').type(profileDescription)
     cy.get('[data-cy="entity-save-button"]').click()
 
     // Select the created profile
-    cy.get('[data-cy="profile-card"]')
-      .should('be.visible')
+    cy.get('[data-cy="profile-select-trigger"]').click()
+    cy.get('[data-cy="profile-select-content"]')
+      .contains(profileName)
       .click()
 
     // Create a new segmentation rule
