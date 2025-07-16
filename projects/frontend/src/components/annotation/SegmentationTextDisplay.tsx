@@ -3,7 +3,15 @@ import { SegmentDataPoint, AnnotatedText, AnnotatedDataset } from "@/lib/db/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
+import { Trash, Menu, Settings, Home, FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSettings } from "@/contexts/SettingsContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
@@ -44,6 +52,8 @@ export const TextDisplay = ({
   onUpdateSegment,
   isReadOnly = false,
 }: TextDisplayProps) => {
+  const { setIsSettingsOpen } = useSettings();
+  const router = useRouter();
   const [selectionInfo, setSelectionInfo] = useState<{
     startIndex: number;
     endIndex: number;
@@ -579,8 +589,41 @@ export const TextDisplay = ({
   return (
     <ScrollArea className="h-screen w-full">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>
+        <CardHeader className="flex flex-row items-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" data-cy="burger-menu">
+                <Menu className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" data-cy="burger-menu-content">
+              <DropdownMenuItem
+                onClick={() => router.push("/")}
+                data-cy="menu-home"
+              >
+                <Home className="mr-2 h-4 w-4" />
+                <span>Home</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => router.push("/dataPointExtraction")}
+                data-cy="menu-datapoint-extraction"
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Data Point Extraction</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  // Add delay to ensure DropdownMenu cleanup finishes first
+                  setTimeout(() => setIsSettingsOpen(true), 100);
+                }}
+                data-cy="menu-setup"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Setup</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <CardTitle className="flex-1 text-center">
             {isReadOnly ? "Text Display" : "Text Segmentation"}
           </CardTitle>
           {!isReadOnly && (
