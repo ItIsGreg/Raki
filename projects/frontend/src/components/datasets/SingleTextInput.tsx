@@ -1,11 +1,5 @@
 // frontend/src/app/(navbarRoutes)/datasets/SingleTextInput.tsx
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -29,17 +23,14 @@ const SingleTextInput: React.FC<SingleTextInputProps> = ({
   const [text, setText] = useState("");
 
   const handleSubmit = async () => {
-    console.log("handleSubmit called", { activeDataset, filename, text });
     if (!activeDataset || !filename || !text) return;
 
     try {
-      console.log("Creating text...");
       await createText({
         datasetId: activeDataset.id,
         filename,
         text,
       });
-      console.log("Text created successfully");
 
       // Refresh the texts list if callback provided
       if (onTextCreated) {
@@ -50,19 +41,31 @@ const SingleTextInput: React.FC<SingleTextInputProps> = ({
       setFilename("");
       setText("");
       onClose();
-      console.log("Modal closed");
     } catch (error) {
       console.error("Error creating text:", error);
       // Optionally show an error message to the user
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Add Single Text</DialogTitle>
-        </DialogHeader>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/80" onClick={onClose} />
+
+      {/* Modal Content */}
+      <div className="relative z-50 bg-background border rounded-lg p-6 w-full max-w-2xl mx-4">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Add Single Text</h2>
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            ✕
+          </button>
+        </div>
+
         <div className="flex flex-col space-y-4">
           <div>
             <label className="text-sm font-medium">Filename</label>
@@ -92,8 +95,8 @@ const SingleTextInput: React.FC<SingleTextInputProps> = ({
             Add Text
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 
