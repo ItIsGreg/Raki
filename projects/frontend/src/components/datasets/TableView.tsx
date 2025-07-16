@@ -30,6 +30,7 @@ interface TableViewProps {
   onClose: () => void;
   data: any[];
   activeDataset: Dataset | undefined;
+  onTextsImported?: () => Promise<void>;
 }
 
 const TableView: React.FC<TableViewProps> = ({
@@ -37,6 +38,7 @@ const TableView: React.FC<TableViewProps> = ({
   onClose,
   data,
   activeDataset,
+  onTextsImported,
 }) => {
   const [indexColumn, setIndexColumn] = useState<string | null>(null);
   const [textColumn, setTextColumn] = useState<string | null>(null);
@@ -203,7 +205,7 @@ const TableView: React.FC<TableViewProps> = ({
     [selectedAnonymisationColumns]
   );
 
-  const handleImportTexts = useCallback(() => {
+  const handleImportTexts = useCallback(async () => {
     if (
       !activeDataset ||
       !indexColumn ||
@@ -215,7 +217,7 @@ const TableView: React.FC<TableViewProps> = ({
     }
 
     // Process all rows including the first row
-    data.forEach((row) => {
+    const importPromises = data.map((row) => {
       const filename = row[indexColumn];
       const originalText = row[textColumn];
 
@@ -223,16 +225,33 @@ const TableView: React.FC<TableViewProps> = ({
         // Apply anonymisation if columns are selected
         const processedText = anonymiseText(String(originalText), row);
 
-        createText({
+        return createText({
           datasetId: activeDataset.id,
           filename: String(filename),
           text: processedText,
         });
       }
+      return Promise.resolve();
     });
 
+    // Wait for all texts to be created
+    await Promise.all(importPromises);
+
+    // Refresh the texts list if callback provided
+    if (onTextsImported) {
+      await onTextsImported();
+    }
+
     onClose(); // Close the dialog after import
-  }, [activeDataset, indexColumn, textColumn, data, onClose, anonymiseText]);
+  }, [
+    activeDataset,
+    indexColumn,
+    textColumn,
+    data,
+    onClose,
+    anonymiseText,
+    onTextsImported,
+  ]);
 
   const hasData = data && data.length > 0;
 

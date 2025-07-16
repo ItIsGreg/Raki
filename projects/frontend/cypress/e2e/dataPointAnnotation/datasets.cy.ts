@@ -287,12 +287,17 @@ describe('Datasets page', () => {
         // Verify table is displayed
         cy.get('[data-cy="table-grid"]').should('be.visible')
 
-        // Select index and text columns
-        cy.get('[data-cy="index-column-select"]').click()
-        cy.get('[data-cy="index-column-option-Index"]').click()
+        // Select index column by clicking on the header
+        cy.get('[data-cy="select-index-column-btn"]').click()
+        cy.get('[data-cy="table-grid"]')
+          .find('.ag-header-cell[col-id="Index"]')
+          .click()
 
-        cy.get('[data-cy="text-column-select"]').click()
-        cy.get('[data-cy="text-column-option-Text"]').click()
+        // Select text column by clicking on the header  
+        cy.get('[data-cy="select-text-column-btn"]').click()
+        cy.get('[data-cy="table-grid"]')
+          .find('.ag-header-cell[col-id="Text"]')
+          .click()
 
         // Import texts
         cy.get('[data-cy="import-texts-btn"]').click()

@@ -376,6 +376,7 @@ const TextList = (props: TextListProps) => {
         onClose={() => setIsTableViewOpen(false)}
         data={tableData}
         activeDataset={activeDataset}
+        onTextsImported={refreshTexts}
       />
       <SingleTextInput
         isOpen={isSingleTextOpen}
