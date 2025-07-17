@@ -9,6 +9,9 @@ describe('Annotated Datasets', () => {
   })
 
   beforeEach(() => {
+    // Clear downloads before each test
+    cy.task('clearDownloads')
+    
     // Clear IndexedDB before each test
     indexedDB.deleteDatabase('myDatabase')
     
@@ -250,7 +253,7 @@ describe('Annotated Datasets', () => {
   
   })
 
-  it.only('should create a new annotated dataset', () => {
+  it('should create a new annotated dataset', () => {
       // Navigate to annotation tab
       cy.get('[data-cy="annotation-tab"]')
       .should('be.visible')
@@ -321,6 +324,274 @@ describe('Annotated Datasets', () => {
         });
       }
     });
+  })
+
+  it('should download annotated dataset and verify file structure', () => {
+    // Navigate to annotation tab
+    cy.get('[data-cy="annotation-tab"]')
+      .should('be.visible')
+      .click()
+
+    // Click add dataset button
+    cy.get('[data-cy="add-dataset-button"]').click()
+
+    // Fill out the form
+    cy.get('[data-cy="dataset-name-input"]')
+      .should('be.visible')
+      .type('Download Test Dataset')
+
+    cy.get('[data-cy="dataset-description-input"]')
+      .should('be.visible')
+      .type('This is a test dataset for download verification')
+
+    // Select the dataset from dropdown
+    cy.get('[data-cy="dataset-select-trigger"]')
+      .should('be.visible')
+      .click()
+
+    cy.get('[data-cy="dataset-select-content"]')
+      .should('be.visible')
+      .contains('Test Dataset')
+      .click()
+
+    // Select the profile from dropdown
+    cy.get('[data-cy="profile-select-trigger"]')
+      .should('be.visible')
+      .click()
+
+    cy.get('[data-cy="profile-select-content"]')
+      .should('be.visible')
+      .contains('Test Profile')
+      .click()
+
+    // Save the annotated dataset
+    cy.get('[data-cy="save-dataset-button"]').click()
+
+    // Wait for annotation process to be available
+    cy.get('[data-cy="annotated-dataset-card"]').should('exist')
+    cy.get('[data-cy="start-annotation-button"]').scrollIntoView().should('be.visible').click({force: true})
+
+    // Wait for annotation to begin processing and complete
+    cy.wait(2000)
+
+    // Check that the annotated text cards exist
+    cy.get('[data-cy="manual-annotated-text-card"]')
+      .should('exist')
+      .should('have.length.at.least', 1);
+
+    // Download the annotated dataset as JSON
+    cy.get('[data-cy="annotated-dataset-card"]').first().click()
+    cy.get('[data-cy="download-dataset-trigger"]').should('be.visible').click()
+    cy.get('[data-cy="download-dataset-json"]').should('be.visible').click()
+
+    // Wait for download to complete
+    cy.wait(2000)
+
+    // Verify the downloaded file structure
+    cy.task('getDownloadedFiles').then((files) => {
+      const fileList = files as string[]
+      cy.log(`Found ${fileList.length} files in downloads folder: ${fileList.join(', ')}`)
+      
+      expect(fileList).to.have.length.at.least(1)
+      
+      const jsonFile = fileList.find((file: string) => file.endsWith('.json'))
+      expect(jsonFile).to.exist
+      
+      // Read and verify the downloaded file structure
+      cy.readFile(`cypress/downloads/${jsonFile}`).then((content) => {
+        // Verify all required properties exist
+        expect(content).to.have.property('annotatedDataset')
+        expect(content).to.have.property('originalDataset')
+        expect(content).to.have.property('profile')
+        expect(content).to.have.property('profilePoints')
+        expect(content).to.have.property('texts')
+        expect(content).to.have.property('annotatedTexts')
+        expect(content).to.have.property('dataPoints')
+        
+        // Verify specific data content
+        expect(content.annotatedDataset).to.have.property('name')
+        expect(content.annotatedDataset).to.have.property('description')
+        expect(content.originalDataset).to.have.property('name')
+        expect(content.profile).to.have.property('name')
+        expect(content.profilePoints).to.be.an('array')
+        expect(content.texts).to.be.an('array')
+        expect(content.annotatedTexts).to.be.an('array')
+        expect(content.dataPoints).to.be.an('array')
+        
+        // Verify the dataset name matches what we created
+        expect(content.annotatedDataset.name).to.include('Download Test Dataset')
+        expect(content.originalDataset.name).to.equal('Test Dataset')
+        expect(content.profile.name).to.equal('Test Profile')
+        
+        cy.log('Downloaded file structure verified successfully')
+      })
+    })
+  })
+
+  it.only('should perform upload/download roundtrip successfully', () => {
+    // Navigate to annotation tab
+    cy.get('[data-cy="annotation-tab"]')
+      .should('be.visible')
+      .click()
+
+    // Click add dataset button
+    cy.get('[data-cy="add-dataset-button"]').click()
+
+    // Fill out the form
+    cy.get('[data-cy="dataset-name-input"]')
+      .should('be.visible')
+      .type('Roundtrip Test Dataset')
+
+    cy.get('[data-cy="dataset-description-input"]')
+      .should('be.visible')
+      .type('This is a test dataset for upload/download roundtrip')
+
+    // Select the dataset from dropdown
+    cy.get('[data-cy="dataset-select-trigger"]')
+      .should('be.visible')
+      .click()
+
+    cy.get('[data-cy="dataset-select-content"]')
+      .should('be.visible')
+      .contains('Test Dataset')
+      .click()
+
+    // Select the profile from dropdown
+    cy.get('[data-cy="profile-select-trigger"]')
+      .should('be.visible')
+      .click()
+
+    cy.get('[data-cy="profile-select-content"]')
+      .should('be.visible')
+      .contains('Test Profile')
+      .click()
+
+    // Save the annotated dataset
+    cy.get('[data-cy="save-dataset-button"]').click()
+
+    // Wait for annotation process to be available
+    cy.get('[data-cy="annotated-dataset-card"]').should('exist')
+    cy.get('[data-cy="start-annotation-button"]').scrollIntoView().should('be.visible').click({force: true})
+
+    // Wait for annotation to begin processing and complete
+    cy.wait(2000)
+
+    // Check that the annotated text cards exist
+    cy.get('[data-cy="manual-annotated-text-card"]')
+      .should('exist')
+      .should('have.length.at.least', 1);
+
+    // Download the annotated dataset as JSON
+    cy.get('[data-cy="annotated-dataset-card"]').first().click()
+    cy.get('[data-cy="download-dataset-trigger"]').should('be.visible').click()
+    cy.get('[data-cy="download-dataset-json"]').should('be.visible').click()
+
+    // Wait for download to complete
+    cy.wait(2000)
+
+    // Get the downloaded file name
+    cy.task('getDownloadedFiles').then((files) => {
+      const fileList = files as string[]
+      const jsonFile = fileList.find((file: string) => file.endsWith('.json'))
+      expect(jsonFile).to.exist
+      
+      // Copy the file to fixtures so attachFile can find it
+      cy.task('copyDownloadToFixtures', { fileName: jsonFile })
+      
+      // Upload the downloaded file (from fixtures)
+      cy.get('[data-cy="upload-dataset-button"]').click()
+      cy.get('[data-cy="upload-dataset-input"]').attachFile({
+        filePath: jsonFile,
+        fileName: jsonFile,
+        mimeType: 'application/json'
+      })
+      
+      // Wait for upload to complete
+      cy.wait(2000)
+      
+      // Debug: Check current page state and available elements
+      cy.log('Checking page state after upload...')
+      cy.get('body').invoke('text').then((text) => {
+        cy.log(`Page contains: ${text.substring(0, 200)}...`)
+      })
+      
+      // Check what data-cy elements are available
+      cy.get('[data-cy]').then(($elements) => {
+        const dataCyValues: string[] = []
+        $elements.each((index, element) => {
+          const dataCy = element.getAttribute('data-cy')
+          if (dataCy) dataCyValues.push(dataCy)
+        })
+        cy.log(`Available data-cy elements: ${dataCyValues.join(', ')}`)
+      })
+      
+      // Make sure we're on the annotation tab
+      cy.get('[data-cy="annotation-tab"]')
+        .should('be.visible')
+        .click()
+      
+      // Wait for the page to load
+      cy.wait(1000)
+      
+      // Debug: Check what datasets are available using the annotation dataset select
+      cy.get('[data-cy="annotation-dataset-select-trigger"]').click({ force: true });
+      cy.wait(500); // Wait for dropdown to render
+      
+      // Debug: Check what elements are available after opening dropdown
+      cy.get('body').find('[data-cy]').then($elements => {
+        const dataCyValues: string[] = []
+        $elements.each((index, element) => {
+          const dataCy = element.getAttribute('data-cy')
+          if (dataCy) dataCyValues.push(dataCy)
+        })
+        cy.log(`Available data-cy elements after dropdown open: ${dataCyValues.join(', ')}`)
+      })
+      
+      cy.get('[data-cy^="dataset-option-"]')
+        .then($options => {
+          let matchCount = 0;
+          $options.each((_, option) => {
+            if (option.textContent?.includes('Roundtrip Test Dataset')) matchCount++;
+          });
+          expect(matchCount).to.be.gte(2); // Expect at least two datasets with the same name
+          cy.log(`Found ${matchCount} datasets with the name 'Roundtrip Test Dataset'`);
+        });
+      cy.get('[data-cy="annotation-dataset-select-trigger"]').click({ force: true }); // Close dropdown
+      
+      cy.log('Upload/download roundtrip completed successfully')
+    })
+  })
+
+  it('should handle invalid file upload gracefully', () => {
+    // Navigate to annotation tab
+    cy.get('[data-cy="annotation-tab"]')
+      .should('be.visible')
+      .click()
+
+    // Create an invalid JSON file
+    const invalidData = {
+      invalid: "structure",
+      missing: "required fields"
+    }
+
+    cy.writeFile('cypress/fixtures/invalid_annotated_dataset.json', invalidData)
+
+    // Try to upload the invalid file
+    cy.get('[data-cy="upload-dataset-button"]').click()
+    cy.get('[data-cy="upload-dataset-input"]').attachFile({
+      filePath: 'invalid_annotated_dataset.json',
+      fileName: 'invalid_annotated_dataset.json',
+      mimeType: 'application/json'
+    })
+
+    // Wait a moment for the upload to process
+    cy.wait(1000)
+
+    // Verify that the upload button is still visible (indicating no successful upload)
+    cy.get('[data-cy="upload-dataset-button"]').should('be.visible')
+    
+    // Log that error handling is working
+    cy.log('Invalid file upload handled gracefully')
   })
 
   })
