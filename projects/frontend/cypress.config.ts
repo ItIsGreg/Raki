@@ -23,8 +23,37 @@ export default defineConfig({
             return null
           }
         },
+        getDownloadedFiles() {
+          const downloadsFolder = path.join(process.cwd(), 'cypress', 'downloads')
+          if (!fs.existsSync(downloadsFolder)) {
+            return []
+          }
+          return fs.readdirSync(downloadsFolder)
+        },
+        clearDownloads() {
+          const downloadsFolder = path.join(process.cwd(), 'cypress', 'downloads')
+          if (fs.existsSync(downloadsFolder)) {
+            const files = fs.readdirSync(downloadsFolder)
+            files.forEach(file => {
+              const filePath = path.join(downloadsFolder, file)
+              if (fs.statSync(filePath).isFile()) {
+                fs.unlinkSync(filePath)
+              }
+            })
+          }
+          return null
+        },
+        copyDownloadToFixtures({ fileName }) {
+          const downloadsFolder = path.join(process.cwd(), 'cypress', 'downloads')
+          const fixturesFolder = path.join(process.cwd(), 'cypress', 'fixtures')
+          const src = path.join(downloadsFolder, fileName)
+          const dest = path.join(fixturesFolder, fileName)
+          fs.copyFileSync(src, dest)
+          return null
+        },
       })
     },
-    // ... rest of your config
+    downloadsFolder: 'cypress/downloads',
+    chromeWebSecurity: false,
   },
 })
