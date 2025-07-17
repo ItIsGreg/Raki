@@ -18,6 +18,7 @@ import TextList from "@/components/datasets/TextList";
 import { TASK_MODE } from "@/app/constants";
 import { Button } from "@/components/ui/button";
 import { Trash2, ChevronDown } from "lucide-react";
+import { TiUpload, TiDownloadOutline } from "react-icons/ti";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileDataPointList from "@/components/profiles/DataPointList";
@@ -239,6 +240,92 @@ const Annotation = () => {
     }
   };
 
+  const handleUploadProfile = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const fileContent = await file.text();
+      const uploadedData = JSON.parse(fileContent);
+
+      // Validate the structure of the uploaded data
+      if (!uploadedData.profile || !uploadedData.profilePoints) {
+        throw new Error("Invalid file structure");
+      }
+
+      // Create the new profile
+      const newProfile = await createProfile({
+        ...uploadedData.profile,
+        mode: uploadedData.profile.mode || mode, // Use uploaded mode or current mode
+      });
+
+      // Create new profile points
+      for (const profilePoint of uploadedData.profilePoints) {
+        await createProfilePoint({
+          ...profilePoint,
+          profileId: newProfile.id,
+        });
+      }
+
+      // Set the new profile as active
+      setActiveProfile(newProfile);
+
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error("Error uploading profile:", error);
+      alert("Error uploading profile. Please check the file format.");
+    }
+  };
+
+  const handleUploadButtonClick = () => {
+    if (!fileInputRef.current) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleDownloadProfile = async () => {
+    if (!activeProfile) return;
+
+    try {
+      // Fetch profile points
+      const profilePoints = await readProfilePointsByProfile(activeProfile.id);
+
+      // Create the complete profile data
+      const profileData = {
+        profile: {
+          name: activeProfile.name,
+          description: activeProfile.description,
+          mode: activeProfile.mode,
+          example: activeProfile.example,
+        },
+        profilePoints: profilePoints.map((point) => {
+          const { id, profileId, ...rest } = point;
+          return rest;
+        }),
+      };
+
+      // Convert to JSON and download
+      const jsonData = JSON.stringify(profileData, null, 2);
+      const blob = new Blob([jsonData], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${activeProfile.name}_profile.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading profile:", error);
+    }
+  };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div
       className="grid grid-cols-7 gap-4 h-full overflow-hidden"
@@ -458,21 +545,49 @@ const Annotation = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleUploadButtonClick}
+                  data-cy="upload-profile-button"
+                  title="Upload Profile"
+                >
+                  <TiUpload className="h-4 w-4" />
+                </Button>
                 <AddButton
                   onClick={() => setAddingProfile(true)}
                   label="Profile"
                   data-cy="add-profile-button"
                 />
                 {activeProfile && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowDeleteProfileDialog(true)}
-                    data-cy="delete-profile-button"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDownloadProfile}
+                      data-cy="download-profile-button"
+                      title="Download Profile"
+                    >
+                      <TiDownloadOutline className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowDeleteProfileDialog(true)}
+                      data-cy="delete-profile-button"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept=".json"
+                  onChange={handleUploadProfile}
+                  data-cy="upload-profile-input"
+                />
               </div>
               <AlertDialog
                 open={showDeleteProfileDialog}
