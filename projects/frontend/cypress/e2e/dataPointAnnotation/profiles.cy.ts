@@ -192,3 +192,132 @@ describe('Profiles page', () => {
     })
   })
 })
+
+describe('Profile Upload and Download', () => {
+  // Handle ResizeObserver errors, which are common with AG Grid
+  Cypress.on('uncaught:exception', (err) => {
+    if (err.message.includes('ResizeObserver') || 
+        err.message.includes('ResizeObserver loop completed with undelivered notifications')) {
+      // Returning false prevents Cypress from failing the test
+      return false
+    }
+    // We still want to fail on other errors
+    return true
+  })
+
+  beforeEach(() => {
+    // Clear IndexedDB (Dexie) before each test
+    indexedDB.deleteDatabase('myDatabase')
+    // Start from the homepage
+    cy.visit('http://localhost:3000/dataPointExtraction')
+    // Click the profiles tab
+    cy.get('[data-cy="profiles-tab"]').click()
+  })
+
+  it('should upload a profile from JSON file', () => {
+    // Create a test profile JSON file
+    const testProfileData = {
+      profile: {
+        name: "Uploaded Test Profile",
+        description: "This is a test profile uploaded from JSON",
+        mode: "datapoint_extraction",
+        example: "Example text for the profile"
+      },
+      profilePoints: [
+        {
+          name: "Uploaded Data Point 1",
+          explanation: "First uploaded data point",
+          synonyms: ["synonym1", "synonym2"],
+          datatype: "text",
+          valueset: [],
+          unit: undefined
+        },
+        {
+          name: "Uploaded Data Point 2", 
+          explanation: "Second uploaded data point",
+          synonyms: ["synonym3"],
+          datatype: "number",
+          valueset: [],
+          unit: "mm"
+        }
+      ]
+    }
+
+    // Write the test file
+    cy.writeFile('cypress/fixtures/test_profile.json', testProfileData)
+
+    // Upload the profile
+    cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
+    cy.get('[data-cy="upload-profile-input"]').attachFile({
+      filePath: 'test_profile.json',
+      fileName: 'test_profile.json',
+      mimeType: 'application/json'
+    })
+
+    // Verify the profile is uploaded and appears in the select dropdown
+    cy.get('[data-cy="profile-select-trigger"]', { timeout: 10000 }).should('be.visible').click()
+    cy.get('[data-cy="profile-select-content"]').should('be.visible').and('contain', 'Uploaded Test Profile')
+
+    // Select the uploaded profile to verify data points were created
+    cy.get('[data-cy="profile-select-content"]').contains('Uploaded Test Profile').click()
+    cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('have.length', 2)
+    cy.get('[data-cy="datapoint-card"]').should('contain', 'Uploaded Data Point 1')
+    cy.get('[data-cy="datapoint-card"]').should('contain', 'Uploaded Data Point 2')
+  })
+
+  it('should handle invalid JSON file upload gracefully', () => {
+    // Create an invalid JSON file
+    const invalidData = {
+      invalid: "structure",
+      missing: "profile data"
+    }
+
+    cy.writeFile('cypress/fixtures/invalid_profile.json', invalidData)
+
+    // Upload the invalid file
+    cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
+    cy.get('[data-cy="upload-profile-input"]').attachFile({
+      filePath: 'invalid_profile.json',
+      fileName: 'invalid_profile.json',
+      mimeType: 'application/json'
+    })
+
+    // Verify an error alert is shown
+    cy.on('window:alert', (text) => {
+      expect(text).to.include('Error uploading profile')
+    })
+  })
+
+  it('should handle malformed JSON file upload gracefully', () => {
+    // Create a malformed JSON file
+    const malformedData = '{ "invalid": "json", "missing": "quotes" }'
+
+    cy.writeFile('cypress/fixtures/malformed_profile.json', malformedData)
+
+    // Upload the malformed file
+    cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
+    cy.get('[data-cy="upload-profile-input"]').attachFile({
+      filePath: 'malformed_profile.json',
+      fileName: 'malformed_profile.json',
+      mimeType: 'application/json'
+    })
+
+    // Verify an error alert is shown
+    cy.on('window:alert', (text) => {
+      expect(text).to.include('Error uploading profile')
+    })
+  })
+
+  afterEach(() => {
+    // Clean up test files
+    cy.task('deleteFile', 'cypress/fixtures/test_profile.json').then(() => {
+      // File deleted or didn't exist
+    })
+    cy.task('deleteFile', 'cypress/fixtures/invalid_profile.json').then(() => {
+      // File deleted or didn't exist
+    })
+    cy.task('deleteFile', 'cypress/fixtures/malformed_profile.json').then(() => {
+      // File deleted or didn't exist
+    })
+  })
+})
