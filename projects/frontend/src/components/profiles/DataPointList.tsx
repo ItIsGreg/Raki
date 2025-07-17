@@ -62,10 +62,19 @@ const DataPointList = <T extends { id: string; profileId: string }>(
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
 
+  // Remove upload/download datapoints functionality
+  // const [isSelectionMode, setIsSelectionMode] = useState(false);
+  // const [selectedDataPoints, setSelectedDataPoints] = useState<string[]>([]);
+
   const dataPoints = useLiveQuery(
     () => readPointsByProfile(activeProfile?.id),
     [activeProfile, readPointsByProfile]
   );
+
+  // Remove handleUploadButtonClick, handleDownloadDatapoints, handleUploadDatapoints
+  // Remove handleEnterSelectionMode, handleExitSelectionMode, handleSelectAll, handleSelectNone, handleToggleDataPoint, handleDownloadSelected
+
+  // Remove handleUploadButtonClick, handleDownloadDatapoints, handleUploadDatapoints
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -129,57 +138,6 @@ const DataPointList = <T extends { id: string; profileId: string }>(
     }
   };
 
-  const handleUploadButtonClick = () => {
-    if (!fileInputRef.current) return;
-    fileInputRef.current?.click();
-  };
-
-  const handleDownloadDatapoints = () => {
-    // remove ids from dataPoints
-    if (!dataPoints) return;
-    const data = JSON.stringify(
-      dataPoints.map((dataPoint) => {
-        const { id, profileId, ...rest } = dataPoint;
-        return rest;
-      })
-    );
-
-    // start download
-    const element = document.createElement("a");
-    const file = new Blob([data], { type: "text/plain" });
-    element.href = URL.createObjectURL(file);
-    element.download = `${activeProfile?.name}_data_points.json`;
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
-  };
-
-  const handleUploadDatapoints = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file && activeProfile) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const content = e.target?.result as string;
-          const uploadDataPoints = JSON.parse(content);
-
-          for (const dataPoint of uploadDataPoints) {
-            await createPoint({
-              ...dataPoint,
-              profileId: activeProfile.id,
-            });
-          }
-          alert("Data Points uploading successful!");
-        } catch (error) {
-          console.error("Error uploading data points: ", error);
-          alert("Error uploading data points. Please check the file format");
-        }
-      };
-      reader.readAsText(file);
-    }
-  };
-
   const handleDeleteDataPoint = async (id: string) => {
     if (!activeProfile) {
       return;
@@ -220,41 +178,7 @@ const DataPointList = <T extends { id: string; profileId: string }>(
                   onClick={() => setIsChatOpen(true)}
                   data-cy="profile-chat-button"
                 />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      data-cy="more-options-button"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={handleUploadButtonClick}
-                      data-cy="upload-datapoints-button"
-                    >
-                      <MdUpload className="mr-2 h-4 w-4" />
-                      Upload
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleDownloadDatapoints}
-                      data-cy="download-datapoints-button"
-                    >
-                      <MdDownload className="mr-2 h-4 w-4" />
-                      Download
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept=".json"
-                  onChange={handleUploadDatapoints}
-                  data-cy="upload-datapoints-input"
-                />
+                {/* Remove DropdownMenu for upload/download */}
               </div>
             )}
           </div>
