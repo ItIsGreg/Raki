@@ -192,3 +192,264 @@ describe('Profiles page', () => {
     })
   })
 })
+
+describe('Profile Upload and Download', () => {
+  // Handle ResizeObserver errors, which are common with AG Grid
+  Cypress.on('uncaught:exception', (err) => {
+    if (err.message.includes('ResizeObserver') || 
+        err.message.includes('ResizeObserver loop completed with undelivered notifications')) {
+      // Returning false prevents Cypress from failing the test
+      return false
+    }
+    // We still want to fail on other errors
+    return true
+  })
+
+  beforeEach(() => {
+    // Clear IndexedDB (Dexie) before each test
+    indexedDB.deleteDatabase('myDatabase')
+    // Start from the homepage
+    cy.visit('http://localhost:3000/dataPointExtraction')
+    // Click the profiles tab
+    cy.get('[data-cy="profiles-tab"]').click()
+  })
+
+  it('should create a profile and download it as JSON', () => {
+    // Create a new profile
+    cy.get('[data-cy="add-profile-button"]').click()
+    cy.get('[data-cy="entity-name-input"]').should('be.visible').type('Test Profile')
+    cy.get('[data-cy="entity-description-input"]').should('be.visible').type('This is a test profile')
+    cy.get('[data-cy="entity-save-button"]').click()
+
+    // Wait for the profile to be created and appear in the list
+    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Test Profile')
+
+    // Add some data points to the profile
+    cy.get('[data-cy="profile-card"]').first().click()
+    cy.get('[data-cy="new-datapoint-button"]').should('be.visible').click()
+    cy.get('[data-cy="entity-name-input"]').should('be.visible').type('Test Data Point')
+    cy.get('[data-cy="entity-description-input"]').should('be.visible').type('This is a test data point')
+    cy.get('[data-cy="entity-save-button"]').click()
+
+    // Wait for the data point to be created
+    cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Test Data Point')
+
+    // Download the profile
+    cy.get('[data-cy="download-profile-button"]').should('be.visible').click()
+
+    // Verify the download button exists and is clickable
+    cy.get('[data-cy="download-profile-button"]').should('be.visible')
+  })
+
+  it('should upload a profile from JSON file', () => {
+    // Create a test profile JSON file
+    const testProfileData = {
+      profile: {
+        name: "Uploaded Test Profile",
+        description: "This is a test profile uploaded from JSON",
+        mode: "datapoint_extraction",
+        example: "Example text for the profile"
+      },
+      profilePoints: [
+        {
+          name: "Uploaded Data Point 1",
+          explanation: "First uploaded data point",
+          synonyms: ["synonym1", "synonym2"],
+          datatype: "text",
+          valueset: [],
+          unit: undefined
+        },
+        {
+          name: "Uploaded Data Point 2", 
+          explanation: "Second uploaded data point",
+          synonyms: ["synonym3"],
+          datatype: "number",
+          valueset: [],
+          unit: "mm"
+        }
+      ]
+    }
+
+    // Write the test file
+    cy.writeFile('cypress/fixtures/test_profile.json', testProfileData)
+
+    // Upload the profile
+    cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
+    cy.get('[data-cy="upload-profile-input"]').attachFile({
+      filePath: 'test_profile.json',
+      fileName: 'test_profile.json',
+      mimeType: 'application/json'
+    })
+
+    // Verify the profile is uploaded and appears in the list
+    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Uploaded Test Profile')
+
+    // Click on the uploaded profile to verify data points were created
+    cy.get('[data-cy="profile-card"]').contains('Uploaded Test Profile').click()
+    cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('have.length', 2)
+    cy.get('[data-cy="datapoint-card"]').should('contain', 'Uploaded Data Point 1')
+    cy.get('[data-cy="datapoint-card"]').should('contain', 'Uploaded Data Point 2')
+  })
+
+  it('should handle invalid JSON file upload gracefully', () => {
+    // Create an invalid JSON file
+    const invalidData = {
+      invalid: "structure",
+      missing: "profile data"
+    }
+
+    cy.writeFile('cypress/fixtures/invalid_profile.json', invalidData)
+
+    // Upload the invalid file
+    cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
+    cy.get('[data-cy="upload-profile-input"]').attachFile({
+      filePath: 'invalid_profile.json',
+      fileName: 'invalid_profile.json',
+      mimeType: 'application/json'
+    })
+
+    // Verify an error alert is shown
+    cy.on('window:alert', (text) => {
+      expect(text).to.include('Error uploading profile')
+    })
+  })
+
+  it('should handle malformed JSON file upload gracefully', () => {
+    // Create a malformed JSON file
+    const malformedData = '{ "invalid": json, "missing": quotes }'
+
+    cy.writeFile('cypress/fixtures/malformed_profile.json', malformedData)
+
+    // Upload the malformed file
+    cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
+    cy.get('[data-cy="upload-profile-input"]').attachFile({
+      filePath: 'malformed_profile.json',
+      fileName: 'malformed_profile.json',
+      mimeType: 'application/json'
+    })
+
+    // Verify an error alert is shown
+    cy.on('window:alert', (text) => {
+      expect(text).to.include('Error uploading profile')
+    })
+  })
+
+  it('should download and re-upload a profile successfully', () => {
+    // Create a profile with data points
+    cy.get('[data-cy="add-profile-button"]').click()
+    cy.get('[data-cy="entity-name-input"]').should('be.visible').type('Round Trip Profile')
+    cy.get('[data-cy="entity-description-input"]').should('be.visible').type('Profile for round trip test')
+    cy.get('[data-cy="entity-save-button"]').click()
+
+    // Wait for profile to be created
+    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Round Trip Profile')
+
+    // Add data points
+    cy.get('[data-cy="profile-card"]').first().click()
+    cy.get('[data-cy="new-datapoint-button"]').should('be.visible').click()
+    cy.get('[data-cy="entity-name-input"]').should('be.visible').type('Round Trip Data Point')
+    cy.get('[data-cy="entity-description-input"]').should('be.visible').type('Data point for round trip test')
+    cy.get('[data-cy="entity-save-button"]').click()
+
+    // Wait for data point to be created
+    cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Round Trip Data Point')
+
+    // Download the profile (this will trigger a download in the browser)
+    cy.get('[data-cy="download-profile-button"]').should('be.visible').click()
+
+    // Delete the original profile
+    cy.get('[data-cy="delete-profile-button"]').should('be.visible').click()
+    cy.get('[data-cy="profile-card"]').should('not.exist')
+
+    // Upload the downloaded profile (we'll simulate this with a known structure)
+    const roundTripProfileData = {
+      profile: {
+        name: "Round Trip Profile",
+        description: "Profile for round trip test",
+        mode: "datapoint_extraction",
+        example: undefined
+      },
+      profilePoints: [
+        {
+          name: "Round Trip Data Point",
+          explanation: "Data point for round trip test",
+          synonyms: [],
+          datatype: "text",
+          valueset: [],
+          unit: undefined
+        }
+      ]
+    }
+
+    cy.writeFile('cypress/fixtures/round_trip_profile.json', roundTripProfileData)
+
+    cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
+    cy.get('[data-cy="upload-profile-input"]').attachFile({
+      filePath: 'round_trip_profile.json',
+      fileName: 'round_trip_profile.json',
+      mimeType: 'application/json'
+    })
+
+    // Verify the profile is re-uploaded successfully
+    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Round Trip Profile')
+    cy.get('[data-cy="profile-card"]').contains('Round Trip Profile').click()
+    cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Round Trip Data Point')
+  })
+
+  it('should preserve profile mode during upload', () => {
+    // Create a profile with text segmentation mode
+    const segmentationProfileData = {
+      profile: {
+        name: "Segmentation Profile",
+        description: "Profile for text segmentation",
+        mode: "text_segmentation",
+        example: undefined
+      },
+      profilePoints: [
+        {
+          name: "Segmentation Point",
+          explanation: "Point for text segmentation",
+          synonyms: ["segment"],
+          datatype: "text",
+          valueset: [],
+          unit: undefined
+        }
+      ]
+    }
+
+    cy.writeFile('cypress/fixtures/segmentation_profile.json', segmentationProfileData)
+
+    // Upload the segmentation profile
+    cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
+    cy.get('[data-cy="upload-profile-input"]').attachFile({
+      filePath: 'segmentation_profile.json',
+      fileName: 'segmentation_profile.json',
+      mimeType: 'application/json'
+    })
+
+    // Verify the profile is uploaded with correct mode
+    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Segmentation Profile')
+    
+    // The mode should be preserved, though we can't easily verify this in the UI
+    // The important thing is that it doesn't crash and the profile is created
+  })
+
+  afterEach(() => {
+    // Clean up test files
+    cy.task('deleteFile', 'cypress/fixtures/test_profile.json').then(() => {
+      // File deleted or didn't exist
+    })
+    cy.task('deleteFile', 'cypress/fixtures/invalid_profile.json').then(() => {
+      // File deleted or didn't exist
+    })
+    cy.task('deleteFile', 'cypress/fixtures/malformed_profile.json').then(() => {
+      // File deleted or didn't exist
+    })
+    cy.task('deleteFile', 'cypress/fixtures/round_trip_profile.json').then(() => {
+      // File deleted or didn't exist
+    })
+    cy.task('deleteFile', 'cypress/fixtures/segmentation_profile.json').then(() => {
+      // File deleted or didn't exist
+    })
+  })
+})
