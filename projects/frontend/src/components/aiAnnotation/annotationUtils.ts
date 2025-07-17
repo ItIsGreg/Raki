@@ -334,7 +334,7 @@ export const handleUploadAnnotatedDataset = async (file: File) => {
       !uploadedData.annotatedTexts ||
       !uploadedData.dataPoints
     ) {
-      throw new Error("Invalid file structure");
+      throw new Error("Invalid file structure. Please ensure the file contains all required data: annotatedDataset, originalDataset, profile, profilePoints, texts, annotatedTexts, and dataPoints");
     }
 
     // Create the new dataset

@@ -59,6 +59,7 @@ export const UploadDatasetButton = ({
         className="hidden"
         accept=".json"
         onChange={handleFileUpload}
+        data-cy="upload-dataset-input"
       />
     </TooltipProvider>
   );

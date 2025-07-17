@@ -42,6 +42,18 @@ declare global {
   namespace Cypress {
     interface Chainable {
       dragTo(target: string): Chainable<JQuery<HTMLElement>>
+      clearIndexedDB(): Chainable<void>
     }
   }
 }
+
+// Add clearIndexedDB command
+Cypress.Commands.add('clearIndexedDB', () => {
+  cy.window().then((win) => {
+    return new Cypress.Promise<void>((resolve) => {
+      const request = win.indexedDB.deleteDatabase('myDatabase')
+      request.onsuccess = () => resolve()
+      request.onerror = () => resolve()
+    })
+  })
+})

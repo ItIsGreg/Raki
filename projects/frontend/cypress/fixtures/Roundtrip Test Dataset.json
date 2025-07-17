@@ -1,0 +1,64 @@
+{
+  "annotatedDataset": {
+    "name": "Roundtrip Test Dataset",
+    "description": "This is a test dataset for upload/download roundtrip",
+    "datasetId": "215de16e-5231-46d9-87f7-b74485dc35b8",
+    "profileId": "93ba860e-89c8-4e60-9778-5592b0081a31",
+    "mode": "datapoint_extraction",
+    "id": "6a7263f7-4e90-4d85-88c6-820ac5b7ea6f"
+  },
+  "originalDataset": {
+    "name": "Test Dataset",
+    "description": "This is a test dataset",
+    "mode": "datapoint_extraction",
+    "id": "215de16e-5231-46d9-87f7-b74485dc35b8"
+  },
+  "profile": {
+    "name": "Test Profile",
+    "description": "Test Profile Description",
+    "mode": "datapoint_extraction",
+    "id": "93ba860e-89c8-4e60-9778-5592b0081a31"
+  },
+  "profilePoints": [
+    {
+      "name": "Test Data Point",
+      "explanation": "Test Data Point Explanation",
+      "synonyms": [
+        "Test Synonym"
+      ],
+      "datatype": "text",
+      "valueset": [],
+      "unit": "",
+      "profileId": "93ba860e-89c8-4e60-9778-5592b0081a31",
+      "id": "67dd7467-3033-4180-83b5-d108d81a7be6",
+      "order": 1000,
+      "previousPointId": null,
+      "nextPointId": null
+    }
+  ],
+  "texts": [
+    {
+      "datasetId": "215de16e-5231-46d9-87f7-b74485dc35b8",
+      "filename": "0.txt",
+      "text": "Dilatierter linker Ventrikel mit mittelgradig reduzierter systolischer Funktion (EF nach Simpson 38%). Wandstärken grenzwertig (IVSD: 11.8 mm, LVPWD: 11.2 mm). E/E' erhöht auf 22.3. Linker Vorhof vergrößert (LAVI: 52 ml/m²). Diastolische Dysfunktion Grad II-III. Aortenwurzel normal dimensioniert. Rechter Ventrikel leicht dilatiert (RVEDD: 3.8 cm), RV-Funktion leicht eingeschränkt (TAPSE: 1.6 cm). Mitralklappe: Leicht sklerosiert, Öffnungsfläche normal, Insuffizienz II°. Trikuspidalklappe: Strukturell unauffällig, Insuffizienz I°, RVSP 42 mmHg + ZVD. VCI: 17 mm mit eingeschränkter Atemmodulation.",
+      "id": "c346e413-5c82-4bd1-a2ce-479442ec02f2"
+    }
+  ],
+  "annotatedTexts": [
+    {
+      "annotatedDatasetId": "6a7263f7-4e90-4d85-88c6-820ac5b7ea6f",
+      "textId": "c346e413-5c82-4bd1-a2ce-479442ec02f2",
+      "aiFaulty": false,
+      "id": "7229a8d7-53da-4fbf-bc42-8cf34112c3ed"
+    }
+  ],
+  "dataPoints": [
+    {
+      "name": "Test Data Point",
+      "value": "",
+      "annotatedTextId": "7229a8d7-53da-4fbf-bc42-8cf34112c3ed",
+      "profilePointId": "67dd7467-3033-4180-83b5-d108d81a7be6",
+      "id": "23208faa-6f87-43c8-83a9-240244f46f9c"
+    }
+  ]
+}

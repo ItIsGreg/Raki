@@ -1,0 +1,19 @@
+{
+  "profile": {
+    "name": "Debug Test Profile",
+    "description": "Debug test profile",
+    "mode": "datapoint_extraction",
+    "example": "Example text"
+  },
+  "profilePoints": [
+    {
+      "name": "Debug Data Point",
+      "explanation": "Debug data point",
+      "synonyms": [
+        "debug"
+      ],
+      "datatype": "text",
+      "valueset": []
+    }
+  ]
+}
