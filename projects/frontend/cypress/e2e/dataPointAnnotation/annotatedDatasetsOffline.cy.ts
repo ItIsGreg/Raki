@@ -509,8 +509,18 @@ describe('Annotated Datasets', () => {
       // Wait for upload to complete
       cy.wait(2000)
       
+      // Force UI refresh by reloading the page to ensure data is fresh
+      cy.reload()
+      cy.wait(2000)
+      
+      // Navigate back to annotation tab after reload
+      cy.get('[data-cy="annotation-tab"]')
+        .should('be.visible')
+        .click()
+      cy.wait(1000)
+      
       // Debug: Check current page state and available elements
-      cy.log('Checking page state after upload...')
+      cy.log('Checking page state after upload and reload...')
       cy.get('body').invoke('text').then((text) => {
         cy.log(`Page contains: ${text.substring(0, 200)}...`)
       })

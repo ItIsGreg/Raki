@@ -17,6 +17,7 @@ import {
   readSegmentationProfilePointsByProfile,
   readText,
 } from "@/lib/db/crud";
+import { downloadAnnotatedDataset } from "./annotationUtils";
 import { DataPoint, SegmentDataPoint } from "@/lib/db/db";
 import { TaskMode } from "@/app/constants";
 
@@ -34,6 +35,13 @@ interface AnnotatedTextDatapointsHolder {
 
 const DownloadButton = ({ dataset, mode }: DownloadButtonProps) => {
   const downLoadAnnotatedDataset = async (format: "json" | "csv" | "xlsx") => {
+    if (format === "json") {
+      // Use the correct downloadAnnotatedDataset function for JSON exports
+      await downloadAnnotatedDataset(dataset);
+      return;
+    }
+
+    // Keep existing logic for CSV and XLSX exports
     // collect data for export
     const activeProfile = await readProfile(dataset.profileId);
 
@@ -65,19 +73,7 @@ const DownloadButton = ({ dataset, mode }: DownloadButtonProps) => {
       }
     }
 
-    if (format === "json") {
-      // Download as JSON
-      const jsonData = {
-        dataset: dataset,
-        profile: activeProfile,
-        profilePoints: profilePoints,
-        annotatedTexts: annotatedTextDatapoints,
-      };
-      const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
-        type: "application/json",
-      });
-      downloadFile(blob, `${dataset.name}.json`);
-    } else if (format === "csv") {
+    if (format === "csv") {
       // Generate and download CSV
       const csv =
         mode === "datapoint_extraction"
