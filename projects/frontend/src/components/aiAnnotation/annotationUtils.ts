@@ -324,17 +324,29 @@ export const handleUploadAnnotatedDataset = async (file: File) => {
     const fileContent = await file.text();
     const uploadedData = JSON.parse(fileContent);
 
+    console.log('DEBUG: Uploaded file content keys:', Object.keys(uploadedData));
+    console.log('DEBUG: Full uploaded data structure:', uploadedData);
+
+    // Check which required fields are missing
+    const requiredFields = [
+      'annotatedDataset',
+      'originalDataset', 
+      'profile',
+      'profilePoints',
+      'texts',
+      'annotatedTexts',
+      'dataPoints'
+    ];
+    
+    const missingFields = requiredFields.filter(field => !uploadedData[field]);
+    const presentFields = requiredFields.filter(field => uploadedData[field]);
+    
+    console.log('DEBUG: Present fields:', presentFields);
+    console.log('DEBUG: Missing fields:', missingFields);
+
     // Validate the structure of the uploaded data
-    if (
-      !uploadedData.annotatedDataset ||
-      !uploadedData.originalDataset ||
-      !uploadedData.profile ||
-      !uploadedData.profilePoints ||
-      !uploadedData.texts ||
-      !uploadedData.annotatedTexts ||
-      !uploadedData.dataPoints
-    ) {
-      throw new Error("Invalid file structure");
+    if (missingFields.length > 0) {
+      throw new Error(`Invalid file structure. Missing fields: ${missingFields.join(', ')}. Present fields: ${presentFields.join(', ')}. Please ensure the file contains all required data: ${requiredFields.join(', ')}`);
     }
 
     // Create the new dataset

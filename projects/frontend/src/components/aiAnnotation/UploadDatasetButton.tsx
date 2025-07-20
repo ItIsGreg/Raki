@@ -30,10 +30,15 @@ export const UploadDatasetButton = ({
     if (!file) return;
 
     try {
-      onUpload?.(file);
+      await onUpload?.(file);
     } catch (error) {
       console.error("Error uploading annotated dataset:", error);
       // You might want to show an error message to the user here
+    } finally {
+      // Reset the file input so the same file can be uploaded again
+      if (event.target) {
+        event.target.value = "";
+      }
     }
   };
 
@@ -59,6 +64,7 @@ export const UploadDatasetButton = ({
         className="hidden"
         accept=".json"
         onChange={handleFileUpload}
+        data-cy="upload-dataset-input"
       />
     </TooltipProvider>
   );

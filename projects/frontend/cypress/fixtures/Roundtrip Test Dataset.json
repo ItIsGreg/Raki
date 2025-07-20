@@ -1,0 +1,49 @@
+{
+  "dataset": {
+    "name": "Roundtrip Test Dataset",
+    "description": "This is a test dataset for upload/download roundtrip",
+    "datasetId": "37bcdded-2f0c-4f8f-b2bb-2bbddb4de659",
+    "profileId": "872b24d2-160e-4624-8ba6-f2c1ce45a423",
+    "mode": "datapoint_extraction",
+    "id": "7d924aef-ab5a-4447-ab42-9542bfab87da"
+  },
+  "profile": {
+    "name": "Test Profile",
+    "description": "Test Profile Description",
+    "mode": "datapoint_extraction",
+    "id": "872b24d2-160e-4624-8ba6-f2c1ce45a423"
+  },
+  "profilePoints": [
+    {
+      "name": "Test Data Point",
+      "explanation": "Test Data Point Explanation",
+      "synonyms": [
+        "Test Synonym"
+      ],
+      "datatype": "text",
+      "valueset": [],
+      "unit": "",
+      "profileId": "872b24d2-160e-4624-8ba6-f2c1ce45a423",
+      "id": "8d1e244a-c5bf-41c1-b715-0ddb95655c4a",
+      "order": 1000,
+      "previousPointId": null,
+      "nextPointId": null
+    }
+  ],
+  "annotatedTexts": [
+    {
+      "annotatedTextId": "b704ca84-8a57-4148-8e82-333ad6e52cc4",
+      "filename": "0.txt",
+      "datapoints": [
+        {
+          "name": "Test Data Point",
+          "value": "",
+          "annotatedTextId": "b704ca84-8a57-4148-8e82-333ad6e52cc4",
+          "profilePointId": "8d1e244a-c5bf-41c1-b715-0ddb95655c4a",
+          "id": "74dcdf41-4d50-484f-9b38-deae81ea767f"
+        }
+      ],
+      "text": "Dilatierter linker Ventrikel mit mittelgradig reduzierter systolischer Funktion (EF nach Simpson 38%). Wandstärken grenzwertig (IVSD: 11.8 mm, LVPWD: 11.2 mm). E/E' erhöht auf 22.3. Linker Vorhof vergrößert (LAVI: 52 ml/m²). Diastolische Dysfunktion Grad II-III. Aortenwurzel normal dimensioniert. Rechter Ventrikel leicht dilatiert (RVEDD: 3.8 cm), RV-Funktion leicht eingeschränkt (TAPSE: 1.6 cm). Mitralklappe: Leicht sklerosiert, Öffnungsfläche normal, Insuffizienz II°. Trikuspidalklappe: Strukturell unauffällig, Insuffizienz I°, RVSP 42 mmHg + ZVD. VCI: 17 mm mit eingeschränkter Atemmodulation."
+    }
+  ]
+}
