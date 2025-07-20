@@ -1,23 +1,23 @@
 {
   "annotatedDataset": {
-    "name": "Roundtrip Test Dataset_2025-07-20T10-51-38-918Z",
+    "name": "Roundtrip Test Dataset_2025-07-20T10-55-00-748Z",
     "description": "This is a test dataset for upload/download roundtrip",
-    "datasetId": "e606afdb-ae5a-43c2-9601-6d57eccdc5b5",
-    "profileId": "68a81480-f817-4cf6-a0a3-89f615b96648",
+    "datasetId": "a0417b16-8aa4-48cc-90c8-fd7f4d025b80",
+    "profileId": "cc90547d-9799-409c-90cc-b36ef32efc40",
     "mode": "datapoint_extraction",
-    "id": "d5cef6ac-d17b-4655-8fbd-a29f74c43fff"
+    "id": "38d02b91-87bc-41dd-a1eb-8f995451aa55"
   },
   "originalDataset": {
-    "name": "Test Dataset_2025-07-20T10-51-38-918Z",
+    "name": "Test Dataset_2025-07-20T10-55-00-748Z",
     "description": "This is a test dataset",
     "mode": "datapoint_extraction",
-    "id": "e606afdb-ae5a-43c2-9601-6d57eccdc5b5"
+    "id": "a0417b16-8aa4-48cc-90c8-fd7f4d025b80"
   },
   "profile": {
-    "name": "Test Profile_2025-07-20T10-51-38-918Z",
+    "name": "Test Profile_2025-07-20T10-55-00-748Z",
     "description": "Test Profile Description",
     "mode": "datapoint_extraction",
-    "id": "68a81480-f817-4cf6-a0a3-89f615b96648"
+    "id": "cc90547d-9799-409c-90cc-b36ef32efc40"
   },
   "profilePoints": [
     {
@@ -29,8 +29,8 @@
       "datatype": "text",
       "valueset": [],
       "unit": "",
-      "profileId": "68a81480-f817-4cf6-a0a3-89f615b96648",
-      "id": "ea31436b-9efd-4757-a145-da6c6b83bf18",
+      "profileId": "cc90547d-9799-409c-90cc-b36ef32efc40",
+      "id": "10c22117-dc94-4bda-9689-3f4da6ad36cb",
       "order": 1000,
       "previousPointId": null,
       "nextPointId": null
@@ -38,27 +38,27 @@
   ],
   "texts": [
     {
-      "datasetId": "e606afdb-ae5a-43c2-9601-6d57eccdc5b5",
+      "datasetId": "a0417b16-8aa4-48cc-90c8-fd7f4d025b80",
       "filename": "0.txt",
       "text": "Dilatierter linker Ventrikel mit mittelgradig reduzierter systolischer Funktion (EF nach Simpson 38%). Wandstärken grenzwertig (IVSD: 11.8 mm, LVPWD: 11.2 mm). E/E' erhöht auf 22.3. Linker Vorhof vergrößert (LAVI: 52 ml/m²). Diastolische Dysfunktion Grad II-III. Aortenwurzel normal dimensioniert. Rechter Ventrikel leicht dilatiert (RVEDD: 3.8 cm), RV-Funktion leicht eingeschränkt (TAPSE: 1.6 cm). Mitralklappe: Leicht sklerosiert, Öffnungsfläche normal, Insuffizienz II°. Trikuspidalklappe: Strukturell unauffällig, Insuffizienz I°, RVSP 42 mmHg + ZVD. VCI: 17 mm mit eingeschränkter Atemmodulation.",
-      "id": "a91b6690-fcb7-49d5-b18d-d935506e8d1c"
+      "id": "c80f14ee-9ddc-41c4-bff4-63da5042912e"
     }
   ],
   "annotatedTexts": [
     {
-      "annotatedDatasetId": "d5cef6ac-d17b-4655-8fbd-a29f74c43fff",
-      "textId": "a91b6690-fcb7-49d5-b18d-d935506e8d1c",
+      "annotatedDatasetId": "38d02b91-87bc-41dd-a1eb-8f995451aa55",
+      "textId": "c80f14ee-9ddc-41c4-bff4-63da5042912e",
       "aiFaulty": false,
-      "id": "46841782-6c34-4ef1-b5fd-8139460ddfa8"
+      "id": "ff11a1fc-18f0-43e3-8c1b-6ea691941240"
     }
   ],
   "dataPoints": [
     {
       "name": "Test Data Point",
       "value": "",
-      "annotatedTextId": "46841782-6c34-4ef1-b5fd-8139460ddfa8",
-      "profilePointId": "ea31436b-9efd-4757-a145-da6c6b83bf18",
-      "id": "0048b61a-70a1-430d-bc57-25c02ae1a46b"
+      "annotatedTextId": "ff11a1fc-18f0-43e3-8c1b-6ea691941240",
+      "profilePointId": "10c22117-dc94-4bda-9689-3f4da6ad36cb",
+      "id": "3e9930f3-e2a8-4ba6-8b1e-1b845e2445ea"
     }
   ]
 }
