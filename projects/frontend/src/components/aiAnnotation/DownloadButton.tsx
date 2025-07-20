@@ -74,30 +74,7 @@ const DownloadButton = ({ dataset, mode }: DownloadButtonProps) => {
       }
     }
 
-    if (format === "json") {
-      // Download as JSON with complete structure for upload compatibility
-      const jsonData = {
-        annotatedDataset: dataset,
-        originalDataset: await readDataset(dataset.datasetId),
-        profile: activeProfile,
-        profilePoints: profilePoints,
-        texts: await Promise.all(
-          annotatedTexts.map(async (at) => {
-            return await readText(at.textId);
-          })
-        ),
-        annotatedTexts: await readAnnotatedTextsByAnnotatedDataset(dataset.id),
-        dataPoints: await Promise.all(
-          annotatedTexts.map(async (at) => {
-            return await readDataPointsByAnnotatedText(at.id);
-          })
-        ).then((arrays) => arrays.flat()),
-      };
-      const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
-        type: "application/json",
-      });
-      downloadFile(blob, `${dataset.name}.json`);
-    } else if (format === "csv") {
+    if (format === "csv") {
       // Generate and download CSV
       const csv =
         mode === "datapoint_extraction"
