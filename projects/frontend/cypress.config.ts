@@ -51,6 +51,13 @@ export default defineConfig({
           fs.copyFileSync(src, dest)
           return null
         },
+        deleteFileIfExists(filePath) {
+          const fullPath = path.join(process.cwd(), filePath)
+          if (fs.existsSync(fullPath)) {
+            fs.unlinkSync(fullPath)
+          }
+          return null
+        },
       })
     },
     downloadsFolder: 'cypress/downloads',
