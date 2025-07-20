@@ -83,17 +83,18 @@ export const runTestSuiteWithProvider = (providerType: 'OpenAI' | 'Custom') => {
       cy.get('[data-cy="profile-select-trigger"]').click()
       cy.get('[data-cy="profile-select-content"]').contains(profileName).click()
 
-      // Upload segmentation rules from fixture
-      cy.get('[data-cy="more-options-button"]').click()
-      cy.get('[data-cy="upload-datapoints-button"]').click()
-      cy.get('[data-cy="upload-datapoints-input"]')
-        .selectFile('cypress/fixtures/upload_test/uploadSegmentationProfilePoints.json', { force: true })
+      // Create a segmentation point manually instead of uploading
+      cy.get('[data-cy="new-datapoint-button"]').should('be.visible').click()
+      cy.get('[data-cy="datapoint-name-input"]').should('be.visible').type('Test Segmentation Rule')
+      cy.get('[data-cy="datapoint-explanation-input"]').should('be.visible').type('Test segmentation rule for annotation')
+      cy.get('[data-cy="save-datapoint-button"]').first().click()
       
-      // Verify the segmentation rules are loaded
+      // Verify the segmentation rule is created
       cy.get('[data-cy="datapoints-container"]')
         .should('be.visible')
         .find('[data-cy="datapoint-card"]')
         .should('exist')
+        .and('contain', 'Test Segmentation Rule')
 
       // Navigate to datasets page - switch to text upload tab
       cy.get('[data-cy="text-upload-tab"]').click({ force: true })
