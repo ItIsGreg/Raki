@@ -434,15 +434,15 @@ describe('Annotated Datasets', () => {
         expect(content.annotatedTexts).to.be.an('array')
         expect(content.dataPoints).to.be.an('array')
         
-        // Verify the dataset name matches what we created
+        // Verify the dataset name matches what we created (with timestamp appended)
         expect(content.annotatedDataset.name).to.include('Download Test Dataset')
-        expect(content.originalDataset.name).to.equal('Test Dataset')
-        expect(content.profile.name).to.equal('Test Profile')
+        expect(content.originalDataset.name).to.include('Test Dataset')
+        expect(content.profile.name).to.include('Test Profile')
       })
     })
   })
 
-  it.only('should perform upload/download roundtrip successfully', () => {
+  it('should perform upload/download roundtrip successfully', () => {
     // Navigate to annotation tab
     cy.get('[data-cy="annotation-tab"]')
       .should('be.visible')
