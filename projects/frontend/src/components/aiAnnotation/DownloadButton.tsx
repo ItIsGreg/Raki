@@ -18,6 +18,7 @@ import {
   readText,
   readDataset,
 } from "@/lib/db/crud";
+import { downloadAnnotatedDataset } from "./annotationUtils";
 import { DataPoint, SegmentDataPoint } from "@/lib/db/db";
 import { TaskMode } from "@/app/constants";
 
@@ -35,6 +36,13 @@ interface AnnotatedTextDatapointsHolder {
 
 const DownloadButton = ({ dataset, mode }: DownloadButtonProps) => {
   const downLoadAnnotatedDataset = async (format: "json" | "csv" | "xlsx") => {
+    if (format === "json") {
+      // Use the correct downloadAnnotatedDataset function for JSON exports
+      await downloadAnnotatedDataset(dataset);
+      return;
+    }
+
+    // Keep existing logic for CSV and XLSX exports
     // collect data for export
     const activeProfile = await readProfile(dataset.profileId);
 

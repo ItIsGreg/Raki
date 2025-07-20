@@ -96,6 +96,33 @@ describe('Text Segmentation Annotated Datasets', () => {
     cy.get('[data-cy="annotation-tab"]').click({ force: true })
   })
 
+  afterEach(() => {
+    // Clean up fixture files created during tests
+    const fixtureFiles = [
+      'cypress/fixtures/invalid_annotated_dataset.json'
+    ]
+    
+    // Also clean up any downloaded dataset files that were copied to fixtures
+    cy.task('getDownloadedFiles').then((files) => {
+      const fileList = files as string[]
+      fileList.forEach(fileName => {
+        if (fileName.endsWith('.json')) {
+          fixtureFiles.push(`cypress/fixtures/${fileName}`)
+        }
+      })
+      
+      // Delete each fixture file if it exists
+      fixtureFiles.forEach(filePath => {
+        cy.task('deleteFileIfExists', filePath)
+      })
+      
+      // Clean up downloads folder to prevent test interference
+      fileList.forEach(fileName => {
+        cy.task('deleteFileIfExists', `cypress/downloads/${fileName}`)
+      })
+    })
+  })
+
   it('should create a new annotated dataset', () => {
     // Click add dataset button
     cy.get('[data-cy="add-dataset-button"]').click()

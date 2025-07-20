@@ -324,6 +324,20 @@ export const handleUploadAnnotatedDataset = async (file: File) => {
     const fileContent = await file.text();
     const uploadedData = JSON.parse(fileContent);
 
+    // Check which required fields are missing
+    const requiredFields = [
+      'annotatedDataset',
+      'originalDataset', 
+      'profile',
+      'profilePoints',
+      'texts',
+      'annotatedTexts',
+      'dataPoints'
+    ];
+    
+    const missingFields = requiredFields.filter(field => !uploadedData[field]);
+    const presentFields = requiredFields.filter(field => uploadedData[field]);
+
     // Validate the structure of the uploaded data
     if (
       !uploadedData.annotatedDataset ||
