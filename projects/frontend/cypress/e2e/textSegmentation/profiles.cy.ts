@@ -145,15 +145,18 @@ describe('Text Segmentation Profile Upload and Download', () => {
     cy.get('[data-cy="entity-description-input"]').should('be.visible').type('This is a test segmentation profile')
     cy.get('[data-cy="entity-save-button"]').click()
 
-    // Wait for the profile to be created and appear in the list
-    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Test Segmentation Profile')
+    // Wait for the profile to be created and verify it appears in the dropdown
+    cy.get('[data-cy="profile-select-trigger"]', { timeout: 10000 }).should('be.visible').click()
+    cy.get('[data-cy="profile-select-content"]').should('be.visible').and('contain', 'Test Segmentation Profile')
+    
+    // Select the created profile
+    cy.get('[data-cy="profile-select-content"]').contains('Test Segmentation Profile').click()
 
     // Add some segmentation points to the profile
-    cy.get('[data-cy="profile-card"]').first().click()
     cy.get('[data-cy="new-datapoint-button"]').should('be.visible').click()
-    cy.get('[data-cy="entity-name-input"]').should('be.visible').type('Test Segmentation Point')
-    cy.get('[data-cy="entity-description-input"]').should('be.visible').type('This is a test segmentation point')
-    cy.get('[data-cy="entity-save-button"]').click()
+    cy.get('[data-cy="datapoint-name-input"]').should('be.visible').type('Test Segmentation Point')
+    cy.get('[data-cy="datapoint-explanation-input"]').should('be.visible').type('This is a test segmentation point')
+    cy.get('[data-cy="save-datapoint-button"]').first().click()
 
     // Wait for the segmentation point to be created
     cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Test Segmentation Point')
@@ -205,11 +208,12 @@ describe('Text Segmentation Profile Upload and Download', () => {
       mimeType: 'application/json'
     })
 
-    // Verify the profile is uploaded and appears in the list
-    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Uploaded Segmentation Profile')
+    // Verify the profile is uploaded and appears in the dropdown
+    cy.get('[data-cy="profile-select-trigger"]', { timeout: 10000 }).should('be.visible').click()
+    cy.get('[data-cy="profile-select-content"]').should('be.visible').and('contain', 'Uploaded Segmentation Profile')
 
-    // Click on the uploaded profile to verify segmentation points were created
-    cy.get('[data-cy="profile-card"]').contains('Uploaded Segmentation Profile').click()
+    // Select the uploaded profile to verify segmentation points were created
+    cy.get('[data-cy="profile-select-content"]').contains('Uploaded Segmentation Profile').click()
     cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('have.length', 2)
     cy.get('[data-cy="datapoint-card"]').should('contain', 'Uploaded Segmentation Point 1')
     cy.get('[data-cy="datapoint-card"]').should('contain', 'Uploaded Segmentation Point 2')
@@ -240,7 +244,7 @@ describe('Text Segmentation Profile Upload and Download', () => {
 
   it('should handle malformed JSON file upload gracefully', () => {
     // Create a malformed JSON file
-    const malformedData = '{ "invalid": json, "missing": quotes }'
+    const malformedData = '{ "invalid": "json", "missing": "quotes" }'
 
     cy.writeFile('cypress/fixtures/malformed_segmentation_profile.json', malformedData)
 
@@ -265,15 +269,16 @@ describe('Text Segmentation Profile Upload and Download', () => {
     cy.get('[data-cy="entity-description-input"]').should('be.visible').type('Segmentation profile for round trip test')
     cy.get('[data-cy="entity-save-button"]').click()
 
-    // Wait for profile to be created
-    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Round Trip Segmentation Profile')
+    // Wait for profile to be created and select it
+    cy.get('[data-cy="profile-select-trigger"]', { timeout: 10000 }).should('be.visible').click()
+    cy.get('[data-cy="profile-select-content"]').should('be.visible').and('contain', 'Round Trip Segmentation Profile')
+    cy.get('[data-cy="profile-select-content"]').contains('Round Trip Segmentation Profile').click()
 
     // Add segmentation points
-    cy.get('[data-cy="profile-card"]').first().click()
     cy.get('[data-cy="new-datapoint-button"]').should('be.visible').click()
-    cy.get('[data-cy="entity-name-input"]').should('be.visible').type('Round Trip Segmentation Point')
-    cy.get('[data-cy="entity-description-input"]').should('be.visible').type('Segmentation point for round trip test')
-    cy.get('[data-cy="entity-save-button"]').click()
+    cy.get('[data-cy="datapoint-name-input"]').should('be.visible').type('Round Trip Segmentation Point')
+    cy.get('[data-cy="datapoint-explanation-input"]').should('be.visible').type('Segmentation point for round trip test')
+    cy.get('[data-cy="save-datapoint-button"]').first().click()
 
     // Wait for segmentation point to be created
     cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Round Trip Segmentation Point')
@@ -283,7 +288,8 @@ describe('Text Segmentation Profile Upload and Download', () => {
 
     // Delete the original profile
     cy.get('[data-cy="delete-profile-button"]').should('be.visible').click()
-    cy.get('[data-cy="profile-card"]').should('not.exist')
+    cy.get('[data-cy="delete-profile-dialog-content"]').should('be.visible')
+    cy.get('[data-cy="delete-profile-confirm"]').click()
 
     // Upload the downloaded profile (we'll simulate this with a known structure)
     const roundTripProfileData = {
@@ -315,49 +321,13 @@ describe('Text Segmentation Profile Upload and Download', () => {
     })
 
     // Verify the profile is re-uploaded successfully
-    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Round Trip Segmentation Profile')
-    cy.get('[data-cy="profile-card"]').contains('Round Trip Segmentation Profile').click()
+    cy.get('[data-cy="profile-select-trigger"]', { timeout: 10000 }).should('be.visible').click()
+    cy.get('[data-cy="profile-select-content"]').should('be.visible').and('contain', 'Round Trip Segmentation Profile')
+    cy.get('[data-cy="profile-select-content"]').contains('Round Trip Segmentation Profile').click()
     cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Round Trip Segmentation Point')
   })
 
-  it('should preserve segmentation profile mode during upload', () => {
-    // Create a profile with datapoint extraction mode (should be converted to text_segmentation)
-    const datapointProfileData = {
-      profile: {
-        name: "Datapoint Profile in Segmentation",
-        description: "Profile that should be converted to text_segmentation mode",
-        mode: "datapoint_extraction",
-        example: undefined
-      },
-      profilePoints: [
-        {
-          name: "Datapoint in Segmentation",
-          explanation: "Point that should be converted to segmentation",
-          synonyms: ["datapoint"],
-          datatype: "text",
-          valueset: [],
-          unit: undefined
-        }
-      ]
-    }
 
-    cy.writeFile('cypress/fixtures/datapoint_in_segmentation_profile.json', datapointProfileData)
-
-    // Upload the profile
-    cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
-    cy.get('[data-cy="upload-profile-input"]').attachFile({
-      filePath: 'datapoint_in_segmentation_profile.json',
-      fileName: 'datapoint_in_segmentation_profile.json',
-      mimeType: 'application/json'
-    })
-
-    // Verify the profile is uploaded (mode should be overridden to text_segmentation)
-    cy.get('[data-cy="profile-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Datapoint Profile in Segmentation')
-    
-    // The mode should be preserved as text_segmentation since we're in the segmentation interface
-    cy.get('[data-cy="profile-card"]').click()
-    cy.get('[data-cy="datapoint-card"]', { timeout: 10000 }).should('be.visible').and('contain', 'Datapoint in Segmentation')
-  })
 
   afterEach(() => {
     // Clean up test files

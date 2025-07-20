@@ -1,0 +1,17 @@
+{
+  "profile": {
+    "name": "Test Segmentation Profile",
+    "description": "This is a test segmentation profile",
+    "mode": "text_segmentation"
+  },
+  "profilePoints": [
+    {
+      "name": "Test Segmentation Point",
+      "explanation": "This is a test segmentation point",
+      "synonyms": [],
+      "order": 1000,
+      "previousPointId": null,
+      "nextPointId": null
+    }
+  ]
+}
