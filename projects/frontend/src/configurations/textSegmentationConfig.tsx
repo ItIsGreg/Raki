@@ -8,7 +8,7 @@ import {
   createSegmentationProfilePoint,
   updateSegmentDataPoint,
 } from "@/lib/db/crud";
-import { TextDisplay } from "@/components/annotation/SegmentationTextDisplay";
+import { TextDisplay } from "@/components/annotation/core/SegmentationTextDisplay";
 import DataPointEditorSegmentation from "@/components/profiles/DataPointEditorSegmentation";
 import {
   ModeConfiguration,

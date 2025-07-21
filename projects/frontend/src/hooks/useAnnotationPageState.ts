@@ -19,8 +19,8 @@ import {
   updateUserSettings,
   readText,
 } from "@/lib/db/crud";
-import { useAnnotationState } from "@/components/annotation/ai/hooks/useAnnotationState";
-import { handleUploadAnnotatedDataset } from "@/components/annotation/ai/annotationUtils";
+import { useAnnotationState } from "@/components/annotation/hooks/useAnnotationState";
+import { handleUploadAnnotatedDataset } from "@/components/annotation/utils/annotationUtils";
 import {
   BaseProfilePoint,
   ModeConfiguration,

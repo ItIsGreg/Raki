@@ -10,16 +10,16 @@ import {
 } from "@/components/ui/select";
 import { ChevronDown } from "lucide-react";
 import { AddButton } from "@/components/shared/AddButton";
-import { UploadDatasetButton } from "@/components/annotation/ai/UploadDatasetButton";
-import { AddDatasetForm } from "@/components/annotation/ai/AddDatasetForm";
-import { AnnotatedDatasetCard } from "@/components/annotation/ai/AnnotatedDatasetCard";
+import { UploadDatasetButton } from "@/components/annotation/datasets/UploadDatasetButton";
+import { AddDatasetForm } from "@/components/annotation/datasets/AddDatasetForm";
+import { AnnotatedDatasetCard } from "@/components/annotation/datasets/AnnotatedDatasetCard";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import DataPointList from "@/components/annotation/DataPointList";
-import AnnotatedTextList from "@/components/annotation/AnnotatedTextList";
+import DataPointList from "@/components/annotation/core/DataPointList";
+import AnnotatedTextList from "@/components/annotation/core/AnnotatedTextList";
 import { AnnotationTabProps, BaseProfilePoint } from "@/types/annotation";
 
 export function AnnotationTab<TProfilePoint extends BaseProfilePoint>({

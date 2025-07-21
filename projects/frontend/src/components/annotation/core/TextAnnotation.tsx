@@ -1,16 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useMemo, useEffect } from "react";
-import { useAnnotationData } from "./hooks/useAnnotationData";
-import { useTextKeyboardNavigation } from "./hooks/useKeyboardNavigation";
-import { generateHighlightedText } from "./utils/textAnnotationUtils";
+import { useAnnotationData } from "../hooks/useAnnotationData";
+import { useTextKeyboardNavigation } from "../hooks/useKeyboardNavigation";
+import { generateHighlightedText } from "../utils/textAnnotationUtils";
 import { TextAnnotationProps } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import { updateProfile, readProfile } from "@/lib/db/crud";
 import { Profile } from "@/lib/db/db";
 import { TASK_MODE } from "@/app/constants";
 import { RefreshCw, Menu, Settings, Home, FileText } from "lucide-react";
-import { reannotateFaultyText } from "@/components/annotation/ai/annotationUtils";
-import { useAnnotationState } from "@/components/annotation/ai/hooks/useAnnotationState";
+import { reannotateFaultyText } from "../utils/annotationUtils";
+import { useAnnotationState } from "../hooks/useAnnotationState";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useRouter } from "next/navigation";
 import {

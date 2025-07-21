@@ -21,11 +21,11 @@ import {
   SegmentationProfilePoint,
   Text,
 } from "@/lib/db/db";
-import { annotateTextBatch, reannotateFaultyText } from "../annotationUtils";
+import { annotateTextBatch, reannotateFaultyText } from "../utils/annotationUtils";
 import { 
   annotateSegmentationTextBatch, 
   reannotateFaultySegmentationText 
-} from "../segmentationAnnotationUtils";
+} from "../utils/segmentationAnnotationUtils";
 import { TaskMode } from "@/app/constants";
 
 type ProfilePointType = ProfilePoint | SegmentationProfilePoint;

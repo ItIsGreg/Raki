@@ -25,7 +25,7 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@/components/ui/select";
-import { useDataPointKeyboardNavigation } from "./hooks/useKeyboardNavigation";
+import { useDataPointKeyboardNavigation } from "../hooks/useKeyboardNavigation";
 
 type AnyDataPoint = DataPoint | SegmentDataPoint;
 

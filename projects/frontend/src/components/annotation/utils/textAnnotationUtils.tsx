@@ -1,7 +1,7 @@
 import React from "react";
 import { AnnotatedText, DataPoint, ProfilePoint } from "@/lib/db/db";
-import TextSlice from "@/components/annotation/TextSlice";
-import DataPointSlice from "@/components/annotation/DataPointSlice";
+import TextSlice from "../slices/TextSlice";
+import DataPointSlice from "../slices/DataPointSlice";
 
 interface GenerateHighlightedTextProps {
   text: string;

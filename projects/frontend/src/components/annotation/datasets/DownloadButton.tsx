@@ -18,7 +18,7 @@ import {
   readText,
   readDataset,
 } from "@/lib/db/crud";
-import { downloadAnnotatedDataset } from "./annotationUtils";
+import { downloadAnnotatedDataset } from "../utils/annotationUtils";
 import { DataPoint, SegmentDataPoint } from "@/lib/db/db";
 import { TaskMode } from "@/app/constants";
 

@@ -1,7 +1,7 @@
 import { TASK_MODE } from "@/app/constants";
 import { ProfilePoint, ProfilePointCreate } from "@/lib/db/db";
 import { readProfilePointsByProfile, createProfilePoint } from "@/lib/db/crud";
-import TextAnnotation from "@/components/annotation/TextAnnotation";
+import TextAnnotation from "@/components/annotation/core/TextAnnotation";
 import DataPointEditor from "@/components/profiles/DataPointEditor";
 import {
   ModeConfiguration,
