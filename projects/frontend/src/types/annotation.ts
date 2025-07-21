@@ -130,6 +130,9 @@ export interface SharedAnnotationHandlers<TProfilePoint extends BaseProfilePoint
   // Form handlers
   handleCancelAddProfile: () => void;
   handleCancelAddDataset: () => void;
+  
+  // Mode-specific handlers
+  handleUpdateSegment?: (segment: any) => Promise<void>;
 }
 
 // Base annotation page props

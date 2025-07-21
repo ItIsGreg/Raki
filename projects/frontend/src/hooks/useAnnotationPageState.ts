@@ -17,6 +17,7 @@ import {
   deleteDataset,
   getUserSettings,
   updateUserSettings,
+  readText,
 } from "@/lib/db/crud";
 import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
 import { handleUploadAnnotatedDataset } from "@/components/aiAnnotation/annotationUtils";
@@ -82,6 +83,20 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
       datasets.map((dataset) => readTextsByDataset(dataset.id))
     ).then((textArrays) => textArrays.flat());
   }, [datasets]);
+
+  // Get text content for display (mode-specific logic)
+  const displayText = useLiveQuery<Text | undefined>(() => {
+    // In text upload tab, use activeText directly
+    if (activeTab === "text-upload" && activeText) {
+      return Promise.resolve(activeText);
+    }
+    // In annotation tab, get text from activeAnnotatedText for segmentation mode
+    if (configuration.mode === "text_segmentation" && activeAnnotatedText?.textId) {
+      return readText(activeAnnotatedText.textId);
+    }
+    // For datapoint extraction, return undefined (uses TextAnnotation component differently)
+    return Promise.resolve(undefined);
+  }, [activeAnnotatedText?.textId, activeText, activeTab, configuration.mode]);
 
   // Update display mode when tab changes
   useEffect(() => {
@@ -167,6 +182,12 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   const handleDeleteAnnotatedDataset = () => {
     if (activeAnnotatedDataset) {
       setActiveAnnotatedDataset(undefined);
+    }
+  };
+
+  const handleUpdateSegment = async (segment: any) => {
+    if (configuration.crudOperations.updateProfilePoint) {
+      await configuration.crudOperations.updateProfilePoint(segment);
     }
   };
 
@@ -321,6 +342,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     setAutoRerunFaulty,
     handleCancelAddProfile,
     handleCancelAddDataset,
+    handleUpdateSegment,
   };
 
   return {
@@ -332,6 +354,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     allTexts,
     userSettings,
     fileInputRef,
+    displayText,
     // Annotation state hook data
     annotationState,
     dbAnnotatedDatasets,

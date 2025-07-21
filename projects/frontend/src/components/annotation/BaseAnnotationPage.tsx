@@ -18,6 +18,7 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
     allTexts,
     userSettings,
     fileInputRef,
+    displayText,
     annotationState,
     dbAnnotatedDatasets,
     handleStart,
@@ -51,14 +52,14 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
           activeAnnotatedDataset={state.activeAnnotatedDataset}
           activeAnnotatedText={state.activeAnnotatedText}
           activeDataPointId={state.activeDataPointId}
-          activeText={state.activeText}
+          activeText={displayText}
           setActiveAnnotatedDataset={handlers.setActiveAnnotatedDataset}
           setActiveDataPointId={handlers.setActiveDataPointId}
           setActiveAnnotatedText={handlers.setActiveAnnotatedText}
           setActiveTab={handlers.setActiveTab}
           setActiveDataPoint={handlers.setActiveDataPoint}
           mode={state.displayMode}
-          onUpdateSegment={configuration.crudOperations.updateProfilePoint}
+          onUpdateSegment={handlers.handleUpdateSegment}
           isReadOnly={state.activeTab === "text-upload"}
         />
       </div>

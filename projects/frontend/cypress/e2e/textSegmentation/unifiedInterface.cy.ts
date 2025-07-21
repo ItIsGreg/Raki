@@ -91,9 +91,14 @@ describe('Text Segmentation Unified Interface', () => {
         .should('contain', '015.md')
         .click({ force: true })
       
+      // Wait for the UI to update
+      cy.wait(1000)
+      
       // Verify text content is displayed in the left panel
       cy.get('[data-cy="text-display"]').should('be.visible')
-      cy.get('[data-cy="text-display"]').should('contain', 'Text Display') // Card title
+      
+      // Check for "Text Display" title in the card header
+      cy.get('h3').contains('Text Display').should('be.visible')
       
       // Verify the text content is actually displayed (not empty)
       cy.get('[data-cy="text-display"]').first().within(() => {
@@ -120,15 +125,18 @@ describe('Text Segmentation Unified Interface', () => {
       
       cy.get('[data-cy="text-card"]').click({ force: true })
       
+      // Wait for the UI to update
+      cy.wait(1000)
+      
       // Verify text display is in read-only mode
+      // Should show "Text Display" title, not "Text Segmentation"
+      cy.get('h3').contains('Text Display').should('be.visible')
+      
+      // Should not show debug button (read-only mode)
+      cy.get('[data-cy="debug-text-parts-btn"]').should('not.exist')
+      
+      // Text should be selectable but not show annotation tooltips
       cy.get('[data-cy="text-display"]').first().within(() => {
-        // Should show "Text Display" title, not "Text Segmentation"
-        cy.get('h3').should('contain', 'Text Display')
-        
-        // Should not show debug button (read-only mode)
-        cy.get('[data-cy="debug-text-parts-btn"]').should('not.exist')
-        
-        // Text should be selectable but not show annotation tooltips
         cy.get('.whitespace-pre-wrap').should('be.visible')
       })
     })

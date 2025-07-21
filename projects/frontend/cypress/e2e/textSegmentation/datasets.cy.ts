@@ -66,8 +66,14 @@ describe('Text Segmentation Datasets (Unified UI)', () => {
           mimeType: 'text/markdown'
         })
         cy.get('[data-cy="text-card"]').should('be.visible').should('contain', '015.md').click({ force: true })
-        // Check text display area for content
-        cy.get('[data-cy="text-display"]').first().should('contain', 'Text Display')
+        
+        // Wait for the UI to update
+        cy.wait(1000)
+        
+        // Check text display area for content - look for CardTitle first
+        cy.get('h3').contains('Text Display').should('be.visible')
+        
+        // Then check the text content
         cy.get('[data-cy="text-display"]').first().within(() => {
           cy.get('.whitespace-pre-wrap').should('contain', expectedContent)
         })
