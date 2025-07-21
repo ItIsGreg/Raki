@@ -179,7 +179,7 @@ describe('Text Segmentation Manual Annotation', () => {
       .click()
 
     // Verify that clicking the dataset card shows annotated texts
-    cy.get('[data-cy="annotated-text-list-container"]')
+    cy.get('[data-cy="manual-annotated-text-list-container"]')
       .find('[data-cy="manual-annotated-text-card"]')
       .should('be.visible')
       .click()
