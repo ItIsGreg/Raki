@@ -21,6 +21,7 @@ import {
 import DataPointList from "@/components/annotation/core/DataPointList";
 import AnnotatedTextList from "@/components/annotation/core/AnnotatedTextList";
 import { AnnotationTabProps, BaseProfilePoint } from "@/types/annotation";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 export function AnnotationTab<TProfilePoint extends BaseProfilePoint>({
   state,
@@ -134,11 +135,8 @@ export function AnnotationTab<TProfilePoint extends BaseProfilePoint>({
               </CollapsibleContent>
             </Collapsible>
           )}
-          <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)]">
-            <div
-              className="col-span-1 overflow-y-auto"
-              data-cy="datapoint-list-container"
-            >
+          <PanelGroup direction="horizontal">
+            <Panel defaultSize={50} minSize={30}>
               <DataPointList
                 data-cy="data-point-list"
                 activeAnnotatedDataset={state.activeAnnotatedDataset}
@@ -150,11 +148,11 @@ export function AnnotationTab<TProfilePoint extends BaseProfilePoint>({
                 isDatasetListOpen={state.isDatasetListOpen}
                 activeProfilePoints={state.activeProfilePoints as any}
               />
-            </div>
-            <div
-              className="col-span-1 overflow-y-auto"
-              data-cy="annotated-text-list-container"
-            >
+            </Panel>
+            <PanelResizeHandle className="w-2 bg-border hover:bg-border/80 transition-colors flex items-center justify-center group">
+              <div className="w-1 h-8 bg-border/50 rounded-full group-hover:bg-border transition-colors" />
+            </PanelResizeHandle>
+            <Panel defaultSize={50} minSize={30}>
               <AnnotatedTextList
                 data-cy="annotated-text-list"
                 activeAnnotatedDataset={state.activeAnnotatedDataset}
@@ -163,8 +161,8 @@ export function AnnotationTab<TProfilePoint extends BaseProfilePoint>({
                 setActiveAnnotatedDataset={handlers.setActiveAnnotatedDataset}
                 mode={configuration.mode}
               />
-            </div>
-          </div>
+            </Panel>
+          </PanelGroup>
         </div>
       </div>
     </TabsContent>

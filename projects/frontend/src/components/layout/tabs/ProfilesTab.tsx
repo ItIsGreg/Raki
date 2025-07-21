@@ -26,6 +26,7 @@ import {
 import ProfileDataPointList from "@/components/profiles/DataPointList";
 import { ProfilesTabProps, BaseProfilePoint } from "@/types/annotation";
 import { Profile } from "@/lib/db/db";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 export function ProfilesTab<TProfilePoint extends BaseProfilePoint>({
   state,
@@ -147,38 +148,50 @@ export function ProfilesTab<TProfilePoint extends BaseProfilePoint>({
               data-cy="new-profile-form"
             />
           )}
-          <div className="grid grid-cols-3 gap-4 h-[calc(100vh-12rem)]">
-            <div
-              className="col-span-2 overflow-y-auto"
-              data-cy="datapoint-editor-container"
-            >
-              <configuration.components.DataPointEditor
-                activeProfile={state.activeProfile}
-                activeDataPoint={state.activeDataPoint}
-                setActiveDataPoint={handlers.setActiveDataPoint}
-                creatingNewDataPoint={state.creatingNewDataPoint}
-                setCreatingNewDataPoint={handlers.setCreatingNewDataPoint}
-              />
-            </div>
-            <div
-              className="col-span-1 overflow-y-auto"
-              data-cy="profile-datapoint-list-container"
-            >
-              <ProfileDataPointList
-                data-cy="profile-datapoint-list"
-                activeProfile={state.activeProfile}
-                activeDataPoint={state.activeDataPoint}
-                setActiveDataPoint={handlers.setActiveDataPoint}
-                setCreatingNewDataPoint={handlers.setCreatingNewDataPoint}
-                readPointsByProfile={
-                  configuration.crudOperations.readProfilePoints
-                }
-                createPoint={(point) =>
-                  configuration.crudOperations.createProfilePoint(point as any)
-                }
-              />
-            </div>
-          </div>
+          <PanelGroup direction="horizontal">
+            <Panel defaultSize={60} minSize={30}>
+              <div
+                className="overflow-y-auto h-full"
+                data-cy="datapoint-editor-container"
+              >
+                <configuration.components.DataPointEditor
+                  data-cy="profile-datapoint-editor"
+                  activeProfile={state.activeProfile}
+                  activeDataPoint={
+                    state.activeDataPoint as TProfilePoint | undefined
+                  }
+                  setActiveDataPoint={handlers.setActiveDataPoint}
+                  creatingNewDataPoint={state.creatingNewDataPoint}
+                  setCreatingNewDataPoint={handlers.setCreatingNewDataPoint}
+                />
+              </div>
+            </Panel>
+            <PanelResizeHandle className="w-2 bg-border hover:bg-border/80 transition-colors flex items-center justify-center group">
+              <div className="w-1 h-8 bg-border/50 rounded-full group-hover:bg-border transition-colors" />
+            </PanelResizeHandle>
+            <Panel defaultSize={40} minSize={30}>
+              <div
+                className="overflow-y-auto h-full"
+                data-cy="profile-datapoint-list-container"
+              >
+                <ProfileDataPointList
+                  data-cy="profile-datapoint-list"
+                  activeProfile={state.activeProfile}
+                  activeDataPoint={state.activeDataPoint}
+                  setActiveDataPoint={handlers.setActiveDataPoint}
+                  setCreatingNewDataPoint={handlers.setCreatingNewDataPoint}
+                  readPointsByProfile={
+                    configuration.crudOperations.readProfilePoints
+                  }
+                  createPoint={(point) =>
+                    configuration.crudOperations.createProfilePoint(
+                      point as any
+                    )
+                  }
+                />
+              </div>
+            </Panel>
+          </PanelGroup>
         </div>
       </div>
     </TabsContent>

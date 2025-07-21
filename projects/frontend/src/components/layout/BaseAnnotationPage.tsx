@@ -7,6 +7,7 @@ import { AnnotationTab } from "./tabs/AnnotationTab";
 import { ProfilesTab } from "./tabs/ProfilesTab";
 import { TextUploadTab } from "./tabs/TextUploadTab";
 import TutorialDrawer from "@/components/tutorial/TutorialDrawer";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
   configuration,
@@ -43,10 +44,7 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
       : "segmentation-tabs-list";
 
   return (
-    <div
-      className="grid grid-cols-7 gap-4 h-full overflow-hidden"
-      data-cy={containerDataCy}
-    >
+    <div className="h-full overflow-hidden" data-cy={containerDataCy}>
       <TutorialDrawer
         isOpen={state.isTutorialOpen}
         onOpenChange={handlers.setIsTutorialOpen}
@@ -55,94 +53,117 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
         data-cy="tutorial-drawer"
       />
 
-      {/* Left Panel - Mode-specific component */}
-      <div className="col-span-4 flex flex-col h-full">
-        <configuration.components.LeftPanel
-          activeAnnotatedDataset={state.activeAnnotatedDataset}
-          activeAnnotatedText={state.activeAnnotatedText}
-          activeDataPointId={state.activeDataPointId}
-          activeText={displayText}
-          setActiveAnnotatedDataset={handlers.setActiveAnnotatedDataset}
-          setActiveDataPointId={handlers.setActiveDataPointId}
-          setActiveAnnotatedText={handlers.setActiveAnnotatedText}
-          setActiveTab={handlers.setActiveTab}
-          setActiveDataPoint={handlers.setActiveDataPoint}
-          mode={state.displayMode}
-          onUpdateSegment={handlers.handleUpdateSegment}
-          isReadOnly={state.activeTab === "text-upload"}
-        />
-      </div>
-
-      {/* Right Panel - Tabbed Interface */}
-      <Tabs
-        defaultValue="annotation"
-        className="col-span-3 h-full flex flex-col overflow-hidden"
-        onValueChange={handlers.setActiveTab}
-        value={state.activeTab}
-        data-cy={tabsDataCy}
+      <PanelGroup
+        direction="horizontal"
+        className="h-full"
+        autoSaveId={`annotation-layout-${configuration.mode}`}
       >
-        <TabsList className="w-full" data-cy={tabsListDataCy}>
-          <TabsTrigger
-            value="annotation"
-            className="flex-1"
-            data-cy="annotation-tab"
-          >
-            Annotation
-          </TabsTrigger>
-          <TabsTrigger
-            value="profiles"
-            className="flex-1"
-            data-cy="profiles-tab"
-          >
-            Profiles
-          </TabsTrigger>
-          <TabsTrigger
-            value="text-upload"
-            className="flex-1"
-            data-cy="text-upload-tab"
-          >
-            Text Upload
-          </TabsTrigger>
-        </TabsList>
+        {/* Left Panel - Text Display/Annotation */}
+        <Panel
+          defaultSize={60}
+          minSize={30}
+          maxSize={80}
+          className="flex flex-col"
+        >
+          <configuration.components.LeftPanel
+            activeAnnotatedDataset={state.activeAnnotatedDataset}
+            activeAnnotatedText={state.activeAnnotatedText}
+            activeDataPointId={state.activeDataPointId}
+            activeText={displayText}
+            setActiveAnnotatedDataset={handlers.setActiveAnnotatedDataset}
+            setActiveDataPointId={handlers.setActiveDataPointId}
+            setActiveAnnotatedText={handlers.setActiveAnnotatedText}
+            setActiveTab={handlers.setActiveTab}
+            setActiveDataPoint={handlers.setActiveDataPoint}
+            mode={state.displayMode}
+            onUpdateSegment={handlers.handleUpdateSegment}
+            isReadOnly={state.activeTab === "text-upload"}
+          />
+        </Panel>
 
-        <AnnotationTab
-          state={state}
-          handlers={handlers}
-          configuration={configuration}
-          annotationState={annotationState}
-          dbAnnotatedDatasets={dbAnnotatedDatasets}
-          handleStart={handleStart}
-          handleStop={handleStop}
-          identifyActiveProfilePoints={identifyActiveProfilePoints}
-        />
+        {/* Resize Handle */}
+        <PanelResizeHandle className="w-2 bg-border hover:bg-border/80 transition-colors flex items-center justify-center group">
+          <div className="w-1 h-8 bg-border/50 rounded-full group-hover:bg-border transition-colors" />
+        </PanelResizeHandle>
 
-        <ProfilesTab
-          state={state}
-          handlers={handlers}
-          configuration={configuration}
-          profiles={profiles}
-          fileInputRef={fileInputRef}
-        />
+        {/* Right Panel - Tabbed Interface */}
+        <Panel
+          defaultSize={40}
+          minSize={20}
+          maxSize={70}
+          className="flex flex-col"
+        >
+          <Tabs
+            defaultValue="annotation"
+            className="h-full flex flex-col overflow-hidden"
+            onValueChange={handlers.setActiveTab}
+            value={state.activeTab}
+            data-cy={tabsDataCy}
+          >
+            <TabsList className="w-full" data-cy={tabsListDataCy}>
+              <TabsTrigger
+                value="annotation"
+                className="flex-1"
+                data-cy="annotation-tab"
+              >
+                Annotation
+              </TabsTrigger>
+              <TabsTrigger
+                value="profiles"
+                className="flex-1"
+                data-cy="profiles-tab"
+              >
+                Profiles
+              </TabsTrigger>
+              <TabsTrigger
+                value="text-upload"
+                className="flex-1"
+                data-cy="text-upload-tab"
+              >
+                Text Upload
+              </TabsTrigger>
+            </TabsList>
 
-        <TextUploadTab
-          state={{
-            activeDataset: state.activeDataset,
-            addingDataset: state.addingDataset,
-            showDeleteDialog: state.showDeleteDialog,
-            activeText: state.activeText,
-          }}
-          handlers={{
-            setActiveDataset: handlers.setActiveDataset,
-            handleSaveDataset: handlers.handleSaveDataset,
-            handleDeleteDataset: handlers.handleDeleteDataset,
-            handleCancelAddDataset: handlers.handleCancelAddDataset,
-            setShowDeleteDialog: handlers.setShowDeleteDialog,
-            setAddingDataset: handlers.setAddingDataset,
-            setActiveText: handlers.setActiveText,
-          }}
-          datasets={datasets}
-        />
-      </Tabs>
+            <AnnotationTab
+              state={state}
+              handlers={handlers}
+              configuration={configuration}
+              annotationState={annotationState}
+              dbAnnotatedDatasets={dbAnnotatedDatasets}
+              handleStart={handleStart}
+              handleStop={handleStop}
+              identifyActiveProfilePoints={identifyActiveProfilePoints}
+            />
+
+            <ProfilesTab
+              state={state}
+              handlers={handlers}
+              configuration={configuration}
+              profiles={profiles}
+              fileInputRef={fileInputRef}
+            />
+
+            <TextUploadTab
+              state={{
+                activeDataset: state.activeDataset,
+                addingDataset: state.addingDataset,
+                showDeleteDialog: state.showDeleteDialog,
+                activeText: state.activeText,
+              }}
+              handlers={{
+                setActiveDataset: handlers.setActiveDataset,
+                handleSaveDataset: handlers.handleSaveDataset,
+                handleDeleteDataset: handlers.handleDeleteDataset,
+                handleCancelAddDataset: handlers.handleCancelAddDataset,
+                setShowDeleteDialog: handlers.setShowDeleteDialog,
+                setAddingDataset: handlers.setAddingDataset,
+                setActiveText: handlers.setActiveText,
+              }}
+              datasets={datasets}
+            />
+          </Tabs>
+        </Panel>
+      </PanelGroup>
     </div>
   );
 }
