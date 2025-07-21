@@ -11,8 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { TiUpload, TiDownloadOutline } from "react-icons/ti";
-import { AddButton } from "@/components/AddButton";
-import EntityForm from "@/components/EntityForm";
+import { AddButton } from "@/components/shared/AddButton";
+import EntityForm from "@/components/shared/EntityForm";
 import {
   AlertDialog,
   AlertDialogAction,

@@ -1,4 +1,4 @@
-import { backendURL } from "../../app/constants";
+import { backendURL } from "../../../app/constants";
 import {
   SegmentationProfilePoint,
   Text,

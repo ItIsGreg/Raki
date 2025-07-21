@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import EntityForm from "@/components/EntityForm";
+import EntityForm from "@/components/shared/EntityForm";
 import {
   AlertDialog,
   AlertDialogAction,

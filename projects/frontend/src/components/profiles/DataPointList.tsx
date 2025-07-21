@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
-import { AddButton } from "@/components/AddButton";
+import { AddButton } from "@/components/shared/AddButton";
 
 export interface DataPointListProps<T> {
   activeProfile: Profile | undefined;

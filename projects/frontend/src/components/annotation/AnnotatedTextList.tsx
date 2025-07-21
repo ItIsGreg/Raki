@@ -5,7 +5,7 @@ import {
   readTextsByIds,
 } from "@/lib/db/crud";
 import { useLiveQuery } from "dexie-react-hooks";
-import CompactCard from "@/components/CompactCard";
+import CompactCard from "@/components/shared/CompactCard";
 import { TASK_MODE, TaskMode } from "@/app/constants";
 
 interface ExtendedAnnotatedTextListProps extends AnnotatedTextListProps {

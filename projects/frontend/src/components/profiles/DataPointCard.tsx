@@ -1,5 +1,5 @@
 import { TiDeleteOutline } from "react-icons/ti";
-import CompactCard from "@/components/CompactCard";
+import CompactCard from "@/components/shared/CompactCard";
 
 export interface GenericDataPointCardProps<T> {
   dataPoint: T;

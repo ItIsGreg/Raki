@@ -9,7 +9,7 @@ import {
   updateSegmentDataPoint,
 } from "@/lib/db/crud";
 import { TiDeleteOutline } from "react-icons/ti";
-import CompactCard from "@/components/CompactCard";
+import CompactCard from "@/components/shared/CompactCard";
 import { AnnotationDataPointListProps } from "@/app/types";
 import { DataPoint, SegmentDataPoint, ProfilePoint } from "@/lib/db/db";
 import { TASK_MODE, TaskMode } from "@/app/constants";

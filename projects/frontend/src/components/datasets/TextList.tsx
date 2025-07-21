@@ -18,7 +18,7 @@ import JSZip from "jszip";
 import SingleTextInput from "./SingleTextInput";
 import * as pdfjsLib from "pdfjs-dist";
 import { backendURL } from "../../app/constants";
-import CompactCard from "@/components/CompactCard";
+import CompactCard from "@/components/shared/CompactCard";
 import {
   DropdownMenu,
   DropdownMenuContent,

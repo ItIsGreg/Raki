@@ -18,8 +18,8 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import DeleteButton from "@/components/DeleteButton";
-import EditButton from "@/components/EditButton";
+import DeleteButton from "@/components/shared/DeleteButton";
+import EditButton from "@/components/shared/EditButton";
 import DownloadButton from "./DownloadButton";
 import { Progress } from "@/components/ui/progress";
 import { Loader2 } from "lucide-react";

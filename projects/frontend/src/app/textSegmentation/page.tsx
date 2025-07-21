@@ -1,6 +1,6 @@
 "use client";
 
-import { BaseAnnotationPage } from "@/components/annotation/BaseAnnotationPage";
+import { BaseAnnotationPage } from "@/components/layout/BaseAnnotationPage";
 import { textSegmentationConfig } from "@/configurations/textSegmentationConfig";
 
 export default function TextSegmentationPage() {

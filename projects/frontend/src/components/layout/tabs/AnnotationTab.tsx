@@ -9,10 +9,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronDown } from "lucide-react";
-import { AddButton } from "@/components/AddButton";
-import { UploadDatasetButton } from "@/components/aiAnnotation/UploadDatasetButton";
-import { AddDatasetForm } from "@/components/aiAnnotation/AddDatasetForm";
-import { AnnotatedDatasetCard } from "@/components/aiAnnotation/AnnotatedDatasetCard";
+import { AddButton } from "@/components/shared/AddButton";
+import { UploadDatasetButton } from "@/components/annotation/ai/UploadDatasetButton";
+import { AddDatasetForm } from "@/components/annotation/ai/AddDatasetForm";
+import { AnnotatedDatasetCard } from "@/components/annotation/ai/AnnotatedDatasetCard";
 import {
   Collapsible,
   CollapsibleContent,

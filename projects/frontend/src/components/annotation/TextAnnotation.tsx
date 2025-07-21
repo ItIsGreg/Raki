@@ -9,8 +9,8 @@ import { updateProfile, readProfile } from "@/lib/db/crud";
 import { Profile } from "@/lib/db/db";
 import { TASK_MODE } from "@/app/constants";
 import { RefreshCw, Menu, Settings, Home, FileText } from "lucide-react";
-import { reannotateFaultyText } from "@/components/aiAnnotation/annotationUtils";
-import { useAnnotationState } from "@/components/aiAnnotation/hooks/useAnnotationState";
+import { reannotateFaultyText } from "@/components/annotation/ai/annotationUtils";
+import { useAnnotationState } from "@/components/annotation/ai/hooks/useAnnotationState";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useRouter } from "next/navigation";
 import {

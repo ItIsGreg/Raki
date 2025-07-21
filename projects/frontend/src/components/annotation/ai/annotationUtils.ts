@@ -1,11 +1,11 @@
-import { backendURL } from "../../app/constants";
+import { backendURL } from "../../../app/constants";
 import {
   ProfilePoint,
   Text,
   AnnotatedDataset,
   AnnotatedText,
 } from "@/lib/db/db";
-import { ReqProfilePoint, ResDataPoint } from "../../app/types";
+import { ReqProfilePoint, ResDataPoint } from "../../../app/types";
 import {
   readProfilePointsByProfile,
   createAnnotatedDataset,
