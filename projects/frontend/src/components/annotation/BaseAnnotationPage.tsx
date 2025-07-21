@@ -6,6 +6,7 @@ import { BaseAnnotationPageProps, BaseProfilePoint } from "@/types/annotation";
 import { AnnotationTab } from "./tabs/AnnotationTab";
 import { ProfilesTab } from "./tabs/ProfilesTab";
 import { TextUploadTab } from "./tabs/TextUploadTab";
+import TutorialDrawer from "@/components/tutorial/TutorialDrawer";
 
 export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
   configuration,
@@ -46,6 +47,14 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
       className="grid grid-cols-7 gap-4 h-full overflow-hidden"
       data-cy={containerDataCy}
     >
+      <TutorialDrawer
+        isOpen={state.isTutorialOpen}
+        onOpenChange={handlers.setIsTutorialOpen}
+        tutorialCompleted={state.tutorialCompleted}
+        onTutorialComplete={handlers.handleTutorialComplete}
+        data-cy="tutorial-drawer"
+      />
+
       {/* Left Panel - Mode-specific component */}
       <div className="col-span-4 flex flex-col h-full">
         <configuration.components.LeftPanel
