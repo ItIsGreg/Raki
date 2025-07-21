@@ -187,7 +187,7 @@ export const runTestSuiteWithProvider = (providerType: 'OpenAI' | 'Custom') => {
         });
 
       // Check that the counts match between the two components
-      cy.get('[data-cy="annotated-text-list-container"]', { timeout: 20000 })
+      cy.get('[data-cy="manual-annotated-text-list-container"]', { timeout: 20000 })
         .find('[data-cy="manual-annotated-text-card"]')
         .should('have.length.gt', 0)
         .then(($cards) => {
