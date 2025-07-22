@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
@@ -17,6 +17,11 @@ export function AuthModal({
   defaultMode = "login",
 }: AuthModalProps) {
   const [mode, setMode] = useState<"login" | "register">(defaultMode);
+
+  // Update mode when defaultMode changes
+  useEffect(() => {
+    setMode(defaultMode);
+  }, [defaultMode]);
 
   const handleSuccess = () => {
     onClose();
