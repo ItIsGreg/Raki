@@ -95,6 +95,79 @@ export interface CloudDatasetCreate {
   mode: string;
 }
 
+// Text types
+export interface CloudText {
+  id: string;
+  dataset_id: string;
+  filename: string;
+  text: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CloudTextCreate {
+  dataset_id: string;
+  filename: string;
+  text: string;
+}
+
+// Annotated Dataset types
+export interface CloudAnnotatedDataset {
+  id: string;
+  user_id: string;
+  dataset_id: string;
+  profile_id: string;
+  name: string;
+  description?: string;
+  mode: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CloudAnnotatedDatasetCreate {
+  dataset_id: string;
+  profile_id: string;
+  name: string;
+  description?: string;
+  mode: string;
+}
+
+// User Settings types
+export interface CloudUserSettings {
+  id: string;
+  user_id: string;
+  tutorial_completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CloudUserSettingsCreate {
+  tutorial_completed?: boolean;
+}
+
+// LLM Config types
+export interface CloudUserLLMConfig {
+  id: string;
+  user_id: string;
+  provider?: string;
+  api_key?: string;
+  model?: string;
+  url?: string;
+  max_tokens?: number;
+  batch_size?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CloudUserLLMConfigCreate {
+  provider?: string;
+  api_key?: string;
+  model?: string;
+  url?: string;
+  max_tokens?: number;
+  batch_size?: number;
+}
+
 // Cloud Data Service
 export class CloudDataService {
   // Profile operations
@@ -154,25 +227,49 @@ export class CloudDataService {
     return apiCall<CloudDataset>(`/data/datasets/${datasetId}`);
   }
 
-  // User Settings operations
-  static async getUserSettings(): Promise<any> {
-    return apiCall<any>('/data/settings');
+  // Text operations
+  static async createText(text: CloudTextCreate): Promise<CloudText> {
+    return apiCall<CloudText>('/data/texts', {
+      method: 'POST',
+      body: JSON.stringify(text),
+    });
   }
 
-  static async updateUserSettings(settings: any): Promise<any> {
-    return apiCall<any>('/data/settings', {
+  static async getDatasetTexts(datasetId: string): Promise<CloudText[]> {
+    return apiCall<CloudText[]>(`/data/datasets/${datasetId}/texts`);
+  }
+
+  // Annotated Dataset operations
+  static async createAnnotatedDataset(annotatedDataset: CloudAnnotatedDatasetCreate): Promise<CloudAnnotatedDataset> {
+    return apiCall<CloudAnnotatedDataset>('/data/annotated-datasets', {
+      method: 'POST',
+      body: JSON.stringify(annotatedDataset),
+    });
+  }
+
+  static async getAnnotatedDatasets(): Promise<CloudAnnotatedDataset[]> {
+    return apiCall<CloudAnnotatedDataset[]>('/data/annotated-datasets');
+  }
+
+  // User Settings operations
+  static async getUserSettings(): Promise<CloudUserSettings> {
+    return apiCall<CloudUserSettings>('/data/settings');
+  }
+
+  static async updateUserSettings(settings: CloudUserSettingsCreate): Promise<CloudUserSettings> {
+    return apiCall<CloudUserSettings>('/data/settings', {
       method: 'PUT',
       body: JSON.stringify(settings),
     });
   }
 
   // LLM Config operations
-  static async getLLMConfig(): Promise<any> {
-    return apiCall<any>('/data/llm-config');
+  static async getLLMConfig(): Promise<CloudUserLLMConfig> {
+    return apiCall<CloudUserLLMConfig>('/data/llm-config');
   }
 
-  static async updateLLMConfig(config: any): Promise<any> {
-    return apiCall<any>('/data/llm-config', {
+  static async updateLLMConfig(config: CloudUserLLMConfigCreate): Promise<CloudUserLLMConfig> {
+    return apiCall<CloudUserLLMConfig>('/data/llm-config', {
       method: 'PUT',
       body: JSON.stringify(config),
     });

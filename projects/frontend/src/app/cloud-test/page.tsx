@@ -201,7 +201,7 @@ export default function CloudTestPage() {
             ) : (
               <div className="grid gap-4">
                 {profiles.map((profile) => (
-                  <Card key={profile.id}>
+                  <Card key={profile.id} data-cy="profile-card">
                     <CardHeader>
                       <CardTitle className="text-lg">{profile.name}</CardTitle>
                       <CardDescription>{profile.description}</CardDescription>

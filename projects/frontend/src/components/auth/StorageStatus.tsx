@@ -10,7 +10,11 @@ export function StorageStatus() {
 
   if (isAuthenticated) {
     return (
-      <Badge variant="secondary" className="flex items-center gap-1">
+      <Badge
+        variant="secondary"
+        className="flex items-center gap-1"
+        data-cy="storage-status"
+      >
         <Cloud className="h-3 w-3" />
         Cloud Storage
       </Badge>
@@ -18,7 +22,11 @@ export function StorageStatus() {
   }
 
   return (
-    <Badge variant="outline" className="flex items-center gap-1">
+    <Badge
+      variant="outline"
+      className="flex items-center gap-1"
+      data-cy="storage-status"
+    >
       <HardDrive className="h-3 w-3" />
       Local Storage
     </Badge>
