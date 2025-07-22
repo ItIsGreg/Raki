@@ -1,16 +1,23 @@
-version: '3.8'
+version: "3.8"
 
 services:
   backend:
-    build: 
+    build:
       context: ./projects/llm_backend
     ports:
       - "8000:8000"
     volumes:
       - ./projects/llm_backend/app:/app/app
+    environment:
+      - DATABASE_URL=postgresql://raki_user:raki_password@postgres:5432/raki_db
+      - JWT_SECRET_KEY=your-secret-key-change-in-production
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+    depends_on:
+      - postgres
 
   frontend:
-    build: 
+    build:
       context: ./projects/frontend
     ports:
       - "3000:3000"
@@ -18,4 +25,18 @@ services:
       - ./projects/frontend:/app
       - /app/node_modules
     depends_on:
-      - backend 
+      - backend
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=raki_db
+      - POSTGRES_USER=raki_user
+      - POSTGRES_PASSWORD=raki_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

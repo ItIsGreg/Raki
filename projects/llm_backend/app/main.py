@@ -8,8 +8,13 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.routers.datapoint_extraction import substrings, values, pipeline, profile_chat
 from app.routers.text_segmentation import pdf_extraction, profile_chat as text_segmentation_profile_chat, segments
+from app.routers import auth
+from app.config.database import engine, Base
 
 app = FastAPI()
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
 
 router = APIRouter()
 
@@ -59,6 +64,11 @@ router.include_router(
     segments.router,
     tags=["segments"],
     prefix="/text-segmentation",
+)
+router.include_router(
+    auth.router,
+    tags=["auth"],
+    prefix="/auth",
 )
 
 app.add_middleware(
