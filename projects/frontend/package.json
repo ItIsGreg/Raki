@@ -15,7 +15,8 @@
     "cypress:segmentation": "cypress run --spec 'cypress/e2e/textSegmentation/**'",
     "cypress:parallel": "npm-run-all --parallel cypress:datapoint cypress:segmentation",
     "test": "cypress run",
-    "test:parallel": "npm-run-all --parallel cypress:datapoint cypress:segmentation"
+    "test:parallel": "npm-run-all --parallel cypress:datapoint cypress:segmentation",
+    "test:cloud-api": "node test-cloud-api.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

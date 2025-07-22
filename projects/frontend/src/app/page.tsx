@@ -39,6 +39,20 @@ export default function Home() {
               </CardHeader>
             </Card>
           </Link>
+
+          <Link href="/cloud-test" className="m-10">
+            <Card
+              className="hover:bg-gray-100 transform hover:shadow-md border-blue-200"
+              data-cy="cloud-test-card"
+            >
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-center text-blue-600">
+                  Cloud Storage Test
+                </CardTitle>
+                <Database className="h-8 w-8 text-blue-600" />
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
       </div>
     </>

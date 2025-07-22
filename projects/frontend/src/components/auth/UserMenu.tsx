@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthModal } from "./AuthModal";
+import { MoveToCloudButton } from "./MoveToCloudButton";
 
 export function UserMenu() {
   const { user, logout, isAuthenticated } = useAuth();
