@@ -147,7 +147,10 @@ export function WorkspaceSelector() {
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => {
+              // Small delay to let DropdownMenu close first
+              setTimeout(() => setShowCreateModal(true), 100);
+            }}
             className="flex items-center gap-2 cursor-pointer"
             data-cy="create-workspace-button"
           >
