@@ -49,17 +49,19 @@ export function DeleteWorkspaceDialog({
           <AlertDialogTitle>Delete Workspace</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to delete "{workspace?.name}"?
-            <br />
-            <br />
-            <strong>This action cannot be undone.</strong> This will permanently
-            delete:
-            <ul className="list-disc list-inside mt-2 space-y-1">
+          </AlertDialogDescription>
+          <div className="mt-4">
+            <p className="text-sm text-muted-foreground">
+              <strong>This action cannot be undone.</strong> This will
+              permanently delete:
+            </p>
+            <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-muted-foreground">
               <li>All profiles and their configuration points</li>
               <li>All datasets and their texts</li>
               <li>All annotations and data extractions</li>
               <li>All analysis results and segments</li>
             </ul>
-          </AlertDialogDescription>
+          </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel data-cy="delete-workspace-cancel">
