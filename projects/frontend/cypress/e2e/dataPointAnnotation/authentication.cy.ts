@@ -23,6 +23,63 @@ describe('Authentication Tests', () => {
     cy.get('[data-cy="storage-status"]').should('be.visible').and('contain', 'Local Storage');
   });
 
+  it('should display workspace selector in header with default local workspace', () => {
+    cy.visit('http://localhost:3000/dataPointExtraction');
+    cy.wait(3000);
+    
+    // Verify workspace selector is visible in header
+    cy.get('header').within(() => {
+      cy.get('[data-cy="workspace-selector"]').should('be.visible');
+      
+      // Should show default local workspace name
+      cy.get('[data-cy="workspace-selector"]').should('contain', 'My Local Workspace');
+      cy.get('[data-cy="workspace-selector"]').should('contain', 'local');
+    });
+    
+    // Click workspace selector to open dropdown
+    cy.get('[data-cy="workspace-selector"]').click();
+    cy.wait(500);
+    
+    // Should show create workspace button
+    cy.get('[data-cy="create-workspace-button"]').should('be.visible');
+  });
+
+  it('should allow creating a new local workspace', () => {
+    cy.visit('http://localhost:3000/dataPointExtraction');
+    cy.wait(3000);
+    
+    // Open workspace selector dropdown
+    cy.get('[data-cy="workspace-selector"]').click();
+    cy.wait(500);
+    
+    // Click create workspace
+    cy.get('[data-cy="create-workspace-button"]').click();
+    cy.wait(1000);
+    
+    // Should open create workspace modal
+    cy.get('[role="dialog"]').should('be.visible').within(() => {
+      cy.contains('Create New Workspace').should('be.visible');
+      
+      // Fill workspace details
+      cy.get('[data-cy="workspace-name-input"]').type('My Test Workspace');
+      cy.get('[data-cy="workspace-description-input"]').type('Test workspace for UI testing');
+      
+      // Verify local storage is selected (should be default)
+      cy.get('[data-cy="storage-type-select"]').should('contain', 'Local Storage');
+      
+      // Submit the form
+      cy.get('[data-cy="create-workspace-submit"]').click();
+    });
+    
+    cy.wait(2000);
+    
+    // Modal should close
+    cy.get('[role="dialog"]').should('not.exist');
+    
+    // Workspace selector should now show the new workspace name
+    cy.get('[data-cy="workspace-selector"]').should('contain', 'My Test Workspace');
+  });
+
   it('should open register form when clicking sign up and login form when clicking sign in', () => {
     cy.visit('http://localhost:3000/dataPointExtraction');
     cy.wait(3000);

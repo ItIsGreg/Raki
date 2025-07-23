@@ -17,6 +17,7 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
+    workspaces = relationship("Workspace", back_populates="user", cascade="all, delete-orphan")
     profiles = relationship("Profile", back_populates="user", cascade="all, delete-orphan")
     datasets = relationship("Dataset", back_populates="user", cascade="all, delete-orphan")
     annotated_datasets = relationship("AnnotatedDataset", back_populates="user", cascade="all, delete-orphan")

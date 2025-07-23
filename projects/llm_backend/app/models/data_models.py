@@ -7,11 +7,30 @@ import uuid
 
 from app.config.database import Base
 
+class Workspace(Base):
+    __tablename__ = "workspaces"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)  # Nullable for local workspaces
+    name = Column(String, nullable=False)
+    description = Column(TextType)
+    storage_type = Column(String, nullable=False)  # 'local' | 'cloud'
+    is_default = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    user = relationship("User", back_populates="workspaces")
+    profiles = relationship("Profile", back_populates="workspace", cascade="all, delete-orphan")
+    datasets = relationship("Dataset", back_populates="workspace", cascade="all, delete-orphan")
+    annotated_datasets = relationship("AnnotatedDataset", back_populates="workspace", cascade="all, delete-orphan")
+
 class Profile(Base):
     __tablename__ = "profiles"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
     name = Column(String, nullable=False)
     description = Column(TextType)
     mode = Column(String, nullable=False)  # TaskMode: datapoint_extraction | text_segmentation
@@ -21,6 +40,7 @@ class Profile(Base):
 
     # Relationships
     user = relationship("User", back_populates="profiles")
+    workspace = relationship("Workspace", back_populates="profiles")
     profile_points = relationship("ProfilePoint", back_populates="profile", cascade="all, delete-orphan")
     segmentation_profile_points = relationship("SegmentationProfilePoint", back_populates="profile", cascade="all, delete-orphan")
     annotated_datasets = relationship("AnnotatedDataset", back_populates="profile")
@@ -69,6 +89,7 @@ class Dataset(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
     name = Column(String, nullable=False)
     description = Column(TextType)
     mode = Column(String, nullable=False)  # TaskMode
@@ -77,6 +98,7 @@ class Dataset(Base):
 
     # Relationships
     user = relationship("User", back_populates="datasets")
+    workspace = relationship("Workspace", back_populates="datasets")
     texts = relationship("Text", back_populates="dataset", cascade="all, delete-orphan")
     annotated_datasets = relationship("AnnotatedDataset", back_populates="dataset")
 
@@ -99,6 +121,7 @@ class AnnotatedDataset(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    workspace_id = Column(UUID(as_uuid=True), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
     dataset_id = Column(UUID(as_uuid=True), ForeignKey("datasets.id", ondelete="CASCADE"), nullable=False, index=True)
     profile_id = Column(UUID(as_uuid=True), ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True)
     name = Column(String, nullable=False)
@@ -109,6 +132,7 @@ class AnnotatedDataset(Base):
 
     # Relationships
     user = relationship("User", back_populates="annotated_datasets")
+    workspace = relationship("Workspace", back_populates="annotated_datasets")
     dataset = relationship("Dataset", back_populates="annotated_datasets")
     profile = relationship("Profile", back_populates="annotated_datasets")
     annotated_texts = relationship("AnnotatedText", back_populates="annotated_dataset", cascade="all, delete-orphan")

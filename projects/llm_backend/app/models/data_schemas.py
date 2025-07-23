@@ -3,6 +3,30 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 import uuid
 
+# Workspace schemas
+class WorkspaceBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+    storage_type: str  # 'local' | 'cloud'
+    is_default: bool = False
+
+class WorkspaceCreate(WorkspaceBase):
+    pass
+
+class WorkspaceUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    storage_type: Optional[str] = None
+    is_default: Optional[bool] = None
+
+class Workspace(WorkspaceBase):
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: uuid.UUID
+    user_id: Optional[uuid.UUID] = None  # Nullable for local workspaces
+    created_at: datetime
+    updated_at: datetime
+
 # Base schemas
 class ProfileBase(BaseModel):
     name: str
@@ -11,13 +35,14 @@ class ProfileBase(BaseModel):
     example: Optional[Dict[str, Any]] = None
 
 class ProfileCreate(ProfileBase):
-    pass
+    workspace_id: uuid.UUID
 
 class Profile(ProfileBase):
     model_config = ConfigDict(from_attributes=True)
     
     id: uuid.UUID
     user_id: uuid.UUID
+    workspace_id: uuid.UUID
     created_at: datetime
     updated_at: datetime
 
@@ -71,13 +96,14 @@ class DatasetBase(BaseModel):
     mode: str  # TaskMode
 
 class DatasetCreate(DatasetBase):
-    pass
+    workspace_id: uuid.UUID
 
 class Dataset(DatasetBase):
     model_config = ConfigDict(from_attributes=True)
     
     id: uuid.UUID
     user_id: uuid.UUID
+    workspace_id: uuid.UUID
     created_at: datetime
     updated_at: datetime
 
@@ -104,6 +130,7 @@ class AnnotatedDatasetBase(BaseModel):
     mode: str  # TaskMode
 
 class AnnotatedDatasetCreate(AnnotatedDatasetBase):
+    workspace_id: uuid.UUID
     dataset_id: uuid.UUID
     profile_id: uuid.UUID
 
@@ -112,6 +139,7 @@ class AnnotatedDataset(AnnotatedDatasetBase):
     
     id: uuid.UUID
     user_id: uuid.UUID
+    workspace_id: uuid.UUID
     dataset_id: uuid.UUID
     profile_id: uuid.UUID
     created_at: datetime

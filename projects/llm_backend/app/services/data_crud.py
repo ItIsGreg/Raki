@@ -4,6 +4,7 @@ from sqlalchemy import and_
 from fastapi import HTTPException, status
 
 from app.models.data_models import (
+    Workspace as WorkspaceModel,
     Profile as ProfileModel,
     ProfilePoint as ProfilePointModel,
     SegmentationProfilePoint as SegmentationProfilePointModel,
@@ -17,11 +18,59 @@ from app.models.data_models import (
     UserLLMConfig as UserLLMConfigModel,
 )
 from app.models.data_schemas import (
+    WorkspaceCreate, WorkspaceUpdate,
     ProfileCreate, ProfilePointCreate, SegmentationProfilePointCreate,
     DatasetCreate, TextCreate, AnnotatedDatasetCreate, AnnotatedTextCreate,
     DataPointCreate, SegmentDataPointCreate, UserSettingsCreate, UserLLMConfigCreate,
 )
 from app.models.auth_models import User
+
+# Workspace CRUD
+def create_workspace(db: Session, workspace: WorkspaceCreate, user_id: str) -> WorkspaceModel:
+    db_workspace = WorkspaceModel(**workspace.model_dump(), user_id=user_id)
+    db.add(db_workspace)
+    db.commit()
+    db.refresh(db_workspace)
+    return db_workspace
+
+def get_user_workspaces(db: Session, user_id: str) -> List[WorkspaceModel]:
+    return db.query(WorkspaceModel).filter(WorkspaceModel.user_id == user_id).all()
+
+def get_workspace(db: Session, workspace_id: str, user_id: str) -> Optional[WorkspaceModel]:
+    return db.query(WorkspaceModel).filter(
+        and_(WorkspaceModel.id == workspace_id, WorkspaceModel.user_id == user_id)
+    ).first()
+
+def update_workspace(db: Session, workspace_id: str, workspace_update: WorkspaceUpdate, user_id: str) -> Optional[WorkspaceModel]:
+    db_workspace = get_workspace(db, workspace_id, user_id)
+    if db_workspace is None:
+        return None
+    
+    for key, value in workspace_update.model_dump(exclude_unset=True).items():
+        setattr(db_workspace, key, value)
+    
+    db.commit()
+    db.refresh(db_workspace)
+    return db_workspace
+
+def delete_workspace(db: Session, workspace_id: str, user_id: str) -> bool:
+    db_workspace = get_workspace(db, workspace_id, user_id)
+    if db_workspace is None:
+        return False
+    
+    db.delete(db_workspace)
+    db.commit()
+    return True
+
+def create_default_workspace(db: Session, user_id: str) -> WorkspaceModel:
+    """Create a default local workspace for a new user"""
+    default_workspace = WorkspaceCreate(
+        name="My Workspace",
+        description="Default workspace",
+        storage_type="local",
+        is_default=True
+    )
+    return create_workspace(db, default_workspace, user_id)
 
 # Profile CRUD
 def create_profile(db: Session, profile: ProfileCreate, user_id: str) -> ProfileModel:

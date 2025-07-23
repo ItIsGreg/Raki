@@ -2,6 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAnnotationPageState } from "@/hooks/useAnnotationPageState";
+import { useWorkspaceIntegration } from "@/hooks/useWorkspaceIntegration";
 import { BaseAnnotationPageProps, BaseProfilePoint } from "@/types/annotation";
 import { AnnotationTab } from "./tabs/AnnotationTab";
 import { ProfilesTab } from "./tabs/ProfilesTab";
@@ -13,6 +14,9 @@ import { AppHeader } from "./AppHeader";
 export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
   configuration,
 }: BaseAnnotationPageProps<TProfilePoint>) {
+  // Integrate workspace with HybridDataService
+  useWorkspaceIntegration();
+
   const {
     state,
     handlers,

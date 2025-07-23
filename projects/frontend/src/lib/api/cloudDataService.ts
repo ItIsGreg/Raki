@@ -43,6 +43,7 @@ export interface CloudProfile {
 }
 
 export interface CloudProfileCreate {
+  workspace_id: string;
   name: string;
   description?: string;
   mode: string;
@@ -90,6 +91,7 @@ export interface CloudDataset {
 }
 
 export interface CloudDatasetCreate {
+  workspace_id: string;
   name: string;
   description?: string;
   mode: string;
@@ -125,6 +127,7 @@ export interface CloudAnnotatedDataset {
 }
 
 export interface CloudAnnotatedDatasetCreate {
+  workspace_id: string;
   dataset_id: string;
   profile_id: string;
   name: string;

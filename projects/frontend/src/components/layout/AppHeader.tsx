@@ -3,6 +3,7 @@
 import React from "react";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { StorageStatus } from "@/components/auth/StorageStatus";
+import { WorkspaceSelector } from "@/components/workspace/WorkspaceSelector";
 
 export function AppHeader() {
   return (
@@ -11,6 +12,7 @@ export function AppHeader() {
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-gray-900">Raki</h1>
+            <WorkspaceSelector />
             <StorageStatus />
           </div>
           <UserMenu />

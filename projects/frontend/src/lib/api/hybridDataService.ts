@@ -49,6 +49,12 @@ import {
 } from '@/lib/db/db';
 import { TaskMode } from '@/app/constants';
 
+// Workspace-aware data service
+export interface WorkspaceInfo {
+  id: string;
+  storage_type: 'local' | 'cloud';
+}
+
 // Type conversion helpers
 function cloudProfileToLocal(cloudProfile: CloudProfile): Profile {
   return {
@@ -60,8 +66,9 @@ function cloudProfileToLocal(cloudProfile: CloudProfile): Profile {
   };
 }
 
-function localProfileToCloud(localProfile: ProfileCreate): CloudProfileCreate {
+function localProfileToCloud(localProfile: ProfileCreate, workspaceId: string): CloudProfileCreate {
   return {
+    workspace_id: workspaceId,
     name: localProfile.name,
     description: localProfile.description,
     mode: localProfile.mode,
@@ -109,8 +116,9 @@ function cloudDatasetToLocal(cloudDataset: CloudDataset): Dataset {
   };
 }
 
-function localDatasetToCloud(localDataset: DatasetCreate): CloudDatasetCreate {
+function localDatasetToCloud(localDataset: DatasetCreate, workspaceId: string): CloudDatasetCreate {
   return {
+    workspace_id: workspaceId,
     name: localDataset.name,
     description: localDataset.description,
     mode: localDataset.mode,
@@ -145,8 +153,9 @@ function cloudAnnotatedDatasetToLocal(cloudAnnotatedDataset: CloudAnnotatedDatas
   };
 }
 
-function localAnnotatedDatasetToCloud(localAnnotatedDataset: AnnotatedDatasetCreate): CloudAnnotatedDatasetCreate {
+function localAnnotatedDatasetToCloud(localAnnotatedDataset: AnnotatedDatasetCreate, workspaceId: string): CloudAnnotatedDatasetCreate {
   return {
+    workspace_id: workspaceId,
     dataset_id: localAnnotatedDataset.datasetId,
     profile_id: localAnnotatedDataset.profileId,
     name: localAnnotatedDataset.name,
@@ -168,16 +177,45 @@ function localUserSettingsToCloud(localSettings: Partial<UserSettings>): CloudUs
   };
 }
 
-// Hybrid Data Service
+// Hybrid Data Service with Workspace Support
 export class HybridDataService {
-  static isAuthenticated(): boolean {
+  private static activeWorkspace: WorkspaceInfo | null = null;
+  
+  // Set the active workspace for routing decisions
+  static setActiveWorkspace(workspace: WorkspaceInfo | null): void {
+    this.activeWorkspace = workspace;
+  }
+
+  // Get the current storage mode
+  private static getStorageType(): 'local' | 'cloud' {
+    if (!this.activeWorkspace) {
+      // Fallback to the old behavior if no workspace is set
+      return this.isAuthenticated() ? 'cloud' : 'local';
+    }
+    return this.activeWorkspace.storage_type;
+  }
+
+  private static isAuthenticated(): boolean {
     return !!localStorage.getItem('auth_token');
+  }
+
+  private static validateCloudOperation(): void {
+    if (this.getStorageType() === 'cloud' && !this.isAuthenticated()) {
+      throw new Error('Cannot perform cloud operations without authentication');
+    }
   }
 
   // Profile operations
   static async createProfile(profile: ProfileCreate): Promise<Profile> {
-    if (this.isAuthenticated()) {
-      const cloudProfile = await CloudDataService.createProfile(localProfileToCloud(profile));
+    this.validateCloudOperation();
+    
+    if (this.getStorageType() === 'cloud') {
+      if (!this.activeWorkspace) {
+        throw new Error('No active workspace for cloud operation');
+      }
+      const cloudProfile = await CloudDataService.createProfile(
+        localProfileToCloud(profile, this.activeWorkspace.id)
+      );
       return cloudProfileToLocal(cloudProfile);
     } else {
       return await createLocalProfile(profile);
@@ -185,7 +223,8 @@ export class HybridDataService {
   }
 
   static async getProfiles(mode?: TaskMode): Promise<Profile[]> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       const cloudProfiles = await CloudDataService.getProfiles();
       const localProfiles = cloudProfiles.map(cloudProfileToLocal);
       return mode ? localProfiles.filter(p => p.mode === mode) : localProfiles;
@@ -202,7 +241,8 @@ export class HybridDataService {
   }
 
   static async getProfile(profileId: string): Promise<Profile | undefined> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       try {
         const cloudProfile = await CloudDataService.getProfile(profileId);
         return cloudProfileToLocal(cloudProfile);
@@ -215,9 +255,17 @@ export class HybridDataService {
   }
 
   static async updateProfile(profileId: string, profile: ProfileCreate): Promise<Profile | undefined> {
-    if (this.isAuthenticated()) {
+    this.validateCloudOperation();
+    
+    if (this.getStorageType() === 'cloud') {
+      if (!this.activeWorkspace) {
+        throw new Error('No active workspace for cloud operation');
+      }
       try {
-        const cloudProfile = await CloudDataService.updateProfile(profileId, localProfileToCloud(profile));
+        const cloudProfile = await CloudDataService.updateProfile(
+          profileId, 
+          localProfileToCloud(profile, this.activeWorkspace.id)
+        );
         return cloudProfileToLocal(cloudProfile);
       } catch (error) {
         return undefined;
@@ -230,7 +278,8 @@ export class HybridDataService {
   }
 
   static async deleteProfile(profileId: string): Promise<boolean> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       try {
         await CloudDataService.deleteProfile(profileId);
         return true;
@@ -249,7 +298,11 @@ export class HybridDataService {
 
   // Profile Point operations
   static async createProfilePoint(point: ProfilePointCreate): Promise<ProfilePoint> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
+      if (!this.activeWorkspace) {
+        throw new Error('No active workspace for cloud operation');
+      }
       const cloudPoint = await CloudDataService.createProfilePoint(localProfilePointToCloud(point));
       return cloudProfilePointToLocal(cloudPoint);
     } else {
@@ -258,7 +311,8 @@ export class HybridDataService {
   }
 
   static async getProfilePoints(profileId: string): Promise<ProfilePoint[]> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       const cloudPoints = await CloudDataService.getProfilePoints(profileId);
       return cloudPoints.map(cloudProfilePointToLocal);
     } else {
@@ -268,8 +322,12 @@ export class HybridDataService {
 
   // Dataset operations
   static async createDataset(dataset: DatasetCreate): Promise<Dataset> {
-    if (this.isAuthenticated()) {
-      const cloudDataset = await CloudDataService.createDataset(localDatasetToCloud(dataset));
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
+      if (!this.activeWorkspace) {
+        throw new Error('No active workspace for cloud operation');
+      }
+      const cloudDataset = await CloudDataService.createDataset(localDatasetToCloud(dataset, this.activeWorkspace.id));
       return cloudDatasetToLocal(cloudDataset);
     } else {
       return await createLocalDataset(dataset);
@@ -277,7 +335,8 @@ export class HybridDataService {
   }
 
   static async getDatasets(mode?: TaskMode): Promise<Dataset[]> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       const cloudDatasets = await CloudDataService.getDatasets();
       const localDatasets = cloudDatasets.map(cloudDatasetToLocal);
       return mode ? localDatasets.filter(d => d.mode === mode) : localDatasets;
@@ -288,7 +347,8 @@ export class HybridDataService {
   }
 
   static async getDataset(datasetId: string): Promise<Dataset | undefined> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       try {
         const cloudDataset = await CloudDataService.getDataset(datasetId);
         return cloudDatasetToLocal(cloudDataset);
@@ -301,7 +361,8 @@ export class HybridDataService {
   }
 
   static async deleteDataset(datasetId: string): Promise<boolean> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       // Note: Need to implement delete dataset endpoint in backend
       return false; // Placeholder
     } else {
@@ -316,7 +377,11 @@ export class HybridDataService {
 
   // Text operations
   static async createText(text: TextCreate): Promise<Text> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
+      if (!this.activeWorkspace) {
+        throw new Error('No active workspace for cloud operation');
+      }
       const cloudText = await CloudDataService.createText(localTextToCloud(text));
       return cloudTextToLocal(cloudText);
     } else {
@@ -325,7 +390,8 @@ export class HybridDataService {
   }
 
   static async getDatasetTexts(datasetId: string): Promise<Text[]> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       const cloudTexts = await CloudDataService.getDatasetTexts(datasetId);
       return cloudTexts.map(cloudTextToLocal);
     } else {
@@ -335,8 +401,12 @@ export class HybridDataService {
 
   // Annotated Dataset operations
   static async createAnnotatedDataset(annotatedDataset: AnnotatedDatasetCreate): Promise<AnnotatedDataset> {
-    if (this.isAuthenticated()) {
-      const cloudAnnotatedDataset = await CloudDataService.createAnnotatedDataset(localAnnotatedDatasetToCloud(annotatedDataset));
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
+      if (!this.activeWorkspace) {
+        throw new Error('No active workspace for cloud operation');
+      }
+      const cloudAnnotatedDataset = await CloudDataService.createAnnotatedDataset(localAnnotatedDatasetToCloud(annotatedDataset, this.activeWorkspace.id));
       return cloudAnnotatedDatasetToLocal(cloudAnnotatedDataset);
     } else {
       return await createLocalAnnotatedDataset(annotatedDataset);
@@ -344,7 +414,8 @@ export class HybridDataService {
   }
 
   static async getAnnotatedDatasets(mode?: TaskMode): Promise<AnnotatedDataset[]> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       const cloudAnnotatedDatasets = await CloudDataService.getAnnotatedDatasets();
       const localAnnotatedDatasets = cloudAnnotatedDatasets.map(cloudAnnotatedDatasetToLocal);
       return mode ? localAnnotatedDatasets.filter(d => d.mode === mode) : localAnnotatedDatasets;
@@ -361,7 +432,8 @@ export class HybridDataService {
 
   // User Settings operations
   static async getUserSettings(): Promise<UserSettings | null> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       try {
         const cloudSettings = await CloudDataService.getUserSettings();
         return cloudUserSettingsToLocal(cloudSettings);
@@ -374,7 +446,8 @@ export class HybridDataService {
   }
 
   static async updateUserSettings(settings: Partial<UserSettings>): Promise<UserSettings | null> {
-    if (this.isAuthenticated()) {
+    if (this.getStorageType() === 'cloud') {
+      this.validateCloudOperation();
       try {
         const cloudSettings = await CloudDataService.updateUserSettings(localUserSettingsToCloud(settings));
         return cloudUserSettingsToLocal(cloudSettings);
@@ -404,7 +477,7 @@ export class HybridDataService {
       const profileIdMapping: Record<string, string> = {};
 
       for (const profile of allLocalProfiles) {
-        const cloudProfile = await CloudDataService.createProfile(localProfileToCloud(profile));
+        const cloudProfile = await CloudDataService.createProfile(localProfileToCloud(profile, this.activeWorkspace?.id || ''));
         profileIdMapping[profile.id] = cloudProfile.id;
         
         // Migrate profile points
@@ -423,7 +496,7 @@ export class HybridDataService {
       const datasetIdMapping: Record<string, string> = {};
 
       for (const dataset of localDatasets) {
-        const cloudDataset = await CloudDataService.createDataset(localDatasetToCloud(dataset));
+        const cloudDataset = await CloudDataService.createDataset(localDatasetToCloud(dataset, this.activeWorkspace?.id || ''));
         datasetIdMapping[dataset.id] = cloudDataset.id;
 
         // Migrate texts within this dataset
@@ -449,7 +522,7 @@ export class HybridDataService {
 
         if (cloudDatasetId && cloudProfileId) {
           await CloudDataService.createAnnotatedDataset({
-            ...localAnnotatedDatasetToCloud(annotatedDataset),
+            ...localAnnotatedDatasetToCloud(annotatedDataset, this.activeWorkspace?.id || ''),
             dataset_id: cloudDatasetId,
             profile_id: cloudProfileId,
           });

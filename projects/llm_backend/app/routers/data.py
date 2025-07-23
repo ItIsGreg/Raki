@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.config.database import get_db
 from app.models.auth_models import User
 from app.models.data_schemas import (
+    Workspace, WorkspaceCreate, WorkspaceUpdate,
     Profile, ProfileCreate, ProfilePoint, ProfilePointCreate,
     Dataset, DatasetCreate, Text, TextCreate,
     AnnotatedDataset, AnnotatedDatasetCreate,
@@ -19,10 +20,92 @@ from app.services.data_crud import (
     create_annotated_dataset, get_user_annotated_datasets,
     get_or_create_user_settings, update_user_settings,
     get_or_create_user_llm_config, update_user_llm_config,
+    # Workspace CRUD functions (to be implemented)
+    create_workspace, get_user_workspaces, get_workspace, update_workspace, delete_workspace,
 )
 from app.utils.auth import get_current_active_user
 
 router = APIRouter()
+
+# Workspace endpoints
+@router.post("/workspaces", response_model=Workspace)
+def create_user_workspace(
+    workspace: WorkspaceCreate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    return create_workspace(db=db, workspace=workspace, user_id=str(current_user.id))
+
+@router.get("/workspaces", response_model=List[Workspace])
+def read_user_workspaces(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    return get_user_workspaces(db=db, user_id=str(current_user.id))
+
+@router.get("/workspaces/{workspace_id}", response_model=Workspace)
+def read_workspace(
+    workspace_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    workspace = get_workspace(db=db, workspace_id=workspace_id, user_id=str(current_user.id))
+    if workspace is None:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    return workspace
+
+@router.put("/workspaces/{workspace_id}", response_model=Workspace)
+def update_user_workspace(
+    workspace_id: str,
+    workspace_update: WorkspaceUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    workspace = update_workspace(
+        db=db, 
+        workspace_id=workspace_id, 
+        workspace_update=workspace_update, 
+        user_id=str(current_user.id)
+    )
+    if workspace is None:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    return workspace
+
+@router.delete("/workspaces/{workspace_id}")
+def delete_user_workspace(
+    workspace_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    success = delete_workspace(db=db, workspace_id=workspace_id, user_id=str(current_user.id))
+    if not success:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    return {"message": "Workspace deleted successfully"}
+
+@router.post("/workspaces/{workspace_id}/promote", response_model=Workspace)
+def promote_workspace_to_cloud(
+    workspace_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Promote a local workspace to cloud storage"""
+    workspace = get_workspace(db=db, workspace_id=workspace_id, user_id=str(current_user.id))
+    if workspace is None:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+    
+    if workspace.storage_type == "cloud":
+        raise HTTPException(status_code=400, detail="Workspace is already cloud-based")
+    
+    # Update storage type to cloud
+    workspace_update = WorkspaceUpdate(storage_type="cloud")
+    updated_workspace = update_workspace(
+        db=db,
+        workspace_id=workspace_id,
+        workspace_update=workspace_update,
+        user_id=str(current_user.id)
+    )
+    
+    return updated_workspace
 
 # Profile endpoints
 @router.post("/profiles", response_model=Profile)

@@ -2,13 +2,28 @@
 
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Badge } from "@/components/ui/badge";
 import { Cloud, HardDrive } from "lucide-react";
 
 export function StorageStatus() {
   const { isAuthenticated } = useAuth();
+  const { activeWorkspace } = useWorkspace();
 
-  if (isAuthenticated) {
+  if (!activeWorkspace) {
+    return (
+      <Badge
+        variant="outline"
+        className="flex items-center gap-1"
+        data-cy="storage-status"
+      >
+        <HardDrive className="h-3 w-3" />
+        Loading...
+      </Badge>
+    );
+  }
+
+  if (activeWorkspace.storage_type === "cloud") {
     return (
       <Badge
         variant="secondary"
