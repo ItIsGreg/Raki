@@ -38,6 +38,7 @@ export interface ProfileCreate {
   name: string;
   description: string;
   mode: TaskMode;
+  workspaceId: string;
   example?: {
     text: string;
     output: Record<string, string>;
@@ -52,6 +53,7 @@ export interface DatasetCreate {
   name: string;
   description: string;
   mode: TaskMode;
+  workspaceId: string;
 }
 
 export interface Dataset extends DatasetCreate {
@@ -75,6 +77,7 @@ export interface AnnotatedDatasetCreate {
   datasetId: string;
   profileId: string;
   mode: TaskMode;
+  workspaceId: string;
 }
 
 export interface AnnotatedDataset extends AnnotatedDatasetCreate {
@@ -321,6 +324,45 @@ export class MySubClassedDexie extends Dexie {
 
     this.version(15).stores({
       userSettings: "++id, tutorialCompleted"
+    });
+
+    // Add version 16 to add workspaceId fields for workspace isolation
+    this.version(16).stores({
+      Profiles: "++id, name, mode, workspaceId",
+      Datasets: "++id, name, mode, workspaceId", 
+      AnnotatedDatasets: "++id, datasetId, profileId, name, mode, workspaceId"
+    }).upgrade(async tx => {
+      // Get the active workspace ID from localStorage
+      const activeWorkspaceId = localStorage.getItem('active_workspace_id');
+      
+      // If no active workspace, we'll need to create a default one
+      let workspaceId = activeWorkspaceId;
+      if (!workspaceId) {
+        // Generate a default local workspace ID
+        workspaceId = 'local-default-workspace';
+        // We'll create this workspace in the WorkspaceContext initialization
+      }
+
+      // Migrate existing profiles to associate with active workspace
+      await tx.table("Profiles").toCollection().modify(profile => {
+        if (!profile.workspaceId) {
+          profile.workspaceId = workspaceId;
+        }
+      });
+
+      // Migrate existing datasets to associate with active workspace  
+      await tx.table("Datasets").toCollection().modify(dataset => {
+        if (!dataset.workspaceId) {
+          dataset.workspaceId = workspaceId;
+        }
+      });
+
+      // Migrate existing annotated datasets to associate with active workspace
+      await tx.table("AnnotatedDatasets").toCollection().modify(annotatedDataset => {
+        if (!annotatedDataset.workspaceId) {
+          annotatedDataset.workspaceId = workspaceId;
+        }
+      });
     });
   }
 }

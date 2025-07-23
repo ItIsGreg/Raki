@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import { v4 as uuidv4 } from "uuid";
+import { deleteWorkspaceData } from "@/lib/db/crud";
 
 // Workspace types
 export interface Workspace {
@@ -201,7 +203,7 @@ class LocalWorkspaceManager {
     return updatedWorkspace;
   }
 
-  static deleteLocalWorkspace(workspaceId: string): boolean {
+  static async deleteLocalWorkspace(workspaceId: string): Promise<boolean> {
     const workspaces = this.getLocalWorkspaces();
     const filteredWorkspaces = workspaces.filter((w) => w.id !== workspaceId);
 
@@ -217,7 +219,14 @@ class LocalWorkspaceManager {
       this.setActiveWorkspace(filteredWorkspaces[0].id);
     }
 
-    return true;
+    // Cascade delete workspace data
+    try {
+      await deleteWorkspaceData(workspaceId);
+      return true;
+    } catch (error) {
+      console.error("Failed to delete workspace data:", error);
+      return false;
+    }
   }
 }
 
@@ -330,16 +339,28 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     const workspace = allWorkspaces.find((w) => w.id === workspaceId);
     if (!workspace) throw new Error("Workspace not found");
 
+    // Prevent deleting the last workspace
+    if (allWorkspaces.length <= 1) {
+      throw new Error("Cannot delete the last workspace");
+    }
+
+    // Warn if deleting the currently active workspace
+    const isActiveWorkspace = activeWorkspace?.id === workspaceId;
+
     if (workspace.storage_type === "cloud" && isAuthenticated) {
       await WorkspaceService.deleteWorkspace(workspaceId);
     } else {
-      const success = LocalWorkspaceManager.deleteLocalWorkspace(workspaceId);
+      const success = await LocalWorkspaceManager.deleteLocalWorkspace(
+        workspaceId
+      );
       if (!success) throw new Error("Failed to delete local workspace");
     }
 
+    // Remove from state
     setAllWorkspaces((prev) => prev.filter((w) => w.id !== workspaceId));
 
-    if (activeWorkspace?.id === workspaceId) {
+    // If deleted workspace was active, switch to the first remaining workspace
+    if (isActiveWorkspace) {
       const remaining = allWorkspaces.filter((w) => w.id !== workspaceId);
       const newActive = remaining[0] || null;
       setActiveWorkspace(newActive);

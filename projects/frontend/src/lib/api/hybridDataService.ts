@@ -62,6 +62,7 @@ function cloudProfileToLocal(cloudProfile: CloudProfile): Profile {
     name: cloudProfile.name,
     description: cloudProfile.description || '',
     mode: cloudProfile.mode as TaskMode,
+    workspaceId: cloudProfile.user_id, // Use user_id as workspace identifier for cloud profiles
     example: cloudProfile.example,
   };
 }
@@ -113,6 +114,7 @@ function cloudDatasetToLocal(cloudDataset: CloudDataset): Dataset {
     name: cloudDataset.name,
     description: cloudDataset.description || '',
     mode: cloudDataset.mode as TaskMode,
+    workspaceId: cloudDataset.user_id, // Use user_id as workspace identifier for cloud datasets
   };
 }
 
@@ -150,6 +152,7 @@ function cloudAnnotatedDatasetToLocal(cloudAnnotatedDataset: CloudAnnotatedDatas
     name: cloudAnnotatedDataset.name,
     description: cloudAnnotatedDataset.description || '',
     mode: cloudAnnotatedDataset.mode as TaskMode,
+    workspaceId: cloudAnnotatedDataset.user_id, // Use user_id as workspace identifier for cloud annotated datasets
   };
 }
 
@@ -218,7 +221,15 @@ export class HybridDataService {
       );
       return cloudProfileToLocal(cloudProfile);
     } else {
-      return await createLocalProfile(profile);
+      // For local storage, ensure workspaceId is set to the active workspace
+      if (!this.activeWorkspace) {
+        throw new Error('No active workspace for local operation');
+      }
+      const profileWithWorkspace = {
+        ...profile,
+        workspaceId: this.activeWorkspace.id
+      };
+      return await createLocalProfile(profileWithWorkspace);
     }
   }
 
@@ -330,7 +341,15 @@ export class HybridDataService {
       const cloudDataset = await CloudDataService.createDataset(localDatasetToCloud(dataset, this.activeWorkspace.id));
       return cloudDatasetToLocal(cloudDataset);
     } else {
-      return await createLocalDataset(dataset);
+      // For local storage, ensure workspaceId is set to the active workspace
+      if (!this.activeWorkspace) {
+        throw new Error('No active workspace for local operation');
+      }
+      const datasetWithWorkspace = {
+        ...dataset,
+        workspaceId: this.activeWorkspace.id
+      };
+      return await createLocalDataset(datasetWithWorkspace);
     }
   }
 

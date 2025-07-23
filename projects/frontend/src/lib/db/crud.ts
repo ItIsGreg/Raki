@@ -24,6 +24,20 @@ import {
 import { TaskMode } from "@/app/constants";
 import { getNextOrderNumber } from "./ordering";
 
+// Helper function to get current workspace ID
+const getCurrentWorkspaceId = (): string | null => {
+  return localStorage.getItem('active_workspace_id');
+};
+
+// Helper function to ensure workspace ID is available
+const ensureWorkspaceId = (): string => {
+  const workspaceId = getCurrentWorkspaceId();
+  if (!workspaceId) {
+    throw new Error('No active workspace found');
+  }
+  return workspaceId;
+};
+
 // The CRUD operations for the ProfilePoint table
 export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
   const id = v4();
@@ -123,7 +137,11 @@ export const readProfile = async (id: string | undefined) => {
 };
 
 export const readAllProfiles = async () => {
-  return db.Profiles.toArray();
+  const workspaceId = getCurrentWorkspaceId();
+  if (!workspaceId) {
+    return db.Profiles.toArray(); // Fallback for migration period
+  }
+  return db.Profiles.where('workspaceId').equals(workspaceId).toArray();
 };
 
 export const updateProfile = async (profile: Profile) => {
@@ -152,7 +170,11 @@ export const readDataset = async (id: string) => {
 };
 
 export const readAllDatasets = async () => {
-  return db.Datasets.toArray();
+  const workspaceId = getCurrentWorkspaceId();
+  if (!workspaceId) {
+    return db.Datasets.toArray(); // Fallback for migration period
+  }
+  return db.Datasets.where('workspaceId').equals(workspaceId).toArray();
 };
 
 export const updateDataset = async (dataset: Dataset) => {
@@ -174,13 +196,21 @@ export const deleteDataset = async (id: string) => {
 };
 
 // Read datasets by mode
-export const readDatasetsByMode = async (mode: TaskMode): Promise<Dataset[]> => {
-  return db.Datasets.where("mode").equals(mode).toArray();
+export const readDatasetsByMode = async (mode: TaskMode) => {
+  const workspaceId = getCurrentWorkspaceId();
+  if (!workspaceId) {
+    return db.Datasets.where("mode").equals(mode).toArray(); // Fallback for migration period
+  }
+  return db.Datasets.where({ mode, workspaceId }).toArray();
 };
 
 // Read profiles by mode
-export const readProfilesByMode = async (mode: TaskMode): Promise<Profile[]> => {
-  return db.Profiles.where("mode").equals(mode).toArray();
+export const readProfilesByMode = async (mode: TaskMode) => {
+  const workspaceId = getCurrentWorkspaceId();
+  if (!workspaceId) {
+    return db.Profiles.where("mode").equals(mode).toArray(); // Fallback for migration period
+  }
+  return db.Profiles.where({ mode, workspaceId }).toArray();
 };
 
 // The CRUD operations for the AnnotatedText table
@@ -254,7 +284,11 @@ export const readAnnotatedDatasetsByDataset = async (datasetId: string) => {
 
 // Read annotated datasets by mode
 export const readAnnotatedDatasetsByMode = async (mode: "text_segmentation" | "datapoint_extraction") => {
-  return db.AnnotatedDatasets.where("mode").equals(mode).toArray();
+  const workspaceId = getCurrentWorkspaceId();
+  if (!workspaceId) {
+    return db.AnnotatedDatasets.where("mode").equals(mode).toArray(); // Fallback for migration period
+  }
+  return db.AnnotatedDatasets.where({ mode, workspaceId }).toArray();
 };
 
 export const updateAnnotatedDataset = async (
@@ -601,4 +635,93 @@ export const updateUserSettings = async (settings: Partial<UserSettings>) => {
   }
   await db.userSettings.update(existingSettings.id, settings);
   return { ...existingSettings, ...settings };
+};
+
+// Workspace cascade delete operations
+export const deleteWorkspaceData = async (workspaceId: string): Promise<void> => {
+  console.log(`Starting cascade delete for workspace: ${workspaceId}`);
+  
+  try {
+    // Step 1: Get all profiles for this workspace
+    const profiles = await db.Profiles.where('workspaceId').equals(workspaceId).toArray();
+    console.log(`Found ${profiles.length} profiles to delete`);
+    
+    // Step 2: Delete all profile points for each profile
+    for (const profile of profiles) {
+      // Delete regular profile points
+      const profilePoints = await db.profilePoints.where('profileId').equals(profile.id).toArray();
+      for (const point of profilePoints) {
+        await db.profilePoints.delete(point.id);
+      }
+      
+      // Delete segmentation profile points  
+      const segmentationPoints = await db.segmentationProfilePoints.where('profileId').equals(profile.id).toArray();
+      for (const point of segmentationPoints) {
+        await db.segmentationProfilePoints.delete(point.id);
+      }
+      
+      console.log(`Deleted ${profilePoints.length + segmentationPoints.length} profile points for profile ${profile.id}`);
+    }
+    
+    // Step 3: Get all datasets for this workspace
+    const datasets = await db.Datasets.where('workspaceId').equals(workspaceId).toArray();
+    console.log(`Found ${datasets.length} datasets to delete`);
+    
+    // Step 4: Delete all texts for each dataset
+    for (const dataset of datasets) {
+      const texts = await db.Texts.where('datasetId').equals(dataset.id).toArray();
+      
+      // For each text, delete its annotated texts and related data points
+      for (const text of texts) {
+        const annotatedTexts = await db.AnnotatedTexts.where('textId').equals(text.id).toArray();
+        
+        for (const annotatedText of annotatedTexts) {
+          // Delete data points for this annotated text
+          const dataPoints = await db.DataPoints.where('annotatedTextId').equals(annotatedText.id).toArray();
+          for (const dataPoint of dataPoints) {
+            await db.DataPoints.delete(dataPoint.id);
+          }
+          
+          // Delete segment data points for this annotated text
+          const segmentDataPoints = await db.SegmentDataPoints.where('annotatedTextId').equals(annotatedText.id).toArray();
+          for (const segmentDataPoint of segmentDataPoints) {
+            await db.SegmentDataPoints.delete(segmentDataPoint.id);
+          }
+          
+          // Delete the annotated text
+          await db.AnnotatedTexts.delete(annotatedText.id);
+        }
+        
+        // Delete the text itself
+        await db.Texts.delete(text.id);
+      }
+      
+      console.log(`Deleted ${texts.length} texts and their associated data for dataset ${dataset.id}`);
+    }
+    
+    // Step 5: Get all annotated datasets for this workspace
+    const annotatedDatasets = await db.AnnotatedDatasets.where('workspaceId').equals(workspaceId).toArray();
+    console.log(`Found ${annotatedDatasets.length} annotated datasets to delete`);
+    
+    // Step 6: Delete all annotated datasets (they should be orphaned now)
+    for (const annotatedDataset of annotatedDatasets) {
+      await db.AnnotatedDatasets.delete(annotatedDataset.id);
+    }
+    
+    // Step 7: Delete all datasets
+    for (const dataset of datasets) {
+      await db.Datasets.delete(dataset.id);
+    }
+    
+    // Step 8: Delete all profiles
+    for (const profile of profiles) {
+      await db.Profiles.delete(profile.id);
+    }
+    
+    console.log(`Successfully completed cascade delete for workspace: ${workspaceId}`);
+    
+  } catch (error) {
+    console.error(`Error during cascade delete for workspace ${workspaceId}:`, error);
+    throw new Error(`Failed to delete workspace data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
