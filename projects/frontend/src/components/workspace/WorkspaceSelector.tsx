@@ -9,16 +9,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -31,22 +21,18 @@ import {
 } from "lucide-react";
 import { useWorkspace, type Workspace } from "@/contexts/WorkspaceContext";
 import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
+import { DeleteWorkspaceDialog } from "./DeleteWorkspaceDialog";
 
 export function WorkspaceSelector() {
-  const {
-    activeWorkspace,
-    allWorkspaces,
-    switchWorkspace,
-    deleteWorkspace,
-    isLoading,
-  } = useWorkspace();
+  const { activeWorkspace, allWorkspaces, switchWorkspace, isLoading } =
+    useWorkspace();
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [workspaceToDelete, setWorkspaceToDelete] = useState<Workspace | null>(
     null
   );
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleDeleteWorkspace = (
     workspace: Workspace,
@@ -54,29 +40,31 @@ export function WorkspaceSelector() {
   ) => {
     event.stopPropagation();
     setWorkspaceToDelete(workspace);
-    // Small delay to let DropdownMenu close first
-    setTimeout(() => setShowDeleteConfirm(true), 100);
-  };
 
-  const confirmDeleteWorkspace = async () => {
-    if (!workspaceToDelete) return;
+    // Force close dropdown first
+    setDropdownOpen(false);
 
-    setIsDeleting(true);
-    try {
-      await deleteWorkspace(workspaceToDelete.id);
-      setShowDeleteConfirm(false);
-      setWorkspaceToDelete(null);
-    } catch (error) {
-      console.error("Failed to delete workspace:", error);
-      // Could add toast notification here
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+    // Wait for dropdown to fully clean up body styles
+    const checkBodyReset = () => {
+      const bodyStyles = {
+        pointerEvents: document.body.style.pointerEvents,
+        overflow: document.body.style.overflow,
+        paddingRight: document.body.style.paddingRight,
+      };
 
-  const cancelDeleteWorkspace = () => {
-    setShowDeleteConfirm(false);
-    setWorkspaceToDelete(null);
+      // Wait until pointer-events is reset to 'auto' or empty
+      if (
+        bodyStyles.pointerEvents === "auto" ||
+        bodyStyles.pointerEvents === ""
+      ) {
+        setShowDeleteConfirm(true);
+      } else {
+        setTimeout(checkBodyReset, 50);
+      }
+    };
+
+    // Start checking after initial delay
+    setTimeout(checkBodyReset, 50);
   };
 
   if (isLoading || !activeWorkspace) {
@@ -90,7 +78,7 @@ export function WorkspaceSelector() {
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
@@ -246,42 +234,16 @@ export function WorkspaceSelector() {
         onOpenChange={setShowCreateModal}
       />
 
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Workspace</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{workspaceToDelete?.name}"?
-              <br />
-              <br />
-              <strong>This action cannot be undone.</strong> This will
-              permanently delete:
-              <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>All profiles and their configuration points</li>
-                <li>All datasets and their texts</li>
-                <li>All annotations and data extractions</li>
-                <li>All analysis results and segments</li>
-              </ul>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              onClick={cancelDeleteWorkspace}
-              data-cy="delete-workspace-cancel"
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDeleteWorkspace}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
-              data-cy="delete-workspace-confirm"
-            >
-              {isDeleting ? "Deleting..." : "Delete Workspace"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteWorkspaceDialog
+        workspace={workspaceToDelete}
+        open={showDeleteConfirm}
+        onOpenChange={(open) => {
+          setShowDeleteConfirm(open);
+          if (!open) {
+            setWorkspaceToDelete(null);
+          }
+        }}
+      />
     </>
   );
 }
