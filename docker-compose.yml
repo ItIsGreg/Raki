@@ -13,6 +13,8 @@ services:
       - JWT_SECRET_KEY=your-secret-key-change-in-production
       - JWT_ALGORITHM=HS256
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ENVIRONMENT=development
+      - TEST_CLEANUP_TOKEN=test-cleanup-secret-2024
     depends_on:
       - postgres
 
