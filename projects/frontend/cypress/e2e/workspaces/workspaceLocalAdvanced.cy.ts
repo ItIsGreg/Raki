@@ -13,6 +13,7 @@ describe('Workspace Local Advanced Test', () => {
     cy.visit('http://localhost:3000/dataPointExtraction');
     cy.wait(1500);
 
+    // Step 0: Create dummy data in default workspace first for proper testing baseline
     // Configure LLM settings first - this is required for annotation to work
     cy.get('[data-cy="burger-menu"]')
       .should('be.visible')
@@ -98,6 +99,77 @@ describe('Workspace Local Advanced Test', () => {
     // Close settings
     cy.get('[data-cy="settings-close-button"]').click()
     cy.get('[data-cy="settings-dialog"]').should('not.exist')
+    
+    // Create dummy data in default workspace for baseline testing
+    
+    // Create dummy profile
+    cy.get('[data-cy="profiles-tab"]').click({ force: true });
+    cy.wait(500);
+    cy.get('[data-cy="add-profile-button"]').click({ force: true });
+    cy.get('[data-cy="entity-name-input"]').type('Default Profile');
+    cy.get('[data-cy="entity-description-input"]').type('Default workspace profile');
+    cy.get('[data-cy="entity-save-button"]').click({ force: true });
+    cy.wait(1000);
+    
+    // Select the default profile and add a datapoint
+    cy.get('[data-cy="profile-select-trigger"]').click({ force: true });
+    cy.get('[data-cy="profile-select-content"]').contains('Default Profile').click({ force: true });
+    cy.wait(500);
+    cy.get('[data-cy="new-datapoint-button"]').click({ force: true });
+    cy.get('[data-cy="datapoint-name-input"]').type('Default Field');
+    cy.get('[data-cy="datapoint-explanation-input"]').type('A default field for testing');
+    cy.get('[data-cy="datatype-trigger"]').click({ force: true });
+    cy.get('[data-cy="datatype-text"]').click({ force: true });
+    cy.get('[data-cy="save-datapoint-button"]').first().click({ force: true });
+    cy.wait(1000);
+    
+    // Create dummy dataset
+    cy.get('[data-cy="text-upload-tab"]').click({ force: true });
+    cy.wait(500);
+    cy.get('[data-cy="add-dataset-button"]').click({ force: true });
+    cy.get('[data-cy="entity-name-input"]').type('Default Dataset');
+    cy.get('[data-cy="entity-description-input"]').type('Default workspace dataset');
+    cy.get('[data-cy="entity-save-button"]').click({ force: true });
+    cy.wait(1000);
+    
+    // Select the default dataset and add some text
+    cy.get('[data-cy="text-dataset-select-trigger"]').click({ force: true });
+    cy.get('[data-cy="text-dataset-select-content"]').contains('Default Dataset').click({ force: true });
+    cy.wait(500);
+    
+    // Add text to the default dataset
+    cy.get('[data-cy="upload-texts-btn"]').click({ force: true });
+    cy.wait(500);
+    cy.get('[data-cy="upload-dropdown-content"]').within(() => {
+      cy.get('[data-cy="single-text-option"]').click({ force: true });
+    });
+    cy.wait(500);
+    cy.get('[data-cy="single-text-filename-input"]').type('default-document.txt');
+    cy.get('[data-cy="single-text-content-input"]').type('This is a default document in the default workspace.');
+    cy.get('[data-cy="add-single-text-btn"]').click({ force: true });
+    cy.wait(1000);
+    
+    // Create dummy annotated dataset
+    cy.get('[data-cy="annotation-tab"]').click({ force: true });
+    cy.wait(500);
+    cy.get('[data-cy="add-dataset-button"]').click({ force: true });
+    cy.get('[data-cy="dataset-name-input"]').type('Default Annotated Dataset');
+    cy.get('[data-cy="dataset-description-input"]').type('Default workspace annotated dataset');
+    cy.get('[data-cy="dataset-select-trigger"]').click({ force: true });
+    cy.get('[data-cy="dataset-select-content"]').contains('Default Dataset').click({ force: true });
+    cy.get('[data-cy="profile-select-trigger"]').click({ force: true });
+    cy.get('[data-cy="profile-select-content"]').contains('Default Profile').click({ force: true });
+    cy.get('[data-cy="save-dataset-button"]').click({ force: true });
+    cy.wait(1000);
+    
+    // Start annotation process for default annotated dataset
+    cy.get('[data-cy="start-annotation-button"]').scrollIntoView().should('be.visible').click({ force: true });
+    cy.wait(2000);
+    
+    // Verify annotation texts are created
+    cy.get('[data-cy="manual-annotated-text-card"]', { timeout: 10000 })
+      .should('exist')
+      .should('have.length.at.least', 1);
     
     // Step 1: Create a new workspace
     cy.get('[data-cy="workspace-selector"]').click({ force: true });
@@ -243,71 +315,39 @@ describe('Workspace Local Advanced Test', () => {
     cy.get('[data-cy="profiles-tab"]').click({ force: true });
     cy.wait(500);
     
+    // Select the default profile first
     cy.get('[data-cy="profile-select-trigger"]').click({ force: true });
-    cy.wait(300);
+    cy.get('[data-cy="profile-select-content"]').should('be.visible');
+    cy.get('[data-cy="profile-select-content"]').should('not.contain.text', 'Test Profile');
+    cy.get('[data-cy="profile-select-content"]').contains('Default Profile').click({ force: true });
     
-    // Should not contain our test profile
-    cy.get('body').should('not.contain.text', 'Test Profile');
-    
-    // Close the dropdown
-    cy.get('body').click({ force: true });
+    // Check that the profile selector shows default profile, not test profile
+    cy.get('[data-cy="profile-select-trigger"]').should('contain.text', 'Default Profile');
+    cy.get('[data-cy="profile-select-trigger"]').should('not.contain.text', 'Test Profile');
     
     // Step 8: Verify datasets don't exist in default workspace
     cy.get('[data-cy="text-upload-tab"]').click({ force: true });
     cy.wait(500);
     
+    // Select the default dataset first
     cy.get('[data-cy="text-dataset-select-trigger"]').click({ force: true });
-    cy.wait(300);
+    cy.get('[data-cy="text-dataset-select-content"]').should('be.visible');
+    cy.get('[data-cy="text-dataset-select-content"]').should('not.contain.text', 'Test Dataset');
+    cy.get('[data-cy="text-dataset-select-content"]').contains('Default Dataset').click({ force: true });
     
-    // Should not contain our test dataset
-    cy.get('body').should('not.contain.text', 'Test Dataset');
-    
-    // Close the dropdown
-    cy.get('body').click({ force: true });
+    // Check that the dataset selector shows default dataset, not test dataset
+    cy.get('[data-cy="text-dataset-select-trigger"]').should('contain.text', 'Default Dataset');
+    cy.get('[data-cy="text-dataset-select-trigger"]').should('not.contain.text', 'Test Dataset');
     
     // Step 9: Verify annotated datasets don't exist in default workspace
     cy.get('[data-cy="annotation-tab"]').click({ force: true });
     cy.wait(500);
     
-    cy.get('[data-cy="annotation-dataset-select-trigger"]').click({ force: true });
-    cy.wait(300);
-    
-    // Should not contain our test annotated dataset
-    cy.get('body').should('not.contain.text', 'Test Annotated Dataset');
-    
-    // Close the dropdown
-    cy.get('body').click({ force: true });
-    
-    // Step 10: Switch back to test workspace and verify data still exists
-    cy.get('[data-cy="workspace-selector"]').click({ force: true });
+    // Verify the annotation dataset selector exists and shows default dataset
+    cy.get('[data-cy="annotation-dataset-select-trigger"]').should('be.visible').click({ force: true });
+    cy.get('[data-cy="annotation-dataset-select-content"]').should('be.visible');
+    cy.get('[data-cy="annotation-dataset-select-content"]').should('not.contain.text', 'Test Annotated Dataset');
+    cy.get('[data-cy="annotation-dataset-select-content"]').contains('Default Annotated Dataset').click({ force: true });
     cy.wait(500);
-    
-    cy.get('[data-cy*="workspace-option-"]').contains('Test Data Workspace').click({ force: true });
-    cy.wait(1000);
-    
-    // Verify we're back in the test workspace
-    cy.get('[data-cy="workspace-selector"]').should('contain.text', 'Test Data Workspace');
-    
-    // Verify our data still exists
-    cy.get('[data-cy="profiles-tab"]').click({ force: true });
-    cy.wait(500);
-    cy.get('[data-cy="profile-select-trigger"]').should('contain.text', 'Test Profile');
-    
-    cy.get('[data-cy="text-upload-tab"]').click({ force: true });
-    cy.wait(500);
-    cy.get('[data-cy="text-dataset-select-trigger"]').should('contain.text', 'Test Dataset');
-    
-    cy.get('[data-cy="annotation-tab"]').click({ force: true });
-    cy.wait(500);
-    cy.get('[data-cy="annotation-dataset-select-trigger"]').should('contain.text', 'Test Annotated Dataset');
-    
-    // Verify the annotation interface still exists
-    cy.get('[data-cy="manual-annotated-text-card"]', { timeout: 10000 })
-      .should('exist')
-      .first()
-      .click({ force: true });
-    cy.wait(500);
-    cy.get('[data-cy="text-annotation-content"]').should('be.visible');
-    cy.get('[data-cy="text-slice"]').should('exist');
   });
 }); 

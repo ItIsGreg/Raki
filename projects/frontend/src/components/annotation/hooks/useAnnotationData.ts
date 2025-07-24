@@ -16,6 +16,7 @@ import {
   ProfilePoint,
   Text,
 } from "@/lib/db/db";
+import { useWorkspaceIntegration } from "@/hooks/useWorkspaceIntegration";
 
 interface UseAnnotationDataProps {
   activeAnnotatedDataset: AnnotatedDataset | undefined;
@@ -38,19 +39,22 @@ export const useAnnotationData = ({
   activeAnnotatedText,
   activeDataPointId,
 }: UseAnnotationDataProps): AnnotationData => {
+  // Get workspace integration to be aware of workspace changes
+  const { activeWorkspace } = useWorkspaceIntegration();
+  
   const texts = useLiveQuery(
     () => readTextsByDataset(activeAnnotatedDataset?.datasetId),
-    [activeAnnotatedDataset]
+    [activeAnnotatedDataset, activeWorkspace?.id]
   );
 
   const annotatedTexts = useLiveQuery(
     () => readAnnotatedTextsByAnnotatedDataset(activeAnnotatedDataset?.id),
-    [activeAnnotatedDataset]
+    [activeAnnotatedDataset, activeWorkspace?.id]
   );
 
   const dataPoints = useLiveQuery(
     () => readDataPointsByAnnotatedText(activeAnnotatedText?.id),
-    [activeAnnotatedText]
+    [activeAnnotatedText, activeWorkspace?.id]
   )?.sort((a, b) => {
     if (a.match && b.match) {
       return a.match[0] - b.match[0];
@@ -64,22 +68,22 @@ export const useAnnotationData = ({
 
   const activeProfile = useLiveQuery(
     () => readProfile(activeAnnotatedDataset?.profileId),
-    [activeAnnotatedDataset]
+    [activeAnnotatedDataset, activeWorkspace?.id]
   );
 
   const activeDataPoint = useLiveQuery(
     () => readDataPoint(activeDataPointId),
-    [activeDataPointId]
+    [activeDataPointId, activeWorkspace?.id]
   );
 
   const activeProfilePoints = useLiveQuery(
     () => readProfilePointsByProfile(activeProfile?.id),
-    [activeProfile]
+    [activeProfile, activeWorkspace?.id]
   );
 
   const activeProfilePoint = useLiveQuery(
     () => readProfilePoint(activeDataPoint?.profilePointId),
-    [activeDataPoint]
+    [activeDataPoint, activeWorkspace?.id]
   );
 
   return {

@@ -26,9 +26,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useWorkspaceIntegration } from "@/hooks/useWorkspaceIntegration";
 
 const TextList = (props: TextListProps) => {
   const { activeText, activeDataset, setActiveText } = props;
+
+  // Get workspace integration to be aware of workspace changes
+  const { activeWorkspace } = useWorkspaceIntegration();
 
   const [dbTexts, setDbTexts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,7 +59,7 @@ const TextList = (props: TextListProps) => {
     }
   };
 
-  // Load texts when activeDataset changes
+  // Load texts when activeDataset or workspace changes
   useEffect(() => {
     const loadTexts = async () => {
       if (!activeDataset?.id) {
@@ -76,7 +80,7 @@ const TextList = (props: TextListProps) => {
     };
 
     loadTexts();
-  }, [activeDataset?.id]);
+  }, [activeDataset?.id, activeWorkspace?.id]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {

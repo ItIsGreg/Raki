@@ -20,6 +20,7 @@ import {
 import { HybridDataService } from "@/lib/api/hybridDataService";
 import { useAnnotationState } from "@/components/annotation/hooks/useAnnotationState";
 import { handleUploadAnnotatedDataset } from "@/components/annotation/utils/annotationUtils";
+import { useWorkspaceIntegration } from "@/hooks/useWorkspaceIntegration";
 import {
   BaseProfilePoint,
   ModeConfiguration,
@@ -30,6 +31,8 @@ import {
 export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   configuration: ModeConfiguration<TProfilePoint>
 ) {
+  // Get workspace integration to be aware of workspace changes
+  const { activeWorkspace } = useWorkspaceIntegration();
   // Core state
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] = useState<
     AnnotatedDataset | undefined
@@ -72,10 +75,10 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   const userSettings = useLiveQuery(() => getUserSettings(), []);
 
   // Get profiles from database
-  const profiles = useLiveQuery(() => readProfilesByMode(configuration.mode), [configuration.mode]);
+  const profiles = useLiveQuery(() => readProfilesByMode(configuration.mode), [configuration.mode, activeWorkspace?.id]);
   
   // Get datasets from database
-  const datasets = useLiveQuery(() => readDatasetsByMode(configuration.mode), [configuration.mode]);
+  const datasets = useLiveQuery(() => readDatasetsByMode(configuration.mode), [configuration.mode, activeWorkspace?.id]);
   
   // Get all texts for all datasets
   const allTexts = useLiveQuery(() => {
@@ -83,7 +86,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     return Promise.all(
       datasets.map((dataset) => readTextsByDataset(dataset.id))
     ).then((textArrays) => textArrays.flat());
-  }, [datasets]);
+  }, [datasets, activeWorkspace?.id]);
 
   // Get text content for display (mode-specific logic)
   const displayText = useLiveQuery<Text | undefined>(() => {

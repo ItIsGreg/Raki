@@ -27,6 +27,7 @@ import {
   reannotateFaultySegmentationText 
 } from "../utils/segmentationAnnotationUtils";
 import { TaskMode } from "@/app/constants";
+import { useWorkspaceIntegration } from "@/hooks/useWorkspaceIntegration";
 
 type ProfilePointType = ProfilePoint | SegmentationProfilePoint;
 
@@ -47,6 +48,9 @@ export const useAnnotationState = <T extends ProfilePointType>({
   autoRerunFaulty,
   mode,
 }: UseAnnotationStateProps<T>) => {
+  // Get workspace integration to be aware of workspace changes
+  const { activeWorkspace } = useWorkspaceIntegration();
+  
   // state definitions
   const [addingDataset, setAddingDataset] = useState(false);
   const [annotationState, setAnnotationState] = useState<"idle" | "regular" | "faulty">("idle");
@@ -57,20 +61,21 @@ export const useAnnotationState = <T extends ProfilePointType>({
   const [faultyBatchIndex, setFaultyBatchIndex] = useState(0);
 
   // db queries
-  const dbAnnotatedDatasets = useLiveQuery(() => readAnnotatedDatasetsByMode(mode), [mode]);
-  const dbApiKeys = useLiveQuery(() => readAllApiKeys());
-  const dbTexts = useLiveQuery(() => readAllTexts());
-  const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts());
+  const dbAnnotatedDatasets = useLiveQuery(() => readAnnotatedDatasetsByMode(mode), [mode, activeWorkspace?.id]);
+  const dbApiKeys = useLiveQuery(() => readAllApiKeys(), [activeWorkspace?.id]);
+  const dbTexts = useLiveQuery(() => readAllTexts(), [activeWorkspace?.id]);
+  const dbAnnotatedTexts = useLiveQuery(() => readAllAnnotatedTexts(), [activeWorkspace?.id]);
   const dbProfilePoints = useLiveQuery(() => 
     mode === "datapoint_extraction" 
       ? readAllProfilePoints()
-      : readAllSegmentationProfilePoints()
+      : readAllSegmentationProfilePoints(),
+    [mode, activeWorkspace?.id]
   );
-  const dbLlmProvider = useLiveQuery(() => readAllLLMProviders());
-  const dbLlmModel = useLiveQuery(() => readAllModels());
-  const dbLlmUrl = useLiveQuery(() => readAllLLMUrls());
-  const dbBatchSize = useLiveQuery(() => readAllBatchSizes());
-  const dbMaxTokens = useLiveQuery(() => readAllMaxTokens());
+  const dbLlmProvider = useLiveQuery(() => readAllLLMProviders(), [activeWorkspace?.id]);
+  const dbLlmModel = useLiveQuery(() => readAllModels(), [activeWorkspace?.id]);
+  const dbLlmUrl = useLiveQuery(() => readAllLLMUrls(), [activeWorkspace?.id]);
+  const dbBatchSize = useLiveQuery(() => readAllBatchSizes(), [activeWorkspace?.id]);
+  const dbMaxTokens = useLiveQuery(() => readAllMaxTokens(), [activeWorkspace?.id]);
 
   // Add effect to update activeProfilePoints when dataset or profile points change
   useEffect(() => {

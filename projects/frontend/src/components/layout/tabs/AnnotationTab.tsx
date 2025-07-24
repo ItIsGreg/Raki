@@ -59,7 +59,7 @@ export function AnnotationTab<TProfilePoint extends BaseProfilePoint>({
                 <SelectValue placeholder="Select a dataset" />
               </SelectTrigger>
               <SelectContent
-                data-cy="annotated-dataset-select-content"
+                data-cy="annotation-dataset-select-content"
                 position="popper"
                 sideOffset={5}
               >
