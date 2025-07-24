@@ -22,7 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { createText } from "@/lib/db/crud";
+import { HybridDataService } from "@/lib/api/hybridDataService";
 import { Dataset } from "@/lib/db/db";
 
 interface TableViewProps {
@@ -225,7 +225,7 @@ const TableView: React.FC<TableViewProps> = ({
         // Apply anonymisation if columns are selected
         const processedText = anonymiseText(String(originalText), row);
 
-        return createText({
+        return HybridDataService.createText({
           datasetId: activeDataset.id,
           filename: String(filename),
           text: processedText,

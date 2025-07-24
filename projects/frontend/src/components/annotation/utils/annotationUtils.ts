@@ -8,16 +8,14 @@ import {
 import { ReqProfilePoint, ResDataPoint } from "../../../app/types";
 import {
   readProfilePointsByProfile,
-  createAnnotatedDataset,
   createAnnotatedText,
-  createDataset,
-  createProfile,
   createProfilePoint,
   createText,
   createDataPoint,
   updateDataPoint,
   updateAnnotatedText,
 } from "@/lib/db/crud";
+import { HybridDataService } from "@/lib/api/hybridDataService";
 import { db } from "@/lib/db/db";
 
 interface LLMConfig {
@@ -352,23 +350,24 @@ export const handleUploadAnnotatedDataset = async (file: File) => {
     }
 
     // Create the new dataset
-    const newDataset = await createDataset({
+    const newDataset = await HybridDataService.createDataset({
       ...uploadedData.originalDataset,
       id: undefined, // Let the create function generate the ID
     });
 
     // Create the new profile
-    const newProfile = await createProfile({
+    const newProfile = await HybridDataService.createProfile({
       ...uploadedData.profile,
       id: undefined, // Let the create function generate the ID
     });
 
     // Create the new annotated dataset
-    const newAnnotatedDataset = await createAnnotatedDataset({
+    const newAnnotatedDataset = await HybridDataService.createAnnotatedDataset({
       ...uploadedData.annotatedDataset,
       id: undefined, // Let the create function generate the ID
       datasetId: newDataset.id,
       profileId: newProfile.id,
+      workspaceId: "", // This will be set by HybridDataService
     });
 
     // Create new profile points

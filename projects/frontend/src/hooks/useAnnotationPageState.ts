@@ -11,14 +11,13 @@ import {
   readProfilesByMode,
   readDatasetsByMode,
   readTextsByDataset,
-  createProfile,
   deleteProfile,
-  createDataset,
   deleteDataset,
   getUserSettings,
   updateUserSettings,
   readText,
 } from "@/lib/db/crud";
+import { HybridDataService } from "@/lib/api/hybridDataService";
 import { useAnnotationState } from "@/components/annotation/hooks/useAnnotationState";
 import { handleUploadAnnotatedDataset } from "@/components/annotation/utils/annotationUtils";
 import {
@@ -164,7 +163,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
 
   const handleSaveProfile = (profile: Profile) => {
     const profileWithMode = { ...profile, mode: configuration.mode };
-    createProfile(profileWithMode).then((newProfile) => {
+    HybridDataService.createProfile(profileWithMode).then((newProfile) => {
       setActiveProfile(newProfile);
       setAddingProfile(false);
     });
@@ -184,7 +183,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
 
   const handleSaveDataset = (dataset: Dataset) => {
     const datasetWithMode = { ...dataset, mode: configuration.mode };
-    createDataset(datasetWithMode).then((newDataset) => {
+    HybridDataService.createDataset(datasetWithMode).then((newDataset) => {
       setActiveDataset(newDataset);
       setAddingDataset(false);
     });
@@ -236,7 +235,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
       }
 
       // Create the new profile
-      const newProfile = await createProfile({
+      const newProfile = await HybridDataService.createProfile({
         ...uploadedData.profile,
         mode: uploadedData.profile.mode || configuration.mode,
       });

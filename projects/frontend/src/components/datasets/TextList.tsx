@@ -6,7 +6,8 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { createText, deleteText, readTextsByDataset } from "@/lib/db/crud";
+import { deleteText, readTextsByDataset } from "@/lib/db/crud";
+import { HybridDataService } from "@/lib/api/hybridDataService";
 import { TextListProps } from "../../app/types";
 import { TiDeleteOutline } from "react-icons/ti";
 import { useRef, useState, useEffect } from "react";
@@ -120,7 +121,7 @@ const TextList = (props: TextListProps) => {
         try {
           const text = await extractTextFromPDFBackend(file);
           if (!activeDataset) return;
-          await createText({
+          await HybridDataService.createText({
             datasetId: activeDataset.id,
             filename: file.name,
             text,
@@ -134,7 +135,7 @@ const TextList = (props: TextListProps) => {
         reader.onload = async (e) => {
           const text = e.target?.result as string;
           if (!activeDataset) return;
-          await createText({
+          await HybridDataService.createText({
             datasetId: activeDataset.id,
             filename: file.name,
             text,
@@ -147,7 +148,7 @@ const TextList = (props: TextListProps) => {
         reader.onload = async (e) => {
           const text = e.target?.result as string;
           if (!activeDataset) return;
-          await createText({
+          await HybridDataService.createText({
             datasetId: activeDataset.id,
             filename: file.name,
             text,

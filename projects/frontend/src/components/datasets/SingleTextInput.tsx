@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { createText } from "@/lib/db/crud";
 import { Dataset } from "@/lib/db/db";
+import { HybridDataService } from "@/lib/api/hybridDataService";
 
 interface SingleTextInputProps {
   isOpen: boolean;
@@ -53,7 +53,7 @@ const SingleTextInput: React.FC<SingleTextInputProps> = ({
     if (!activeDataset || !filename || !text) return;
 
     try {
-      await createText({
+      await HybridDataService.createText({
         datasetId: activeDataset.id,
         filename,
         text,

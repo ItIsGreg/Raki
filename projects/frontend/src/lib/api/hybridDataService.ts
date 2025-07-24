@@ -428,7 +428,15 @@ export class HybridDataService {
       const cloudAnnotatedDataset = await CloudDataService.createAnnotatedDataset(localAnnotatedDatasetToCloud(annotatedDataset, this.activeWorkspace.id));
       return cloudAnnotatedDatasetToLocal(cloudAnnotatedDataset);
     } else {
-      return await createLocalAnnotatedDataset(annotatedDataset);
+      // For local storage, ensure workspaceId is set to the active workspace
+      if (!this.activeWorkspace) {
+        throw new Error('No active workspace for local operation');
+      }
+      const annotatedDatasetWithWorkspace = {
+        ...annotatedDataset,
+        workspaceId: this.activeWorkspace.id
+      };
+      return await createLocalAnnotatedDataset(annotatedDatasetWithWorkspace);
     }
   }
 

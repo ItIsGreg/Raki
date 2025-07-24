@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import {
-  createAnnotatedDataset,
-  readDatasetsByMode,
-  readProfilesByMode,
-} from "@/lib/db/crud";
+import { readDatasetsByMode, readProfilesByMode } from "@/lib/db/crud";
+import { HybridDataService } from "@/lib/api/hybridDataService";
 import {
   Card,
   CardContent,
@@ -58,12 +55,13 @@ export const AddDatasetForm = ({
     ) {
       return;
     }
-    createAnnotatedDataset({
+    HybridDataService.createAnnotatedDataset({
       name: addDatasetName,
       description: addDatasetDescription,
       datasetId: addDatasetDatasetId,
       profileId: addDatasetProfileId,
       mode: mode,
+      workspaceId: "", // This will be set by HybridDataService
     }).then((newDataset) => {
       onDatasetCreated?.(newDataset);
       onClose();
