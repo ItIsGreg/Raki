@@ -35,7 +35,7 @@ export function CreateWorkspaceModal({
   open,
   onOpenChange,
 }: CreateWorkspaceModalProps) {
-  const { createWorkspace } = useWorkspace();
+  const { createWorkspace, switchWorkspace } = useWorkspace();
   const { isAuthenticated } = useAuth();
 
   const [formData, setFormData] = useState<WorkspaceCreate>({
@@ -64,11 +64,14 @@ export function CreateWorkspaceModal({
     setIsLoading(true);
 
     try {
-      await createWorkspace({
+      const newWorkspace = await createWorkspace({
         name: formData.name.trim(),
         description: formData.description?.trim() || undefined,
         storage_type: formData.storage_type,
       });
+
+      // Switch to the newly created workspace
+      await switchWorkspace(newWorkspace.id, newWorkspace);
 
       // Reset form and close modal
       setFormData({

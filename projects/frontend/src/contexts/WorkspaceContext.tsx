@@ -39,7 +39,10 @@ interface WorkspaceContextType {
   isLoading: boolean;
 
   // Actions
-  switchWorkspace: (workspaceId: string) => Promise<void>;
+  switchWorkspace: (
+    workspaceId: string,
+    workspaceToSwitch?: Workspace
+  ) => Promise<void>;
   createWorkspace: (workspace: WorkspaceCreate) => Promise<Workspace>;
   updateWorkspace: (
     workspaceId: string,
@@ -278,11 +281,26 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const switchWorkspace = async (workspaceId: string) => {
-    const workspace = allWorkspaces.find((w) => w.id === workspaceId);
+  const switchWorkspace = async (
+    workspaceId: string,
+    workspaceToSwitch?: Workspace
+  ) => {
+    // If workspace object is provided directly, use it (for newly created workspaces)
+    let workspace = workspaceToSwitch;
+
+    // Otherwise, find it in the current allWorkspaces state
+    if (!workspace) {
+      workspace = allWorkspaces.find((w) => w.id === workspaceId);
+    }
+
     if (workspace) {
       setActiveWorkspace(workspace);
       LocalWorkspaceManager.setActiveWorkspace(workspaceId);
+    } else {
+      console.error(
+        "[WorkspaceContext] Workspace not found with ID:",
+        workspaceId
+      );
     }
   };
 
