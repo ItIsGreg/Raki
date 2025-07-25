@@ -22,6 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  deleteAccount: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -139,6 +140,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem("auth_token");
   };
 
+  const deleteAccount = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        logout();
+        console.log("Account deleted successfully.");
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to delete account:", errorData);
+        throw new Error(errorData.detail || "Failed to delete account");
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      throw error;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -146,6 +170,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     login,
     register,
     logout,
+    deleteAccount,
     isAuthenticated: !!user && !!token,
   };
 
