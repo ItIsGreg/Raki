@@ -85,6 +85,7 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
             type="submit"
             className="w-full"
             disabled={isLoading || !email || !password}
+            data-cy="login-button"
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
