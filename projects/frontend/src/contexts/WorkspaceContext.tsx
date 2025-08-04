@@ -234,7 +234,7 @@ class LocalWorkspaceManager {
 }
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(
     null
   );
@@ -243,85 +243,112 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   // Load workspaces when auth state changes
   useEffect(() => {
-    loadWorkspaces();
-  }, [isAuthenticated]);
-
-  const loadWorkspaces = async () => {
-    setIsLoading(true);
-    try {
-      let workspaces: Workspace[] = [];
-
-      if (isAuthenticated) {
-        // Load cloud workspaces
-        workspaces = await WorkspaceService.getWorkspaces();
-      } else {
-        // Load local workspaces
-        workspaces = LocalWorkspaceManager.getLocalWorkspaces();
+    async function initializeWorkspaces() {
+      // Only wait for auth loading if user is not authenticated
+      // If user is authenticated, we should proceed even if auth is still "loading"
+      if (isLoading && !isAuthenticated) {
+        return;
       }
 
-      setAllWorkspaces(workspaces);
+      try {
+        setIsLoading(true);
 
-      // Set active workspace
-      const activeId = LocalWorkspaceManager.getActiveWorkspaceId();
-      const active =
-        workspaces.find((w) => w.id === activeId) || workspaces[0] || null;
-      setActiveWorkspace(active);
+        // Always load local workspaces first
+        const localWorkspaces = LocalWorkspaceManager.getLocalWorkspaces();
 
-      if (active && active.id !== activeId) {
-        LocalWorkspaceManager.setActiveWorkspace(active.id);
+        // Ensure there's a default local workspace
+        let defaultLocalWorkspace = localWorkspaces.find((w) => w.is_default);
+        if (!defaultLocalWorkspace) {
+          defaultLocalWorkspace =
+            LocalWorkspaceManager.createDefaultWorkspace();
+          localWorkspaces.push(defaultLocalWorkspace);
+        }
+
+        let allWorkspaces = [...localWorkspaces];
+
+        // If authenticated, also load cloud workspaces (but don't auto-create any)
+        if (isAuthenticated && user) {
+          try {
+            const cloudWorkspaces = await WorkspaceService.getWorkspaces();
+            allWorkspaces = [...localWorkspaces, ...cloudWorkspaces];
+          } catch (error) {
+            console.error("Failed to load cloud workspaces:", error);
+            // Continue with just local workspaces
+          }
+        }
+
+        setAllWorkspaces(allWorkspaces);
+
+        // Determine active workspace:
+        // 1. Try to keep current active workspace if it still exists
+        // 2. Fall back to saved active workspace ID
+        // 3. Fall back to default local workspace
+        const savedActiveId = LocalWorkspaceManager.getActiveWorkspaceId();
+        let newActiveWorkspace =
+          allWorkspaces.find((w) => w.id === activeWorkspace?.id) ||
+          allWorkspaces.find((w) => w.id === savedActiveId) ||
+          defaultLocalWorkspace;
+
+        setActiveWorkspace(newActiveWorkspace);
+
+        // Save the active workspace ID
+        if (newActiveWorkspace) {
+          LocalWorkspaceManager.setActiveWorkspace(newActiveWorkspace.id);
+        }
+      } catch (error) {
+        console.error("Error initializing workspaces:", error);
+        // Fallback to local workspaces only
+        const localWorkspaces = LocalWorkspaceManager.getLocalWorkspaces();
+        const defaultLocal =
+          localWorkspaces.find((w) => w.is_default) ||
+          LocalWorkspaceManager.createDefaultWorkspace();
+        setAllWorkspaces([defaultLocal]);
+        setActiveWorkspace(defaultLocal);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to load workspaces:", error);
-      // Fallback to local workspaces
-      const localWorkspaces = LocalWorkspaceManager.getLocalWorkspaces();
-      setAllWorkspaces(localWorkspaces);
-      setActiveWorkspace(localWorkspaces[0] || null);
-    } finally {
-      setIsLoading(false);
     }
-  };
+
+    initializeWorkspaces();
+  }, [isAuthenticated, user]);
 
   const switchWorkspace = async (
     workspaceId: string,
     workspaceToSwitch?: Workspace
-  ) => {
-    // If workspace object is provided directly, use it (for newly created workspaces)
-    let workspace = workspaceToSwitch;
+  ): Promise<void> => {
+    const workspace =
+      workspaceToSwitch || allWorkspaces.find((w) => w.id === workspaceId);
+    if (!workspace) return;
 
-    // Otherwise, find it in the current allWorkspaces state
-    if (!workspace) {
-      workspace = allWorkspaces.find((w) => w.id === workspaceId);
-    }
-
-    if (workspace) {
-      setActiveWorkspace(workspace);
-      LocalWorkspaceManager.setActiveWorkspace(workspaceId);
-    } else {
-      console.error(
-        "[WorkspaceContext] Workspace not found with ID:",
-        workspaceId
-      );
-    }
+    setActiveWorkspace(workspace);
+    LocalWorkspaceManager.setActiveWorkspace(workspaceId);
   };
 
   const createWorkspace = async (
-    workspace: WorkspaceCreate
+    workspaceData: WorkspaceCreate
   ): Promise<Workspace> => {
     let newWorkspace: Workspace;
 
-    if (isAuthenticated && workspace.storage_type === "cloud") {
-      newWorkspace = await WorkspaceService.createWorkspace(workspace);
+    if (workspaceData.storage_type === "cloud" && isAuthenticated) {
+      // Create cloud workspace
+      newWorkspace = await WorkspaceService.createWorkspace(workspaceData);
     } else {
-      newWorkspace = LocalWorkspaceManager.createLocalWorkspace(workspace);
+      // Create local workspace
+      newWorkspace = LocalWorkspaceManager.createLocalWorkspace(workspaceData);
     }
 
+    // Add to allWorkspaces
     setAllWorkspaces((prev) => [...prev, newWorkspace]);
+
+    // Auto-switch to the new workspace
+    await switchWorkspace(newWorkspace.id, newWorkspace);
+
     return newWorkspace;
   };
 
   const updateWorkspace = async (
     workspaceId: string,
-    update: WorkspaceUpdate
+    updates: WorkspaceUpdate
   ): Promise<Workspace> => {
     const workspace = allWorkspaces.find((w) => w.id === workspaceId);
     if (!workspace) throw new Error("Workspace not found");
@@ -329,23 +356,27 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     let updatedWorkspace: Workspace;
 
     if (workspace.storage_type === "cloud" && isAuthenticated) {
+      // Update cloud workspace
       updatedWorkspace = await WorkspaceService.updateWorkspace(
         workspaceId,
-        update
+        updates
       );
     } else {
+      // Update local workspace
       const result = LocalWorkspaceManager.updateLocalWorkspace(
         workspaceId,
-        update
+        updates
       );
       if (!result) throw new Error("Failed to update local workspace");
       updatedWorkspace = result;
     }
 
+    // Update in allWorkspaces
     setAllWorkspaces((prev) =>
       prev.map((w) => (w.id === workspaceId ? updatedWorkspace : w))
     );
 
+    // Update active workspace if it's the one being updated
     if (activeWorkspace?.id === workspaceId) {
       setActiveWorkspace(updatedWorkspace);
     }
@@ -355,62 +386,85 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const deleteWorkspace = async (workspaceId: string): Promise<void> => {
     const workspace = allWorkspaces.find((w) => w.id === workspaceId);
-    if (!workspace) throw new Error("Workspace not found");
+    if (!workspace) return;
 
-    // Prevent deleting the last workspace
+    // Can't delete the last remaining workspace
     if (allWorkspaces.length <= 1) {
       throw new Error("Cannot delete the last workspace");
     }
 
-    // Warn if deleting the currently active workspace
-    const isActiveWorkspace = activeWorkspace?.id === workspaceId;
-
     if (workspace.storage_type === "cloud" && isAuthenticated) {
+      // Delete cloud workspace
       await WorkspaceService.deleteWorkspace(workspaceId);
     } else {
-      const success = await LocalWorkspaceManager.deleteLocalWorkspace(
-        workspaceId
-      );
-      if (!success) throw new Error("Failed to delete local workspace");
+      // Delete local workspace (and associated data)
+      await LocalWorkspaceManager.deleteLocalWorkspace(workspaceId);
     }
 
-    // Remove from state
-    setAllWorkspaces((prev) => prev.filter((w) => w.id !== workspaceId));
+    // Remove from allWorkspaces
+    const updatedWorkspaces = allWorkspaces.filter((w) => w.id !== workspaceId);
+    setAllWorkspaces(updatedWorkspaces);
 
-    // If deleted workspace was active, switch to the first remaining workspace
-    if (isActiveWorkspace) {
-      const remaining = allWorkspaces.filter((w) => w.id !== workspaceId);
-      const newActive = remaining[0] || null;
+    // If this was the active workspace, switch to another one
+    if (activeWorkspace?.id === workspaceId) {
+      const newActive = updatedWorkspaces[0];
       setActiveWorkspace(newActive);
-      if (newActive) {
-        LocalWorkspaceManager.setActiveWorkspace(newActive.id);
-      }
+      LocalWorkspaceManager.setActiveWorkspace(newActive.id);
     }
   };
 
   const promoteToCloud = async (workspaceId: string): Promise<Workspace> => {
     if (!isAuthenticated) {
-      throw new Error("Must be authenticated to promote workspace to cloud");
+      throw new Error("Must be authenticated to promote to cloud");
     }
 
     const workspace = allWorkspaces.find((w) => w.id === workspaceId);
-    if (!workspace) throw new Error("Workspace not found");
-
-    if (workspace.storage_type === "cloud") {
-      throw new Error("Workspace is already cloud-based");
+    if (!workspace || workspace.storage_type !== "local") {
+      throw new Error("Can only promote local workspaces");
     }
 
-    // This would involve migrating local data to cloud
-    // For now, just update the workspace type
-    const updatedWorkspace = await updateWorkspace(workspaceId, {
-      storage_type: "cloud",
-    });
-
-    return updatedWorkspace;
+    // This would involve complex data migration - placeholder for now
+    throw new Error("Workspace promotion not yet implemented");
   };
 
   const refreshWorkspaces = async (): Promise<void> => {
-    await loadWorkspaces();
+    if (isLoading) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Always refresh local workspaces
+      const localWorkspaces = LocalWorkspaceManager.getLocalWorkspaces();
+      let allWorkspaces = [...localWorkspaces];
+
+      // If authenticated, also refresh cloud workspaces
+      if (isAuthenticated && user) {
+        try {
+          const cloudWorkspaces = await WorkspaceService.getWorkspaces();
+          allWorkspaces = [...localWorkspaces, ...cloudWorkspaces];
+        } catch (error) {
+          console.error("Failed to refresh cloud workspaces:", error);
+        }
+      }
+
+      setAllWorkspaces(allWorkspaces);
+
+      // Update active workspace if it still exists
+      const currentActive = allWorkspaces.find(
+        (w) => w.id === activeWorkspace?.id
+      );
+      if (currentActive) {
+        setActiveWorkspace(currentActive);
+      } else if (allWorkspaces.length > 0) {
+        setActiveWorkspace(allWorkspaces[0]);
+      }
+    } catch (error) {
+      console.error("Error refreshing workspaces:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const value: WorkspaceContextType = {
