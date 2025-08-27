@@ -65,6 +65,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   >(undefined);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [tutorialCompleted, setTutorialCompleted] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   // File input ref for profile uploads
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -124,6 +125,19 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     // Close the drawer when tutorial is marked as completed
     if (completed) {
       setIsTutorialOpen(false);
+    }
+  };
+
+  // Handle feedback submission
+  const handleFeedbackSubmit = async (feedback: { title: string; text: string }) => {
+    try {
+      // TODO: Implement feedback submission logic
+      console.log("Feedback submitted:", feedback);
+      // You can add API call here to send feedback to your backend
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Failed to submit feedback:", error);
+      return Promise.reject(error);
     }
   };
 
@@ -329,6 +343,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     editingDataset,
     isTutorialOpen,
     tutorialCompleted,
+    isFeedbackOpen,
   };
 
   // Compose handlers object
@@ -366,6 +381,8 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     handleUpdateSegment,
     setIsTutorialOpen,
     handleTutorialComplete,
+    setIsFeedbackOpen,
+    handleFeedbackSubmit,
   };
 
   return {

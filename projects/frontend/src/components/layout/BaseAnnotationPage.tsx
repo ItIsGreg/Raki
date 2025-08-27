@@ -7,6 +7,7 @@ import { AnnotationTab } from "./tabs/AnnotationTab";
 import { ProfilesTab } from "./tabs/ProfilesTab";
 import { TextUploadTab } from "./tabs/TextUploadTab";
 import TutorialDrawer from "@/components/tutorial/TutorialDrawer";
+import FeedbackDrawer from "@/components/feedback/FeedbackDrawer";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 
 export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
@@ -51,6 +52,13 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
         tutorialCompleted={state.tutorialCompleted}
         onTutorialComplete={handlers.handleTutorialComplete}
         data-cy="tutorial-drawer"
+      />
+      
+      <FeedbackDrawer
+        isOpen={state.isFeedbackOpen}
+        onOpenChange={handlers.setIsFeedbackOpen}
+        onSubmit={handlers.handleFeedbackSubmit}
+        data-cy="feedback-drawer"
       />
 
       <PanelGroup

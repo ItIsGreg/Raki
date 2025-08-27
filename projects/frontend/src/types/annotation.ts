@@ -85,6 +85,7 @@ export interface SharedAnnotationState<TProfilePoint extends BaseProfilePoint> {
   editingDataset?: AnnotatedDataset;
   isTutorialOpen: boolean;
   tutorialCompleted: boolean;
+  isFeedbackOpen: boolean;
 }
 
 // Shared handlers interface
@@ -137,6 +138,8 @@ export interface SharedAnnotationHandlers<TProfilePoint extends BaseProfilePoint
   handleUpdateSegment?: (segment: any) => Promise<void>;
   setIsTutorialOpen: (open: boolean) => void;
   handleTutorialComplete: (completed: boolean) => Promise<void>;
+  setIsFeedbackOpen: (open: boolean) => void;
+  handleFeedbackSubmit: (feedback: { title: string; text: string }) => Promise<void>;
 }
 
 // Base annotation page props
