@@ -16,3 +16,8 @@ dependencies = [
     "pymupdf4llm>=0.0.17",
     "azure-ai-inference>=1.0.0b9",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "python-dotenv>=1.0.0",
+]

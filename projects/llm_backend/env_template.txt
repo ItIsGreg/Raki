@@ -1,0 +1,17 @@
+# Email Configuration Template for Gmail
+# Copy this content to a .env file and fill in your actual values
+# NEVER commit the .env file to version control!
+
+# Gmail sender credentials
+EMAIL_SENDER_EMAIL=your-email@gmail.com
+EMAIL_SENDER_PASSWORD=your-app-password-here
+
+# Support email recipient (where support emails will be sent)
+SUPPORT_EMAIL_RECIPIENT=support@company.com
+
+# Instructions:
+# 1. Copy this content to a file named .env
+# 2. Fill in your actual Gmail credentials
+# 3. For Gmail: Use an App Password, not your regular password
+# 4. Make sure .env is in .gitignore (it should be already)
+# 5. The service automatically uses Gmail SMTP (smtp.gmail.com:587)
