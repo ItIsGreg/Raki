@@ -15,6 +15,7 @@ dependencies = [
     "langchain-openai>=0.2.14",
     "pymupdf4llm>=0.0.17",
     "azure-ai-inference>=1.0.0b9",
+    "pydantic[email]>=2.0.0",
 ]
 
 [project.optional-dependencies]
