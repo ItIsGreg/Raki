@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, X, Send } from "lucide-react";
+import { MessageSquare, X, Send, CheckCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FeedbackDrawerProps {
@@ -18,6 +18,7 @@ interface FeedbackDrawerProps {
   onOpenChange: (open: boolean) => void;
   onSubmit?: (feedback: { title: string; text: string }) => void;
   "data-cy"?: string;
+  backendUrl?: string;
 }
 
 // Custom DrawerContent without overlay for non-modal drawer
@@ -42,23 +43,57 @@ const FeedbackDrawer = ({
   onOpenChange,
   onSubmit,
   "data-cy": dataCy,
+  backendUrl = "http://localhost:8000",
 }: FeedbackDrawerProps) => {
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleSubmit = async () => {
     if (!title.trim() || !text.trim()) return;
     
     setIsSubmitting(true);
+    setSubmitStatus('idle');
+    
     try {
-      await onSubmit?.({ title: title.trim(), text: text.trim() });
-      // Reset form after successful submission
-      setTitle("");
-      setText("");
-      onOpenChange(false);
+      // Send email via backend API
+      const response = await fetch(`${backendUrl}/support/email/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          subject: `Feedback: ${title.trim()}`,
+          message: text.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setSubmitStatus('success');
+        console.log("Feedback sent successfully!");
+        
+        // Reset form after successful submission
+        setTitle("");
+        setText("");
+        
+        // Close drawer after a short delay
+        setTimeout(() => {
+          onOpenChange(false);
+          setSubmitStatus('idle');
+        }, 1500);
+      } else {
+        throw new Error(result.message || 'Failed to send feedback');
+      }
     } catch (error) {
       console.error("Failed to submit feedback:", error);
+      setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
     }
@@ -145,9 +180,24 @@ const FeedbackDrawer = ({
                 disabled={!title.trim() || !text.trim() || isSubmitting}
                 className="w-full"
                 size="lg"
+                variant={submitStatus === 'success' ? 'default' : submitStatus === 'error' ? 'destructive' : 'default'}
               >
-                <Send className="h-4 w-4 mr-2" />
-                {isSubmitting ? "Sending..." : "Send Feedback"}
+                {submitStatus === 'success' ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Sent Successfully!
+                  </>
+                ) : submitStatus === 'error' ? (
+                  <>
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    Send Failed
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    {isSubmitting ? "Sending..." : "Send Feedback"}
+                  </>
+                )}
               </Button>
             </div>
           </div>
