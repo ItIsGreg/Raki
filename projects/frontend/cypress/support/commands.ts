@@ -43,6 +43,9 @@ declare global {
     interface Chainable {
       dragTo(target: string): Chainable<JQuery<HTMLElement>>
       clearIndexedDB(): Chainable<void>
+      openFeedbackDrawer(): Chainable<void>
+      submitFeedback(title: string, message: string): Chainable<void>
+      mockFeedbackAPI(success: boolean, statusCode?: number): Chainable<void>
     }
   }
 }
@@ -56,4 +59,27 @@ Cypress.Commands.add('clearIndexedDB', () => {
       request.onerror = () => resolve()
     })
   })
+})
+
+// Add feedback drawer commands
+Cypress.Commands.add('openFeedbackDrawer', () => {
+  cy.get('[data-cy="feedback-drawer"] button').click()
+  cy.get('.feedback-drawer-content').should('be.visible')
+})
+
+Cypress.Commands.add('submitFeedback', (title: string, message: string) => {
+  cy.get('#feedback-title').clear().type(title)
+  cy.get('#feedback-text').clear().type(message)
+  cy.get('[data-cy="feedback-drawer"] button:contains("Send")').click()
+})
+
+Cypress.Commands.add('mockFeedbackAPI', (success: boolean, statusCode = 200) => {
+  const responseBody = success 
+    ? { success: true, message: 'Email sent successfully to support team' }
+    : { success: false, message: 'Failed to send email' }
+  
+  cy.intercept('POST', '**/support/email/send', {
+    statusCode,
+    body: responseBody
+  }).as('sendFeedbackEmail')
 })

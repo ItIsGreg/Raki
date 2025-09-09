@@ -123,8 +123,8 @@ const FeedbackDrawer = ({
             <MessageSquare className="h-4 w-4" />
           </Button>
         </DrawerTrigger>
-        <CustomDrawerContent className="h-[60vh] feedback-drawer-content">
-          <div className="flex flex-col h-full">
+        <CustomDrawerContent className="h-[60vh] max-h-[80vh] min-h-[300px] sm:h-[50vh] md:h-[60vh] lg:h-[50vh] feedback-drawer-content">
+          <div className="flex flex-col h-full overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b">
               <DrawerHeader className="p-0">
@@ -143,7 +143,7 @@ const FeedbackDrawer = ({
             </div>
 
             {/* Content */}
-            <div className="flex-1 p-4 space-y-4">
+            <div className="flex-1 p-4 space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
               {/* Title Input */}
               <div className="space-y-2">
                 <Label htmlFor="feedback-title">Title</Label>
@@ -165,7 +165,7 @@ const FeedbackDrawer = ({
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   onKeyDown={handleKeyPress}
-                  className="w-full min-h-[200px] resize-none"
+                  className="w-full min-h-[150px] max-h-[300px] resize-none"
                 />
                 <p className="text-xs text-muted-foreground">
                   Press Ctrl+Enter to send
@@ -176,6 +176,7 @@ const FeedbackDrawer = ({
             {/* Footer */}
             <div className="p-4 border-t">
               <Button
+                id="feedback-submit-button"
                 onClick={handleSubmit}
                 disabled={!title.trim() || !text.trim() || isSubmitting}
                 className="w-full"
