@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { User, Menu, X, ChevronDown, Plus, HardDrive, Cloud } from "lucide-react";
@@ -68,6 +68,7 @@ export default function TopNavbar({ className }: TopNavbarProps) {
   const [newStorageName, setNewStorageName] = useState("");
   const [newStorageType, setNewStorageType] = useState("local");
   const pathname = usePathname();
+  const router = useRouter();
 
   const isActive = (href: string) => {
     if (href === "/home") {
@@ -101,6 +102,14 @@ export default function TopNavbar({ className }: TopNavbarProps) {
 
   const getCurrentStorage = () => {
     return storages.find(s => s.id === selectedStorage) || storages[0];
+  };
+
+  const handleSignInClick = () => {
+    if (isSignedIn) {
+      setIsSignedIn(false);
+    } else {
+      router.push("/auth");
+    }
   };
 
   return (
@@ -214,7 +223,7 @@ export default function TopNavbar({ className }: TopNavbarProps) {
               variant="outline" 
               size="sm" 
               className="flex items-center gap-2"
-              onClick={() => setIsSignedIn(!isSignedIn)}
+              onClick={handleSignInClick}
             >
               <User className="w-4 h-4" />
               {isSignedIn ? "Sign Out" : "Sign In"}
@@ -315,7 +324,7 @@ export default function TopNavbar({ className }: TopNavbarProps) {
                   variant="outline" 
                   size="sm" 
                   className="w-full flex items-center justify-center gap-2"
-                  onClick={() => setIsSignedIn(!isSignedIn)}
+                  onClick={handleSignInClick}
                 >
                   <User className="w-4 h-4" />
                   {isSignedIn ? "Sign Out" : "Sign In"}
