@@ -1,5 +1,4 @@
 from typing import Callable
-from uu import Error
 from rich import print
 from rich.panel import Panel
 from rich.syntax import Syntax
