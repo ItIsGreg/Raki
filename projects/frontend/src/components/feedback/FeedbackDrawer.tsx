@@ -47,11 +47,12 @@ const FeedbackDrawer = ({
 }: FeedbackDrawerProps) => {
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
+  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleSubmit = async () => {
-    if (!title.trim() || !text.trim()) return;
+    if (!title.trim() || !text.trim() || !email.trim()) return;
     
     setIsSubmitting(true);
     setSubmitStatus('idle');
@@ -65,7 +66,7 @@ const FeedbackDrawer = ({
         },
         body: JSON.stringify({
           subject: `Feedback: ${title.trim()}`,
-          message: text.trim(),
+          message: `From: ${email.trim()}\n\n${text.trim()}`,
         }),
       });
 
@@ -82,12 +83,13 @@ const FeedbackDrawer = ({
         // Reset form after successful submission
         setTitle("");
         setText("");
+        setEmail("");
         
         // Close drawer after a short delay
         setTimeout(() => {
           onOpenChange(false);
           setSubmitStatus('idle');
-        }, 1500);
+        }, 2000);
       } else {
         throw new Error(result.message || 'Failed to send feedback');
       }
@@ -156,6 +158,19 @@ const FeedbackDrawer = ({
                 />
               </div>
 
+              {/* Email Input */}
+              <div className="space-y-2">
+                <Label htmlFor="feedback-email">Email</Label>
+                <Input
+                  id="feedback-email"
+                  type="email"
+                  placeholder="your.email@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
               {/* Text Input */}
               <div className="space-y-2 flex-1">
                 <Label htmlFor="feedback-text">Feedback</Label>
@@ -178,7 +193,7 @@ const FeedbackDrawer = ({
               <Button
                 id="feedback-submit-button"
                 onClick={handleSubmit}
-                disabled={!title.trim() || !text.trim() || isSubmitting}
+                disabled={!title.trim() || !text.trim() || !email.trim() || isSubmitting}
                 className="w-full"
                 size="lg"
                 variant={submitStatus === 'success' ? 'default' : submitStatus === 'error' ? 'destructive' : 'default'}

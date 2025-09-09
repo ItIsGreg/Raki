@@ -23,10 +23,12 @@ describe('FeedbackDrawer - Core Functionality', () => {
     // Check if drawer content is visible
     cy.get('.feedback-drawer-content').should('be.visible');
     cy.get('#feedback-title').should('be.visible');
+    cy.get('#feedback-email').should('be.visible');
     cy.get('#feedback-text').should('be.visible');
     
     // Fill out the feedback form
     cy.get('#feedback-title').type('Test Feedback Title');
+    cy.get('#feedback-email').type('test@example.com');
     cy.get('#feedback-text').type('This is a test feedback message');
     
     // Submit the feedback
@@ -41,7 +43,7 @@ describe('FeedbackDrawer - Core Functionality', () => {
     cy.get('@sendFeedbackEmail').then((interception: any) => {
       expect(interception.request.body).to.deep.equal({
         subject: 'Feedback: Test Feedback Title',
-        message: 'This is a test feedback message'
+        message: 'From: test@example.com\n\nThis is a test feedback message'
       });
     });
   });
