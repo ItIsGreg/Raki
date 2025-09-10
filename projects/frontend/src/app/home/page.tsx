@@ -1,9 +1,6 @@
-import { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Raki - Home",
-  description: "AI-powered data annotation and text segmentation platform",
-};
+import { Metadata } from "next";
 
 export default function HomePage() {
   return (
@@ -92,6 +89,6 @@ export default function HomePage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
   );
 }

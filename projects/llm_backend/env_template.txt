@@ -1,0 +1,27 @@
+# LLM Configuration
+LLAMA3_URL=your_llama3_url_here
+LLAMA3_KEY=your_llama3_api_key_here
+KISS_KI_URL=your_kiss_ki_url_here
+KISS_KI_KEY=your_kiss_ki_api_key_here
+KISS_KI_MODEL=your_kiss_ki_model_here
+PROMPT_LANGUAGE=en
+
+# Database Configuration
+DATABASE_URL=mongodb://localhost:27017
+# For MongoDB Atlas: DATABASE_URL=mongodb+srv://username:password@cluster.mongodb.net/raki_db
+# For MongoDB with authentication: DATABASE_URL=mongodb://username:password@localhost:27017/raki_db
+
+# Authentication Configuration
+SECRET_KEY=your-super-secret-key-change-in-production
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+SESSION_TOKEN_EXPIRE_DAYS=7
+
+# Google OAuth Configuration
+# ONLY CLIENT_ID is needed - NO CLIENT_SECRET required!
+# Use the SAME value as NEXT_PUBLIC_GOOGLE_CLIENT_ID in frontend
+GOOGLE_CLIENT_ID=your-google-client-id-here
+
+# Email Configuration (for support)
+EMAIL_SENDER_EMAIL=your-email@gmail.com
+EMAIL_SENDER_PASSWORD=your-app-password
+SUPPORT_EMAIL_RECIPIENT=support@raki.ai

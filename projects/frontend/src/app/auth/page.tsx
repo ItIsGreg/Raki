@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,31 +9,125 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
+import { useNavigationWithLoading } from "@/hooks/useNavigationWithLoading";
 
 export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    fullName: "",
+  });
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const router = useRouter();
+  const { login, register, googleAuth } = useAuth();
+  const { navigateWithLoading } = useNavigationWithLoading();
+
+  // Google OAuth configuration
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+
+  const handleGoogleSuccess = async (credential: string) => {
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      await googleAuth(credential);
+      navigateWithLoading("/home");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Google authentication failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleError = (error: string) => {
+    setError(error);
+    setIsLoading(false);
+  };
+
+  const { renderGoogleButton } = useGoogleAuth({
+    clientId: googleClientId,
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    // Clear error when user starts typing
+    if (error) setError(null);
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle sign in logic
-    console.log("Sign in clicked");
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      await login(formData.email, formData.password, rememberMe);
+      navigateWithLoading("/home");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle register logic
-    console.log("Register clicked");
+    setError(null);
+
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return;
+    }
+
+    if (!agreeToTerms) {
+      setError("Please agree to the terms and conditions");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await register(formData.email, formData.password, formData.fullName);
+      navigateWithLoading("/home");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleSignIn = () => {
-    // Handle Google sign in
-    console.log("Google sign in clicked");
-  };
+  // Effect to render Google button when component mounts
+  useEffect(() => {
+    if (googleClientId) {
+      const timer = setTimeout(() => {
+        renderGoogleButton("google-signin-button");
+      }, 1000); // Wait for Google script to load
+
+      return () => clearTimeout(timer);
+    }
+  }, [googleClientId, renderGoogleButton]);
 
   return (
     <div className="min-h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4">
@@ -46,6 +141,13 @@ export default function AuthPage() {
             <p className="text-gray-600">Sign in to your account or create a new one</p>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center gap-2 text-red-700">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+            
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -61,9 +163,12 @@ export default function AuthPage() {
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="signin-email"
+                        name="email"
                         type="email"
                         placeholder="Enter your email"
                         className="pl-10"
+                        value={formData.email}
+                        onChange={handleInputChange}
                         required
                       />
                     </div>
@@ -75,9 +180,12 @@ export default function AuthPage() {
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="signin-password"
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
                         className="pl-10 pr-10"
+                        value={formData.password}
+                        onChange={handleInputChange}
                         required
                       />
                       <button
@@ -95,7 +203,7 @@ export default function AuthPage() {
                       <Checkbox
                         id="remember-me"
                         checked={rememberMe}
-                        onCheckedChange={setRememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked === true)}
                       />
                       <Label htmlFor="remember-me" className="text-sm">
                         Remember me
@@ -106,8 +214,8 @@ export default function AuthPage() {
                     </Button>
                   </div>
 
-                  <Button type="submit" className="w-full">
-                    Sign In
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Signing In..." : "Sign In"}
                   </Button>
                 </form>
 
@@ -121,32 +229,13 @@ export default function AuthPage() {
                     </div>
                   </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full mt-4"
-                    onClick={handleGoogleSignIn}
-                  >
-                    <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      />
-                    </svg>
-                    Continue with Google
-                  </Button>
+                  {googleClientId ? (
+                    <div id="google-signin-button" className="w-full"></div>
+                  ) : (
+                    <div className="w-full p-4 text-center text-sm text-gray-500 border rounded-lg">
+                      Google authentication is not configured. Please use email and password.
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
@@ -159,9 +248,12 @@ export default function AuthPage() {
                       <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="register-name"
+                        name="fullName"
                         type="text"
                         placeholder="Enter your full name"
                         className="pl-10"
+                        value={formData.fullName}
+                        onChange={handleInputChange}
                         required
                       />
                     </div>
@@ -173,9 +265,12 @@ export default function AuthPage() {
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="register-email"
+                        name="email"
                         type="email"
                         placeholder="Enter your email"
                         className="pl-10"
+                        value={formData.email}
+                        onChange={handleInputChange}
                         required
                       />
                     </div>
@@ -187,9 +282,12 @@ export default function AuthPage() {
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="register-password"
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Create a password"
                         className="pl-10 pr-10"
+                        value={formData.password}
+                        onChange={handleInputChange}
                         required
                       />
                       <button
@@ -208,9 +306,12 @@ export default function AuthPage() {
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="confirm-password"
+                        name="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="Confirm your password"
                         className="pl-10 pr-10"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
                         required
                       />
                       <button
@@ -227,7 +328,7 @@ export default function AuthPage() {
                     <Checkbox
                       id="agree-terms"
                       checked={agreeToTerms}
-                      onCheckedChange={setAgreeToTerms}
+                      onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
                     />
                     <Label htmlFor="agree-terms" className="text-sm">
                       I agree to the{" "}
@@ -244,9 +345,9 @@ export default function AuthPage() {
                   <Button 
                     type="submit" 
                     className="w-full"
-                    disabled={!agreeToTerms}
+                    disabled={!agreeToTerms || isLoading}
                   >
-                    Create Account
+                    {isLoading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>
 
@@ -260,32 +361,13 @@ export default function AuthPage() {
                     </div>
                   </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full mt-4"
-                    onClick={handleGoogleSignIn}
-                  >
-                    <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      />
-                    </svg>
-                    Continue with Google
-                  </Button>
+                  {googleClientId ? (
+                    <div id="google-signin-button" className="w-full"></div>
+                  ) : (
+                    <div className="w-full p-4 text-center text-sm text-gray-500 border rounded-lg">
+                      Google authentication is not configured. Please use email and password.
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>

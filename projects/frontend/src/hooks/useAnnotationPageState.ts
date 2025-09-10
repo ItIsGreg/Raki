@@ -31,6 +31,9 @@ import {
 export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   configuration: ModeConfiguration<TProfilePoint>
 ) {
+  // Loading state
+  const [isReady, setIsReady] = useState(false);
+  
   // Core state
   const [activeAnnotatedDataset, setActiveAnnotatedDataset] = useState<
     AnnotatedDataset | undefined
@@ -133,6 +136,30 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
       setTutorialCompleted(userSettings.tutorialCompleted);
     }
   }, [userSettings]);
+
+  // Reset ready state when component mounts (for tab navigation)
+  useEffect(() => {
+    setIsReady(false);
+  }, []);
+
+  // Set component as ready when essential data is loaded
+  useEffect(() => {
+    // Check if all essential data is loaded
+    const essentialDataLoaded = profiles !== undefined && 
+                               datasets !== undefined && 
+                               userSettings !== undefined;
+    
+    if (essentialDataLoaded && !isReady) {
+      // Add a small delay to ensure all components are rendered
+      const delay = 100; // Small delay for rendering
+      
+      const timer = setTimeout(() => {
+        setIsReady(true);
+      }, delay);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [profiles, datasets, userSettings, isReady]);
 
   // Wrapper functions to handle type conversion
   const handleSetActiveAnnotatedDataset = (dataset: AnnotatedDataset | null) => {
@@ -384,5 +411,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     handleStart,
     handleStop,
     identifyActiveProfilePoints,
+    // Loading state
+    isReady,
   };
 } 

@@ -5,7 +5,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { User, Menu, X, ChevronDown, Plus, HardDrive, Cloud } from "lucide-react";
+import { User, Menu, X, ChevronDown, Plus, HardDrive, Cloud, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigationWithLoading } from "@/hooks/useNavigationWithLoading";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,7 +62,6 @@ const navigationItems = [
 export default function TopNavbar({ className }: TopNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isStorageModalOpen, setIsStorageModalOpen] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false);
   const [selectedStorage, setSelectedStorage] = useState("local");
   const [storages, setStorages] = useState([
     { id: "local", name: "Local", type: "local" },
@@ -69,6 +70,8 @@ export default function TopNavbar({ className }: TopNavbarProps) {
   const [newStorageType, setNewStorageType] = useState("local");
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { navigateWithLoading } = useNavigationWithLoading();
 
   const isActive = (href: string) => {
     if (href === "/home") {
@@ -96,6 +99,19 @@ export default function TopNavbar({ className }: TopNavbarProps) {
     }
   };
 
+  const handleCloseStorageModal = () => {
+    setIsStorageModalOpen(false);
+    setNewStorageName("");
+    setNewStorageType("local");
+    
+    // Ensure body styles are cleaned up
+    setTimeout(() => {
+      document.body.removeAttribute("data-scroll-locked");
+      document.body.style.pointerEvents = "";
+      document.body.style.overflow = "";
+    }, 100);
+  };
+
   const getStorageIcon = (type: string) => {
     return type === "local" ? <HardDrive className="w-4 h-4" /> : <Cloud className="w-4 h-4" />;
   };
@@ -105,10 +121,10 @@ export default function TopNavbar({ className }: TopNavbarProps) {
   };
 
   const handleSignInClick = () => {
-    if (isSignedIn) {
-      setIsSignedIn(false);
+    if (isAuthenticated) {
+      logout();
     } else {
-      router.push("/auth");
+      navigateWithLoading("/auth");
     }
   };
 
@@ -148,26 +164,26 @@ export default function TopNavbar({ className }: TopNavbarProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-48">
                       {item.submenu.map((subItem) => (
-                        <DropdownMenuItem key={subItem.name} asChild>
-                          <Link
-                            href={subItem.href}
-                            className={cn(
-                              "w-full",
-                              isActive(subItem.href)
-                                ? "bg-blue-100 text-blue-700"
-                                : ""
-                            )}
-                          >
-                            {subItem.name}
-                          </Link>
+                        <DropdownMenuItem 
+                          key={subItem.name}
+                          onClick={() => navigateWithLoading(subItem.href)}
+                          className={cn(
+                            "w-full cursor-pointer",
+                            isActive(subItem.href)
+                              ? "bg-blue-100 text-blue-700"
+                              : ""
+                          )}
+                        >
+                          {subItem.name}
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Link
+                  <Button
                     key={item.name}
-                    href={item.href}
+                    variant="ghost"
+                    onClick={() => navigateWithLoading(item.href)}
                     className={cn(
                       "px-3 py-2 rounded-md text-sm font-medium transition-colors",
                       isActive(item.href)
@@ -176,7 +192,7 @@ export default function TopNavbar({ className }: TopNavbarProps) {
                     )}
                   >
                     {item.name}
-                  </Link>
+                  </Button>
                 )
               ))}
             </div>
@@ -218,16 +234,41 @@ export default function TopNavbar({ className }: TopNavbarProps) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Sign In Button */}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-2"
-              onClick={handleSignInClick}
-            >
-              <User className="w-4 h-4" />
-              {isSignedIn ? "Sign Out" : "Sign In"}
-            </Button>
+            {/* User Menu */}
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    {user?.full_name || user?.email}
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem disabled>
+                    <User className="w-4 h-4 mr-2" />
+                    <div className="flex flex-col">
+                      <span className="font-medium">{user?.full_name}</span>
+                      <span className="text-xs text-gray-500">{user?.email}</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={logout} className="text-red-600">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2"
+                onClick={handleSignInClick}
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -258,35 +299,39 @@ export default function TopNavbar({ className }: TopNavbarProps) {
                       {item.name}
                     </div>
                     {item.submenu.map((subItem) => (
-                      <Link
+                      <button
                         key={subItem.name}
-                        href={subItem.href}
+                        onClick={() => {
+                          navigateWithLoading(subItem.href);
+                          setIsMobileMenuOpen(false);
+                        }}
                         className={cn(
-                          "block px-6 py-2 rounded-md text-sm font-medium transition-colors",
+                          "block w-full text-left px-6 py-2 rounded-md text-sm font-medium transition-colors",
                           isActive(subItem.href)
                             ? "bg-blue-100 text-blue-700"
                             : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                         )}
-                        onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {subItem.name}
-                      </Link>
+                      </button>
                     ))}
                   </div>
                 ) : (
-                  <Link
+                  <button
                     key={item.name}
-                    href={item.href}
+                    onClick={() => {
+                      navigateWithLoading(item.href);
+                      setIsMobileMenuOpen(false);
+                    }}
                     className={cn(
-                      "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                      "block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors",
                       isActive(item.href)
                         ? "bg-blue-100 text-blue-700"
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                     )}
-                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.name}
-                  </Link>
+                  </button>
                 )
               ))}
               <div className="pt-4 border-t border-gray-200 space-y-2">
@@ -320,22 +365,46 @@ export default function TopNavbar({ className }: TopNavbarProps) {
                   </div>
                 </div>
                 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full flex items-center justify-center gap-2"
-                  onClick={handleSignInClick}
-                >
-                  <User className="w-4 h-4" />
-                  {isSignedIn ? "Sign Out" : "Sign In"}
-                </Button>
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <div className="px-3 py-2 text-sm text-gray-700">
+                      <div className="font-medium">{user?.full_name}</div>
+                      <div className="text-xs text-gray-500">{user?.email}</div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full flex items-center justify-center gap-2 text-red-600"
+                      onClick={logout}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </Button>
+                  </div>
+                ) : (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={handleSignInClick}
+                  >
+                    <User className="w-4 h-4" />
+                    Sign In
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         )}
 
         {/* Add Storage Modal */}
-        <Dialog open={isStorageModalOpen} onOpenChange={setIsStorageModalOpen}>
+        <Dialog open={isStorageModalOpen} onOpenChange={(open) => {
+          if (!open) {
+            handleCloseStorageModal();
+          } else {
+            setIsStorageModalOpen(true);
+          }
+        }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Add New Storage</DialogTitle>
@@ -381,14 +450,14 @@ export default function TopNavbar({ className }: TopNavbarProps) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => isSignedIn && setNewStorageType("cloud")}
-                    disabled={!isSignedIn}
+                    onClick={() => isAuthenticated && setNewStorageType("cloud")}
+                    disabled={!isAuthenticated}
                     className={cn(
                       "w-full flex items-center gap-2 p-3 rounded-lg border transition-colors",
                       newStorageType === "cloud"
                         ? "border-blue-500 bg-blue-50 text-blue-700"
                         : "border-gray-200 hover:border-gray-300",
-                      !isSignedIn && "opacity-50 cursor-not-allowed"
+                      !isAuthenticated && "opacity-50 cursor-not-allowed"
                     )}
                   >
                     <div className={cn(
@@ -403,7 +472,7 @@ export default function TopNavbar({ className }: TopNavbarProps) {
                     </div>
                     <Cloud className="w-4 h-4" />
                     <span>Cloud Storage</span>
-                    {!isSignedIn && (
+                    {!isAuthenticated && (
                       <span className="text-xs text-gray-400 ml-auto">(Sign in required)</span>
                     )}
                   </button>
@@ -413,17 +482,13 @@ export default function TopNavbar({ className }: TopNavbarProps) {
             <DialogFooter>
               <Button
                 variant="outline"
-                onClick={() => {
-                  setIsStorageModalOpen(false);
-                  setNewStorageName("");
-                  setNewStorageType("local");
-                }}
+                onClick={handleCloseStorageModal}
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleAddStorage}
-                disabled={!newStorageName.trim() || (newStorageType === "cloud" && !isSignedIn)}
+                disabled={!newStorageName.trim() || (newStorageType === "cloud" && !isAuthenticated)}
               >
                 Add Storage
               </Button>

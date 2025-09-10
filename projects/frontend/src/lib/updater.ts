@@ -1,10 +1,20 @@
-import { check } from "@tauri-apps/plugin-updater";
-import { ask } from "@tauri-apps/plugin-dialog";
-import { relaunch } from "@tauri-apps/plugin-process";
+// Check if we're running in Tauri environment
+const isTauri = typeof window !== 'undefined' && window.__TAURI__;
 
 export async function checkForAppUpdates() {
+  // Only run update checks in Tauri environment
+  if (!isTauri) {
+    console.log("Update check skipped - not running in Tauri environment");
+    return;
+  }
+
   console.log("Checking for updates");
   try {
+    // Dynamically import Tauri modules only when needed
+    const { check } = await import("@tauri-apps/plugin-updater");
+    const { ask } = await import("@tauri-apps/plugin-dialog");
+    const { relaunch } = await import("@tauri-apps/plugin-process");
+
     const update = await check();
 
     if (update?.available) {

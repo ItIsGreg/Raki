@@ -2,16 +2,20 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAnnotationPageState } from "@/hooks/useAnnotationPageState";
+import { useComponentReady } from "@/hooks/useComponentReady";
 import { BaseAnnotationPageProps, BaseProfilePoint } from "@/types/annotation";
 import { AnnotationTab } from "./tabs/AnnotationTab";
 import { ProfilesTab } from "./tabs/ProfilesTab";
 import { TextUploadTab } from "./tabs/TextUploadTab";
 import TutorialDrawer from "@/components/tutorial/TutorialDrawer";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { useEffect } from "react";
 
 export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
   configuration,
 }: BaseAnnotationPageProps<TProfilePoint>) {
+  const { markComponentReady } = useComponentReady();
+  
   const {
     state,
     handlers,
@@ -26,7 +30,15 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
     handleStart,
     handleStop,
     identifyActiveProfilePoints,
+    isReady,
   } = useAnnotationPageState(configuration);
+
+  // Signal when the component is ready (when data is actually loaded)
+  useEffect(() => {
+    if (isReady) {
+      markComponentReady();
+    }
+  }, [isReady, markComponentReady]);
 
   const containerDataCy =
     configuration.mode === "datapoint_extraction"

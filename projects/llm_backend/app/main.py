@@ -8,6 +8,8 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.routers.datapoint_extraction import substrings, values, pipeline, profile_chat
 from app.routers.text_segmentation import pdf_extraction, profile_chat as text_segmentation_profile_chat, segments
+from app.routers.auth import router as auth_router
+from app.lib.db import init_db, close_db
 
 app = FastAPI()
 
@@ -63,13 +65,30 @@ router.include_router(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
+# Include routers
 app.include_router(router)
+app.include_router(auth_router)
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize MongoDB on startup."""
+    await init_db()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Close MongoDB connection on shutdown."""
+    await close_db()
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()  # For Windows support
