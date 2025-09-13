@@ -5,7 +5,7 @@ import {
   AnnotatedDataset,
   AnnotatedText,
 } from "@/lib/db/db";
-import { db } from "@/lib/db/db";
+import { getCurrentDatabase } from "@/lib/db/databaseManager";
 import {
   createAnnotatedText,
   createSegmentDataPoint,
@@ -93,7 +93,7 @@ export const reannotateFaultySegmentationText = async (
   maxTokens: number | undefined
 ) => {
   try {
-    const text = await db.Texts.get(annotatedFaultyText.textId);
+    const text = await getCurrentDatabase().Texts.get(annotatedFaultyText.textId);
     if (!text) {
       throw new Error("Text not found");
     }

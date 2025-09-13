@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { User, Menu, X, ChevronDown, Plus, HardDrive, Cloud, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStorage } from "@/contexts/StorageContext";
 import { useNavigationWithLoading } from "@/hooks/useNavigationWithLoading";
 import {
   DropdownMenu,
@@ -62,16 +63,13 @@ const navigationItems = [
 export default function TopNavbar({ className }: TopNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isStorageModalOpen, setIsStorageModalOpen] = useState(false);
-  const [selectedStorage, setSelectedStorage] = useState("local");
-  const [storages, setStorages] = useState([
-    { id: "local", name: "Local", type: "local" },
-  ]);
   const [newStorageName, setNewStorageName] = useState("");
   const [newStorageType, setNewStorageType] = useState("local");
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const { navigateWithLoading } = useNavigationWithLoading();
+  const { storages, currentStorage, addStorage, switchStorage, isLoading } = useStorage();
 
   const isActive = (href: string) => {
     if (href === "/home") {
@@ -84,18 +82,16 @@ export default function TopNavbar({ className }: TopNavbarProps) {
     return submenu.some(item => pathname.startsWith(item.href));
   };
 
-  const handleAddStorage = () => {
+  const handleAddStorage = async () => {
     if (newStorageName.trim()) {
-      const newStorage = {
-        id: `storage_${Date.now()}`,
-        name: newStorageName.trim(),
-        type: newStorageType,
-      };
-      setStorages([...storages, newStorage]);
-      setSelectedStorage(newStorage.id);
-      setNewStorageName("");
-      setNewStorageType("local");
-      setIsStorageModalOpen(false);
+      try {
+        await addStorage(newStorageName.trim(), newStorageType as 'local' | 'cloud');
+        setNewStorageName("");
+        setNewStorageType("local");
+        setIsStorageModalOpen(false);
+      } catch (error) {
+        console.error('Error adding storage:', error);
+      }
     }
   };
 
@@ -117,7 +113,7 @@ export default function TopNavbar({ className }: TopNavbarProps) {
   };
 
   const getCurrentStorage = () => {
-    return storages.find(s => s.id === selectedStorage) || storages[0];
+    return currentStorage || storages[0] || { id: 'default', name: 'Local', type: 'local' };
   };
 
   const handleSignInClick = () => {
@@ -213,10 +209,10 @@ export default function TopNavbar({ className }: TopNavbarProps) {
                 {storages.map((storage) => (
                   <DropdownMenuItem
                     key={storage.id}
-                    onClick={() => setSelectedStorage(storage.id)}
+                    onClick={() => switchStorage(storage.id)}
                     className={cn(
                       "flex items-center gap-2",
-                      selectedStorage === storage.id && "bg-blue-100 text-blue-700"
+                      currentStorage?.id === storage.id && "bg-blue-100 text-blue-700"
                     )}
                   >
                     {getStorageIcon(storage.type)}

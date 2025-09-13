@@ -1,5 +1,5 @@
-import { db } from "./db";
 import { ProfilePoint, SegmentationProfilePoint } from "./db";
+import { getCurrentDatabase } from "./databaseManager";
 
 const ORDER_GAP = 1000;
 const MIN_GAP = 10;
@@ -13,7 +13,7 @@ type Point = {
 };
 
 export async function getNextOrderNumber(profileId: string, isSegmentation: boolean): Promise<number> {
-  const table = isSegmentation ? db.segmentationProfilePoints : db.profilePoints;
+  const table = isSegmentation ? getCurrentDatabase().segmentationProfilePoints : getCurrentDatabase().profilePoints;
   const points = await table.where("profileId").equals(profileId).toArray();
   
   if (points.length === 0) {
@@ -32,7 +32,7 @@ export async function renumberPoints(
   points: Point[],
   isSegmentation: boolean
 ): Promise<void> {
-  const table = isSegmentation ? db.segmentationProfilePoints : db.profilePoints;
+  const table = isSegmentation ? getCurrentDatabase().segmentationProfilePoints : getCurrentDatabase().profilePoints;
   
   // Sort points by current order
   const sortedPoints = [...points].sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -45,7 +45,7 @@ export async function renumberPoints(
   });
   
   // Save all points
-  await db.transaction('rw', table, async () => {
+  await getCurrentDatabase().transaction('rw', table, async () => {
     for (const point of sortedPoints) {
       const existingPoint = await table.get(point.id);
       if (existingPoint) {
@@ -66,7 +66,7 @@ export async function reorderPoint(
   newNextPoint: Point | null,
   isSegmentation: boolean
 ): Promise<void> {
-  const table = isSegmentation ? db.segmentationProfilePoints : db.profilePoints;
+  const table = isSegmentation ? getCurrentDatabase().segmentationProfilePoints : getCurrentDatabase().profilePoints;
   
   // Get the existing points
   const existingMovedPoint = await table.get(movedPoint.id);
@@ -119,7 +119,7 @@ export async function reorderPoint(
   }
   
   // Save all changes in a transaction
-  await db.transaction('rw', table, async () => {
+  await getCurrentDatabase().transaction('rw', table, async () => {
     // Save the moved point
     await table.put(updatedMovedPoint);
     
@@ -139,7 +139,7 @@ export async function getOrderedPoints(
   profileId: string,
   isSegmentation: boolean
 ): Promise<Point[]> {
-  const table = isSegmentation ? db.segmentationProfilePoints : db.profilePoints;
+  const table = isSegmentation ? getCurrentDatabase().segmentationProfilePoints : getCurrentDatabase().profilePoints;
   return table
     .where("profileId")
     .equals(profileId)

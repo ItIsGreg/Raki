@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useCurrentDatabase } from "./useCurrentDatabase";
 import {
   AnnotatedDataset,
   AnnotatedText,
@@ -31,6 +32,9 @@ import {
 export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   configuration: ModeConfiguration<TProfilePoint>
 ) {
+  // Get current database
+  const currentDatabase = useCurrentDatabase();
+  
   // Loading state
   const [isReady, setIsReady] = useState(false);
   
@@ -73,13 +77,13 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get user settings from database
-  const userSettings = useLiveQuery(() => getUserSettings(), []);
+  const userSettings = useLiveQuery(() => getUserSettings(), [currentDatabase]);
 
   // Get profiles from database
-  const profiles = useLiveQuery(() => readProfilesByMode(configuration.mode), [configuration.mode]);
+  const profiles = useLiveQuery(() => readProfilesByMode(configuration.mode), [configuration.mode, currentDatabase]);
   
   // Get datasets from database
-  const datasets = useLiveQuery(() => readDatasetsByMode(configuration.mode), [configuration.mode]);
+  const datasets = useLiveQuery(() => readDatasetsByMode(configuration.mode), [configuration.mode, currentDatabase]);
   
   // Get all texts for all datasets
   const allTexts = useLiveQuery(() => {
@@ -87,7 +91,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     return Promise.all(
       datasets.map((dataset) => readTextsByDataset(dataset.id))
     ).then((textArrays) => textArrays.flat());
-  }, [datasets]);
+  }, [datasets, currentDatabase]);
 
   // Get text content for display (mode-specific logic)
   const displayText = useLiveQuery<Text | undefined>(() => {
@@ -101,7 +105,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     }
     // For datapoint extraction, return undefined (uses TextAnnotation component differently)
     return Promise.resolve(undefined);
-  }, [activeAnnotatedText?.textId, activeText, activeTab, configuration.mode]);
+  }, [activeAnnotatedText?.textId, activeText, activeTab, configuration.mode, currentDatabase]);
 
   // Update display mode when tab changes
   useEffect(() => {

@@ -9,7 +9,6 @@ import {
   SegmentationProfilePointCreate,
   SegmentDataPointCreate,
   TextCreate,
-  db,
   Profile,
   Dataset,
   AnnotatedText,
@@ -23,12 +22,13 @@ import {
 } from "./db";
 import { TaskMode } from "@/app/constants";
 import { getNextOrderNumber } from "./ordering";
+import { getCurrentDatabase } from "./databaseManager";
 
 // The CRUD operations for the ProfilePoint table
 export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
   const id = v4();
   try {
-    const profile = await db.Profiles.get(profilePoint.profileId);
+    const profile = await getCurrentDatabase().Profiles.get(profilePoint.profileId);
     if (!profile) {
       console.error('Profile not found for point creation:', profilePoint.profileId);
       throw new Error("Profile not found");
@@ -45,7 +45,7 @@ export const createProfilePoint = async (profilePoint: ProfilePointCreate) => {
       nextPointId: null
     };
     
-    await db.profilePoints.add(newProfilePoint);
+    await getCurrentDatabase().profilePoints.add(newProfilePoint);
     return newProfilePoint;
   } catch (error) {
     console.error('Failed to create profile point:', error);
@@ -59,11 +59,11 @@ export const readProfilePoint = async (id: string | undefined) => {
   if (!id) {
     return undefined;
   }
-  return db.profilePoints.get(id);
+  return getCurrentDatabase().profilePoints.get(id);
 };
 
 export const readAllProfilePoints = async () => {
-  return db.profilePoints.toArray();
+  return getCurrentDatabase().profilePoints.toArray();
 };
 
 // read all profile points that belong to a specific profile
@@ -73,22 +73,22 @@ export const readProfilePointsByProfile = async (
   if (!profileId) {
     return [];
   }
-  return db.profilePoints.where("profileId").equals(profileId).toArray();
+  return getCurrentDatabase().profilePoints.where("profileId").equals(profileId).toArray();
 };
 
 export const updateProfilePoint = async (profilePoint: ProfilePoint) => {
-  return db.profilePoints.put(profilePoint);
+  return getCurrentDatabase().profilePoints.put(profilePoint);
 };
 
 export const deleteProfilePoint = async (id: string) => {
-  const point = await db.profilePoints.get(id);
+  const point = await getCurrentDatabase().profilePoints.get(id);
   if (!point) return;
 
   // Update the previous point's nextPointId
   if (point.previousPointId) {
-    const prevPoint = await db.profilePoints.get(point.previousPointId);
+    const prevPoint = await getCurrentDatabase().profilePoints.get(point.previousPointId);
     if (prevPoint) {
-      await db.profilePoints.update(prevPoint.id, {
+      await getCurrentDatabase().profilePoints.update(prevPoint.id, {
         nextPointId: point.nextPointId,
       });
     }
@@ -96,22 +96,22 @@ export const deleteProfilePoint = async (id: string) => {
 
   // Update the next point's previousPointId
   if (point.nextPointId) {
-    const nextPoint = await db.profilePoints.get(point.nextPointId);
+    const nextPoint = await getCurrentDatabase().profilePoints.get(point.nextPointId);
     if (nextPoint) {
-      await db.profilePoints.update(nextPoint.id, {
+      await getCurrentDatabase().profilePoints.update(nextPoint.id, {
         previousPointId: point.previousPointId,
       });
     }
   }
 
-  return db.profilePoints.delete(id);
+  return getCurrentDatabase().profilePoints.delete(id);
 };
 
 // The CRUD operations for the Profile table
 export const createProfile = async (profile: ProfileCreate) => {
   const id = v4();
   const newProfile = { ...profile, id };
-  await db.Profiles.add(newProfile);
+  await getCurrentDatabase().Profiles.add(newProfile);
   return newProfile;
 };
 
@@ -119,15 +119,15 @@ export const readProfile = async (id: string | undefined) => {
   if (!id) {
     return undefined;
   }
-  return db.Profiles.get(id);
+  return getCurrentDatabase().Profiles.get(id);
 };
 
 export const readAllProfiles = async () => {
-  return db.Profiles.toArray();
+  return getCurrentDatabase().Profiles.toArray();
 };
 
 export const updateProfile = async (profile: Profile) => {
-  return db.Profiles.put(profile);
+  return getCurrentDatabase().Profiles.put(profile);
 };
 
 export const deleteProfile = async (id: string) => {
@@ -136,27 +136,27 @@ export const deleteProfile = async (id: string) => {
   profilePoints.forEach((profilePoint) => {
     deleteProfilePoint(profilePoint.id);
   });
-  return db.Profiles.delete(id);
+  return getCurrentDatabase().Profiles.delete(id);
 };
 
 // The CRUD operations for the Dataset table
 export const createDataset = async (dataset: DatasetCreate) => {
   const id = v4();
   const newDataset = { ...dataset, id };
-  await db.Datasets.add(newDataset);
+  await getCurrentDatabase().Datasets.add(newDataset);
   return newDataset;
 };
 
 export const readDataset = async (id: string) => {
-  return db.Datasets.get(id);
+  return getCurrentDatabase().Datasets.get(id);
 };
 
 export const readAllDatasets = async () => {
-  return db.Datasets.toArray();
+  return getCurrentDatabase().Datasets.toArray();
 };
 
 export const updateDataset = async (dataset: Dataset) => {
-  return db.Datasets.put(dataset);
+  return getCurrentDatabase().Datasets.put(dataset);
 };
 
 export const deleteDataset = async (id: string) => {
@@ -170,17 +170,17 @@ export const deleteDataset = async (id: string) => {
   texts.forEach((text) => {
     deleteText(text.id);
   });
-  return db.Datasets.delete(id);
+  return getCurrentDatabase().Datasets.delete(id);
 };
 
 // Read datasets by mode
 export const readDatasetsByMode = async (mode: TaskMode): Promise<Dataset[]> => {
-  return db.Datasets.where("mode").equals(mode).toArray();
+  return getCurrentDatabase().Datasets.where("mode").equals(mode).toArray();
 };
 
 // Read profiles by mode
 export const readProfilesByMode = async (mode: TaskMode): Promise<Profile[]> => {
-  return db.Profiles.where("mode").equals(mode).toArray();
+  return getCurrentDatabase().Profiles.where("mode").equals(mode).toArray();
 };
 
 // The CRUD operations for the AnnotatedText table
@@ -189,16 +189,16 @@ export const createAnnotatedText = async (
 ) => {
   const id = v4();
   const newAnnotatedText = { ...annotatedText, id };
-  await db.AnnotatedTexts.add(newAnnotatedText);
+  await getCurrentDatabase().AnnotatedTexts.add(newAnnotatedText);
   return newAnnotatedText;
 };
 
 export const readAnnotatedText = async (id: string) => {
-  return db.AnnotatedTexts.get(id);
+  return getCurrentDatabase().AnnotatedTexts.get(id);
 };
 
 export const readAllAnnotatedTexts = async () => {
-  return db.AnnotatedTexts.toArray();
+  return getCurrentDatabase().AnnotatedTexts.toArray();
 };
 
 // read all annotated texts that belong to a specific annotated dataset
@@ -208,16 +208,16 @@ export const readAnnotatedTextsByAnnotatedDataset = async (
   if (!annotatedDatasetId) {
     return [];
   }
-  return db.AnnotatedTexts.where({ annotatedDatasetId }).toArray();
+  return getCurrentDatabase().AnnotatedTexts.where({ annotatedDatasetId }).toArray();
 };
 
 // read all annotated texts that belong to a specific text
 export const readAnnotatedTextsByText = async (textId: string) => {
-  return db.AnnotatedTexts.where({ textId }).toArray();
+  return getCurrentDatabase().AnnotatedTexts.where({ textId }).toArray();
 };
 
 export const updateAnnotatedText = async (annotatedText: AnnotatedText) => {
-  return db.AnnotatedTexts.put(annotatedText);
+  return getCurrentDatabase().AnnotatedTexts.put(annotatedText);
 };
 
 export const deleteAnnotatedText = async (id: string) => {
@@ -226,7 +226,7 @@ export const deleteAnnotatedText = async (id: string) => {
   dataPoints.forEach((dataPoint) => {
     deleteDataPoint(dataPoint.id);
   });
-  return db.AnnotatedTexts.delete(id);
+  return getCurrentDatabase().AnnotatedTexts.delete(id);
 };
 
 // The CRUD operations for the AnnotatedDataset table
@@ -235,32 +235,32 @@ export const createAnnotatedDataset = async (
 ) => {
   const id = v4();
   const newAnnotatedDataset = { ...annotatedDataset, id };
-  await db.AnnotatedDatasets.add(newAnnotatedDataset);
+  await getCurrentDatabase().AnnotatedDatasets.add(newAnnotatedDataset);
   return newAnnotatedDataset;
 };
 
 export const readAnnotatedDataset = async (id: string) => {
-  return db.AnnotatedDatasets.get(id);
+  return getCurrentDatabase().AnnotatedDatasets.get(id);
 };
 
 export const readAllAnnotatedDatasets = async () => {
-  return db.AnnotatedDatasets.toArray();
+  return getCurrentDatabase().AnnotatedDatasets.toArray();
 };
 
 // read all annotated datasets that belong to a specific dataset
 export const readAnnotatedDatasetsByDataset = async (datasetId: string) => {
-  return db.AnnotatedDatasets.where({ datasetId }).toArray();
+  return getCurrentDatabase().AnnotatedDatasets.where({ datasetId }).toArray();
 };
 
 // Read annotated datasets by mode
 export const readAnnotatedDatasetsByMode = async (mode: "text_segmentation" | "datapoint_extraction") => {
-  return db.AnnotatedDatasets.where("mode").equals(mode).toArray();
+  return getCurrentDatabase().AnnotatedDatasets.where("mode").equals(mode).toArray();
 };
 
 export const updateAnnotatedDataset = async (
   annotatedDataset: AnnotatedDataset
 ) => {
-  return db.AnnotatedDatasets.put(annotatedDataset);
+  return getCurrentDatabase().AnnotatedDatasets.put(annotatedDataset);
 };
 
 export const deleteAnnotatedDataset = async (id: string) => {
@@ -269,28 +269,28 @@ export const deleteAnnotatedDataset = async (id: string) => {
   annotatedTexts.forEach((annotatedText) => {
     deleteAnnotatedText(annotatedText.id);
   });
-  return db.AnnotatedDatasets.delete(id);
+  return getCurrentDatabase().AnnotatedDatasets.delete(id);
 };
 
 // The CRUD operations for the Texts table
 export const createText = async (text: TextCreate) => {
   const id = v4();
   const newText = { ...text, id };
-  await db.Texts.add(newText);
+  await getCurrentDatabase().Texts.add(newText);
   return newText;
 };
 
 export const readText = async (id: string) => {
-  return db.Texts.get(id);
+  return getCurrentDatabase().Texts.get(id);
 };
 
 export const readAllTexts = async () => {
-  return db.Texts.toArray();
+  return getCurrentDatabase().Texts.toArray();
 };
 
 // read texts by id
 export const readTextsByIds = async (ids: string[]) => {
-  return db.Texts.where("id").anyOf(ids).toArray();
+  return getCurrentDatabase().Texts.where("id").anyOf(ids).toArray();
 };
 
 // read all texts that belong to a specific dataset
@@ -298,11 +298,11 @@ export const readTextsByDataset = async (datasetId: string | undefined) => {
   if (!datasetId) {
     return [];
   }
-  return db.Texts.where({ datasetId }).toArray();
+  return getCurrentDatabase().Texts.where({ datasetId }).toArray();
 };
 
 export const updateText = async (text: Text) => {
-  return db.Texts.put(text);
+  return getCurrentDatabase().Texts.put(text);
 };
 
 export const deleteText = async (id: string) => {
@@ -311,14 +311,14 @@ export const deleteText = async (id: string) => {
   await Promise.all(annotatedTexts.map((annotatedText) => 
     deleteAnnotatedText(annotatedText.id)
   ));
-  return db.Texts.delete(id);
+  return getCurrentDatabase().Texts.delete(id);
 };
 
 // The CRUD operations for the DataPoint table
 export const createDataPoint = async (dataPoint: DataPointCreate) => {
   const id = v4();
   const newDataPoint = { ...dataPoint, id };
-  await db.DataPoints.add(newDataPoint);
+  await getCurrentDatabase().DataPoints.add(newDataPoint);
   return newDataPoint;
 };
 
@@ -326,11 +326,11 @@ export const readDataPoint = async (id: string | undefined) => {
   if (!id) {
     return undefined;
   }
-  return db.DataPoints.get(id);
+  return getCurrentDatabase().DataPoints.get(id);
 };
 
 export const readAllDataPoints = async () => {
-  return db.DataPoints.toArray();
+  return getCurrentDatabase().DataPoints.toArray();
 };
 
 // read all data points that belong to a specific annotated text
@@ -340,86 +340,86 @@ export const readDataPointsByAnnotatedText = async (
   if (!annotatedTextId) {
     return [];
   }
-  return db.DataPoints.where({ annotatedTextId }).toArray();
+  return getCurrentDatabase().DataPoints.where({ annotatedTextId }).toArray();
 };
 
 export const updateDataPoint = async (dataPoint: DataPoint) => {
-  return db.DataPoints.put(dataPoint);
+  return getCurrentDatabase().DataPoints.put(dataPoint);
 };
 
 export const deleteDataPoint = async (id: string) => {
-  return db.DataPoints.delete(id);
+  return getCurrentDatabase().DataPoints.delete(id);
 };
 
 // crud operations for api key table
 
 export const createApiKey = async (key: string) => {
   const id = v4();
-  return db.ApiKeys.add({ id, key });
+  return getCurrentDatabase().ApiKeys.add({ id, key });
 };
 
 export const readApiKey = async (id: string) => {
-  return db.ApiKeys.get(id);
+  return getCurrentDatabase().ApiKeys.get(id);
 };
 
 export const readAllApiKeys = async () => {
-  return db.ApiKeys.toArray();
+  return getCurrentDatabase().ApiKeys.toArray();
 };
 
 export const updateApiKey = async (id: string, key: string) => {
-  return db.ApiKeys.put({ id, key });
+  return getCurrentDatabase().ApiKeys.put({ id, key });
 };
 
 export const deleteApiKey = async (id: string) => {
-  return db.ApiKeys.delete(id);
+  return getCurrentDatabase().ApiKeys.delete(id);
 };
 
 export const createModel = async (name: string) => {
   const id = v4();
-  return await db.models.add({ id, name });
+  return await getCurrentDatabase().models.add({ id, name });
 };
 
 export const readAllModels = async () => {
-  return await db.models.toArray();
+  return await getCurrentDatabase().models.toArray();
 };
 
 export const deleteModel = async (id: string) => {
-  return await db.models.delete(id);
+  return await getCurrentDatabase().models.delete(id);
 };
 
 export const createLLMProvider = async (provider: string) => {
   const id = v4();
-  return await db.llmProviders.add({ id, provider });
+  return await getCurrentDatabase().llmProviders.add({ id, provider });
 };
 
 export const readAllLLMProviders = async () => {
-  return await db.llmProviders.toArray();
+  return await getCurrentDatabase().llmProviders.toArray();
 };
 
 export const deleteLLMProvider = async (id: string) => {
-  return await db.llmProviders.delete(id);
+  return await getCurrentDatabase().llmProviders.delete(id);
 };
 
 // LLM URL CRUD operations
 export const createLLMUrl = async (url: string) => {
   const id = v4();
-  return await db.llmUrls.add({ id, url });
+  return await getCurrentDatabase().llmUrls.add({ id, url });
 };
 
 export const readLLMUrl = async (id: string) => {
-  return await db.llmUrls.get(id);
+  return await getCurrentDatabase().llmUrls.get(id);
 };
 
 export const readAllLLMUrls = async () => {
-  return await db.llmUrls.toArray();
+  return await getCurrentDatabase().llmUrls.toArray();
 };
 
 export const updateLLMUrl = async (id: string, url: string) => {
-  return await db.llmUrls.put({ id, url });
+  return await getCurrentDatabase().llmUrls.put({ id, url });
 };
 
 export const deleteLLMUrl = async (id: string) => {
-  return await db.llmUrls.delete(id);
+  return await getCurrentDatabase().llmUrls.delete(id);
 };
 
 export interface BatchSize {
@@ -430,44 +430,44 @@ export interface BatchSize {
 // CRUD operations
 export const createBatchSize = async (value: number) => {
   const id = v4();
-  return await db.batchSizes.add({ id, value });
+  return await getCurrentDatabase().batchSizes.add({ id, value });
 };
 
 export const readAllBatchSizes = async () => {
-  return await db.batchSizes.toArray();
+  return await getCurrentDatabase().batchSizes.toArray();
 };
 
 export const deleteAllBatchSizes = async (id: string) => {
-  return await db.batchSizes.delete(id);
+  return await getCurrentDatabase().batchSizes.delete(id);
 };
 
 // Max Tokens CRUD operations
 export const createMaxTokens = async (value: number | undefined) => {
   const id = v4();
-  return await db.maxTokens.add({ id, value });
+  return await getCurrentDatabase().maxTokens.add({ id, value });
 };
 
 export const readMaxTokens = async (id: string) => {
-  return db.maxTokens.get(id);
+  return getCurrentDatabase().maxTokens.get(id);
 };
 
 export const readAllMaxTokens = async () => {
-  return db.maxTokens.toArray();
+  return getCurrentDatabase().maxTokens.toArray();
 };
 
 export const updateMaxTokens = async (id: string, value: number | undefined) => {
-  return await db.maxTokens.put({ id, value });
+  return await getCurrentDatabase().maxTokens.put({ id, value });
 };
 
 export const deleteMaxTokens = async (id: string) => {
-  return await db.maxTokens.delete(id);
+  return await getCurrentDatabase().maxTokens.delete(id);
 };
 
 // The CRUD operations for the SegmentationProfilePoint table
 export const createSegmentationProfilePoint = async (profilePoint: SegmentationProfilePointCreate) => {
   const id = v4();
   try {
-    const profile = await db.Profiles.get(profilePoint.profileId);
+    const profile = await getCurrentDatabase().Profiles.get(profilePoint.profileId);
     if (!profile) {
       throw new Error("Profile not found");
     }
@@ -483,7 +483,7 @@ export const createSegmentationProfilePoint = async (profilePoint: SegmentationP
       nextPointId: null
     };
     
-    await db.segmentationProfilePoints.add(newProfilePoint);
+    await getCurrentDatabase().segmentationProfilePoints.add(newProfilePoint);
     return newProfilePoint;
   } catch (error) {
     throw new Error(
@@ -496,11 +496,11 @@ export const readSegmentationProfilePoint = async (id: string | undefined) => {
   if (!id) {
     return undefined;
   }
-  return db.segmentationProfilePoints.get(id);
+  return getCurrentDatabase().segmentationProfilePoints.get(id);
 };
 
 export const readAllSegmentationProfilePoints = async () => {
-  return db.segmentationProfilePoints.toArray();
+  return getCurrentDatabase().segmentationProfilePoints.toArray();
 };
 
 // read all segmentation profile points that belong to a specific profile
@@ -510,22 +510,22 @@ export const readSegmentationProfilePointsByProfile = async (
   if (!profileId) {
     return [];
   }
-  return db.segmentationProfilePoints.where("profileId").equals(profileId).toArray();
+  return getCurrentDatabase().segmentationProfilePoints.where("profileId").equals(profileId).toArray();
 };
 
 export const updateSegmentationProfilePoint = async (profilePoint: SegmentationProfilePoint) => {
-  return db.segmentationProfilePoints.put(profilePoint);
+  return getCurrentDatabase().segmentationProfilePoints.put(profilePoint);
 };
 
 export const deleteSegmentationProfilePoint = async (id: string) => {
-  const point = await db.segmentationProfilePoints.get(id);
+  const point = await getCurrentDatabase().segmentationProfilePoints.get(id);
   if (!point) return;
 
   // Update the previous point's nextPointId
   if (point.previousPointId) {
-    const prevPoint = await db.segmentationProfilePoints.get(point.previousPointId);
+    const prevPoint = await getCurrentDatabase().segmentationProfilePoints.get(point.previousPointId);
     if (prevPoint) {
-      await db.segmentationProfilePoints.update(prevPoint.id, {
+      await getCurrentDatabase().segmentationProfilePoints.update(prevPoint.id, {
         nextPointId: point.nextPointId,
       });
     }
@@ -533,22 +533,22 @@ export const deleteSegmentationProfilePoint = async (id: string) => {
 
   // Update the next point's previousPointId
   if (point.nextPointId) {
-    const nextPoint = await db.segmentationProfilePoints.get(point.nextPointId);
+    const nextPoint = await getCurrentDatabase().segmentationProfilePoints.get(point.nextPointId);
     if (nextPoint) {
-      await db.segmentationProfilePoints.update(nextPoint.id, {
+      await getCurrentDatabase().segmentationProfilePoints.update(nextPoint.id, {
         previousPointId: point.previousPointId,
       });
     }
   }
 
-  return db.segmentationProfilePoints.delete(id);
+  return getCurrentDatabase().segmentationProfilePoints.delete(id);
 };
 
 // The CRUD operations for the SegmentDataPoint table
 export const createSegmentDataPoint = async (segmentDataPoint: SegmentDataPointCreate) => {
   const id = v4();
   const newSegmentDataPoint = { ...segmentDataPoint, id };
-  await db.SegmentDataPoints.add(newSegmentDataPoint);
+  await getCurrentDatabase().SegmentDataPoints.add(newSegmentDataPoint);
   return newSegmentDataPoint;
 };
 
@@ -556,11 +556,11 @@ export const readSegmentDataPoint = async (id: string | undefined) => {
   if (!id) {
     return undefined;
   }
-  return db.SegmentDataPoints.get(id);
+  return getCurrentDatabase().SegmentDataPoints.get(id);
 };
 
 export const readAllSegmentDataPoints = async () => {
-  return db.SegmentDataPoints.toArray();
+  return getCurrentDatabase().SegmentDataPoints.toArray();
 };
 
 // read all segment data points that belong to a specific annotated text
@@ -570,27 +570,27 @@ export const readSegmentDataPointsByAnnotatedText = async (
   if (!annotatedTextId) {
     return [];
   }
-  return db.SegmentDataPoints.where({ annotatedTextId }).toArray();
+  return getCurrentDatabase().SegmentDataPoints.where({ annotatedTextId }).toArray();
 };
 
 export const updateSegmentDataPoint = async (segmentDataPoint: SegmentDataPoint) => {
-  return db.SegmentDataPoints.put(segmentDataPoint);
+  return getCurrentDatabase().SegmentDataPoints.put(segmentDataPoint);
 };
 
 export const deleteSegmentDataPoint = async (id: string) => {
-  return db.SegmentDataPoints.delete(id);
+  return getCurrentDatabase().SegmentDataPoints.delete(id);
 };
 
 // User Settings CRUD operations
 export const getUserSettings = async () => {
-  const settings = await db.userSettings.toArray();
+  const settings = await getCurrentDatabase().userSettings.toArray();
   return settings[0] || null;
 };
 
 export const createUserSettings = async (settings: Partial<UserSettings>) => {
   const id = v4();
   const newSettings = { id, tutorialCompleted: false, ...settings };
-  await db.userSettings.add(newSettings);
+  await getCurrentDatabase().userSettings.add(newSettings);
   return newSettings;
 };
 
@@ -599,6 +599,6 @@ export const updateUserSettings = async (settings: Partial<UserSettings>) => {
   if (!existingSettings) {
     return createUserSettings(settings);
   }
-  await db.userSettings.update(existingSettings.id, settings);
+  await getCurrentDatabase().userSettings.update(existingSettings.id, settings);
   return { ...existingSettings, ...settings };
 };

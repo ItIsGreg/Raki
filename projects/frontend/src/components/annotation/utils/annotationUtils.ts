@@ -18,7 +18,7 @@ import {
   updateDataPoint,
   updateAnnotatedText,
 } from "@/lib/db/crud";
-import { db } from "@/lib/db/db";
+import { getCurrentDatabase } from "@/lib/db/databaseManager";
 
 interface LLMConfig {
   provider: string;
@@ -48,7 +48,7 @@ const updateExistingAndCreateNewDataPoints = async (
       }));
 
   // find existing data points
-  const existingDataPoints = await db.DataPoints.where({
+  const existingDataPoints = await getCurrentDatabase().DataPoints.where({
     annotatedTextId: annotatedTextId,
   }).toArray();
 
@@ -87,7 +87,7 @@ export const reannotateFaultyText = async (
   maxTokens: number | undefined
 ) => {
   try {
-    const text = await db.Texts.get(annotatedFaultyText.textId);
+    const text = await getCurrentDatabase().Texts.get(annotatedFaultyText.textId);
     if (!text) {
       throw new Error("Text not found");
     }
@@ -158,7 +158,7 @@ async function callAnnotationAPI(
   try {
     // Get the profile to access its example
     const profileId = activeProfilePoints[0]?.profileId;
-    const profile = await db.Profiles.get(profileId);
+    const profile = await getCurrentDatabase().Profiles.get(profileId);
     if (!profile) {
       throw new Error("Profile not found");
     }
@@ -261,25 +261,25 @@ const complementMissingDatapoints = (
 export const downloadAnnotatedDataset = async (dataset: AnnotatedDataset) => {
   try {
     // Fetch the corresponding profile
-    const profile = await db.Profiles.get(dataset.profileId);
+    const profile = await getCurrentDatabase().Profiles.get(dataset.profileId);
     if (!profile) throw new Error("Profile not found");
 
     // Fetch profile points for the profile
     const profilePoints = await readProfilePointsByProfile(profile.id);
 
     // Fetch all texts associated with this annotated dataset
-    const annotatedTexts = await db.AnnotatedTexts.where({
+    const annotatedTexts = await getCurrentDatabase().AnnotatedTexts.where({
       annotatedDatasetId: dataset.id,
     }).toArray();
     const textIds = annotatedTexts.map((at) => at.textId);
-    const texts = await db.Texts.bulkGet(textIds);
+    const texts = await getCurrentDatabase().Texts.bulkGet(textIds);
 
     // Fetch the corresponding dataset
-    const originalDataset = await db.Datasets.get(dataset.datasetId);
+    const originalDataset = await getCurrentDatabase().Datasets.get(dataset.datasetId);
     if (!originalDataset) throw new Error("Original dataset not found");
 
     // Fetch all data points for this annotated dataset
-    const dataPoints = await db.DataPoints.where("annotatedTextId")
+    const dataPoints = await getCurrentDatabase().DataPoints.where("annotatedTextId")
       .anyOf(annotatedTexts.map((at) => at.id))
       .toArray();
 
