@@ -12,3 +12,5 @@ export const TASK_MODE = {
 } as const;
 
 export type TaskMode = (typeof TASK_MODE)[keyof typeof TASK_MODE];
+
+export const DATABASE_NAME = "myDatabase";

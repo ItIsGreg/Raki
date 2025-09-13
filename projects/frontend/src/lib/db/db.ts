@@ -1,5 +1,5 @@
 // db.ts
-import { TaskMode } from "@/app/constants";
+import { TaskMode, DATABASE_NAME } from "@/app/constants";
 import Dexie, { Table } from "dexie";
 import { v4 } from "uuid";
 
@@ -172,8 +172,8 @@ export class MySubClassedDexie extends Dexie {
   SegmentDataPoints!: Table<SegmentDataPoint>;
   userSettings!: Table<UserSettings>;
 
-  constructor() {
-    super("myDatabase");
+  constructor(name : string = DATABASE_NAME) {
+    super(name);
     this.version(8).stores({
       // friends: "++id, name, age", // Primary key and indexed props
       profilePoints: "++id, name, profileId",
@@ -325,4 +325,4 @@ export class MySubClassedDexie extends Dexie {
   }
 }
 
-export const db = new MySubClassedDexie();
+export const db : MySubClassedDexie = new MySubClassedDexie();
