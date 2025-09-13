@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useCurrentDatabase } from "./useCurrentDatabase";
+import { useStorage } from "@/contexts/StorageContext";
 import {
   AnnotatedDataset,
   AnnotatedText,
@@ -32,8 +33,9 @@ import {
 export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   configuration: ModeConfiguration<TProfilePoint>
 ) {
-  // Get current database
+  // Get current database and storage context
   const currentDatabase = useCurrentDatabase();
+  const { currentStorage } = useStorage();
   
   // Loading state
   const [isReady, setIsReady] = useState(false);
@@ -54,11 +56,21 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   const [isDatasetListOpen, setIsDatasetListOpen] = useState(false);
   const [autoRerunFaulty, setAutoRerunFaulty] = useState(true);
   const [activeProfile, setActiveProfile] = useState<Profile | undefined>();
+
+  // Clear active profile when storage changes
+  useEffect(() => {
+    setActiveProfile(undefined);
+    setActiveAnnotatedDataset(undefined);
+    setActiveAnnotatedText(undefined);
+    setActiveDataPointId(undefined);
+    setActiveProfilePoints([]);
+  }, [currentStorage?.id]);
   const [activeDataPoint, setActiveDataPoint] = useState<
     TProfilePoint | undefined
   >(undefined);
   const [creatingNewDataPoint, setCreatingNewDataPoint] = useState<boolean>(false);
   const [addingProfile, setAddingProfile] = useState(false);
+  const [pendingActiveProfile, setPendingActiveProfile] = useState<Profile | null>(null);
   const [activeDataset, setActiveDataset] = useState<Dataset | undefined>(undefined);
   const [addingDataset, setAddingDataset] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -80,10 +92,20 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   const userSettings = useLiveQuery(() => getUserSettings(), [currentDatabase]);
 
   // Get profiles from database
-  const profiles = useLiveQuery(() => readProfilesByMode(configuration.mode), [configuration.mode, currentDatabase]);
+  const profiles = useLiveQuery(() => readProfilesByMode(configuration.mode), [
+    configuration.mode, 
+    currentDatabase,
+    // Include version for cloud storage to trigger refresh on changes
+    currentDatabase && 'getVersion' in currentDatabase ? (currentDatabase as any).getVersion() : 0
+  ]);
   
   // Get datasets from database
-  const datasets = useLiveQuery(() => readDatasetsByMode(configuration.mode), [configuration.mode, currentDatabase]);
+  const datasets = useLiveQuery(() => readDatasetsByMode(configuration.mode), [
+    configuration.mode, 
+    currentDatabase,
+    // Include version for cloud storage to trigger refresh on changes
+    currentDatabase && 'getVersion' in currentDatabase ? (currentDatabase as any).getVersion() : 0
+  ]);
   
   // Get all texts for all datasets
   const allTexts = useLiveQuery(() => {
@@ -114,15 +136,37 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
 
   // Synchronize active profile with active annotated dataset
   useEffect(() => {
-    if (activeAnnotatedDataset && profiles) {
+    if (activeAnnotatedDataset && profiles && profiles.length > 0) {
       const associatedProfile = profiles.find(
         (p) => p.id === activeAnnotatedDataset.profileId
       );
       if (associatedProfile) {
         setActiveProfile(associatedProfile);
       }
+    } else if (profiles && profiles.length > 0 && !activeAnnotatedDataset) {
+      // If we have profiles but no active dataset, clear the active profile
+      // This prevents the "all profiles selected" issue when switching storage
+      if (activeProfile && !profiles.find(p => p.id === activeProfile.id)) {
+        setActiveProfile(undefined);
+      }
     }
-  }, [activeAnnotatedDataset, profiles]);
+  }, [activeAnnotatedDataset, profiles, activeProfile]);
+
+  // Handle pending active profile when it appears in the list
+  useEffect(() => {
+    if (pendingActiveProfile && profiles && profiles.length > 0) {
+      console.log('Checking for pending profile:', pendingActiveProfile.id);
+      console.log('Available profile IDs:', profiles.map(p => p.id));
+      const profileInList = profiles.find(p => p.id === pendingActiveProfile.id);
+      if (profileInList) {
+        console.log('Pending profile found in list, setting as active:', profileInList);
+        setActiveProfile(profileInList);
+        setPendingActiveProfile(null);
+      } else {
+        console.log('Pending profile not found in list yet');
+      }
+    }
+  }, [profiles, pendingActiveProfile]);
 
   // Handle tutorial completion
   const handleTutorialComplete = async (completed: boolean) => {
@@ -196,7 +240,11 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   const handleSaveProfile = (profile: Profile) => {
     const profileWithMode = { ...profile, mode: configuration.mode };
     createProfile(profileWithMode).then((newProfile) => {
-      setActiveProfile(newProfile);
+      console.log('Profile created:', newProfile);
+      console.log('Current profiles before setting active:', profiles);
+      
+      // Set as pending active profile - will be activated when it appears in the list
+      setPendingActiveProfile(newProfile);
       setAddingProfile(false);
     });
   };

@@ -9,6 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from app.routers.datapoint_extraction import substrings, values, pipeline, profile_chat
 from app.routers.text_segmentation import pdf_extraction, profile_chat as text_segmentation_profile_chat, segments
 from app.routers.auth import router as auth_router
+from app.routers.user_data import router as user_data_router
 from app.lib.db import init_db, close_db
 
 app = FastAPI()
@@ -79,6 +80,7 @@ app.add_middleware(
 # Include routers
 app.include_router(router)
 app.include_router(auth_router)
+app.include_router(user_data_router)
 
 @app.on_event("startup")
 async def startup_event():

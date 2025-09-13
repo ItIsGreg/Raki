@@ -195,20 +195,22 @@ const DataPointList = <T extends { id: string; profileId: string }>(
             >
               <SortableContext
                 items={dataPoints
+                  .filter(point => point && point.id)
                   .sort(
                     (a, b) => ((a as any).order || 0) - ((b as any).order || 0)
                   )
-                  .map((point) => point.id)}
+                  .map((point, index) => `${point.id}-${index}`)}
                 strategy={verticalListSortingStrategy}
               >
                 {dataPoints
+                  .filter(point => point && point.id)
                   .sort(
                     (a, b) => ((a as any).order || 0) - ((b as any).order || 0)
                   )
-                  .map((dataPoint) => {
+                  .map((dataPoint, index) => {
                     return (
                       <SortableDataPointCard
-                        key={dataPoint.id}
+                        key={`${dataPoint.id}-${index}`}
                         dataPoint={dataPoint}
                         activeDataPoint={activeDataPoint}
                         setActiveDataPoint={setActiveDataPoint}

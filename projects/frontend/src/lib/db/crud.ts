@@ -109,10 +109,26 @@ export const deleteProfilePoint = async (id: string) => {
 
 // The CRUD operations for the Profile table
 export const createProfile = async (profile: ProfileCreate) => {
-  const id = v4();
-  const newProfile = { ...profile, id };
-  await getCurrentDatabase().Profiles.add(newProfile);
-  return newProfile;
+  const database = getCurrentDatabase();
+  if (!database) throw new Error('No database available');
+  
+  // For cloud storage, let the adapter handle ID generation
+  if ('getVersion' in database) {
+    // This is a CloudStorageAdapter
+    const id = await database.Profiles.add(profile);
+    // Fetch the created profile to get the full object with correct ID
+    const createdProfile = await database.Profiles.get(id);
+    if (!createdProfile) {
+      throw new Error('Failed to retrieve created profile');
+    }
+    return createdProfile;
+  } else {
+    // This is a local Dexie database
+    const id = v4();
+    const newProfile = { ...profile, id };
+    await database.Profiles.add(newProfile);
+    return newProfile;
+  }
 };
 
 export const readProfile = async (id: string | undefined) => {
@@ -162,12 +178,12 @@ export const updateDataset = async (dataset: Dataset) => {
 export const deleteDataset = async (id: string) => {
   // delete all annotated datasets that belong to the dataset
   const annotatedDatasets = await readAnnotatedDatasetsByDataset(id);
-  annotatedDatasets.forEach((annotatedDataset) => {
+  annotatedDatasets.forEach((annotatedDataset: AnnotatedDataset) => {
     deleteAnnotatedDataset(annotatedDataset.id);
   });
   // delete all texts that belong to the dataset
   const texts = await readTextsByDataset(id);
-  texts.forEach((text) => {
+  texts.forEach((text: Text) => {
     deleteText(text.id);
   });
   return getCurrentDatabase().Datasets.delete(id);
@@ -175,12 +191,20 @@ export const deleteDataset = async (id: string) => {
 
 // Read datasets by mode
 export const readDatasetsByMode = async (mode: TaskMode): Promise<Dataset[]> => {
-  return getCurrentDatabase().Datasets.where("mode").equals(mode).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.Datasets.where("mode").equals(mode);
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 // Read profiles by mode
 export const readProfilesByMode = async (mode: TaskMode): Promise<Profile[]> => {
-  return getCurrentDatabase().Profiles.where("mode").equals(mode).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.Profiles.where("mode").equals(mode);
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 // The CRUD operations for the AnnotatedText table
@@ -208,12 +232,20 @@ export const readAnnotatedTextsByAnnotatedDataset = async (
   if (!annotatedDatasetId) {
     return [];
   }
-  return getCurrentDatabase().AnnotatedTexts.where({ annotatedDatasetId }).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.AnnotatedTexts.where({ annotatedDatasetId });
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 // read all annotated texts that belong to a specific text
 export const readAnnotatedTextsByText = async (textId: string) => {
-  return getCurrentDatabase().AnnotatedTexts.where({ textId }).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.AnnotatedTexts.where({ textId });
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 export const updateAnnotatedText = async (annotatedText: AnnotatedText) => {
@@ -223,7 +255,7 @@ export const updateAnnotatedText = async (annotatedText: AnnotatedText) => {
 export const deleteAnnotatedText = async (id: string) => {
   // delete all data points that belong to the annotated text
   const dataPoints = await readDataPointsByAnnotatedText(id);
-  dataPoints.forEach((dataPoint) => {
+  dataPoints.forEach((dataPoint: DataPoint) => {
     deleteDataPoint(dataPoint.id);
   });
   return getCurrentDatabase().AnnotatedTexts.delete(id);
@@ -249,12 +281,20 @@ export const readAllAnnotatedDatasets = async () => {
 
 // read all annotated datasets that belong to a specific dataset
 export const readAnnotatedDatasetsByDataset = async (datasetId: string) => {
-  return getCurrentDatabase().AnnotatedDatasets.where({ datasetId }).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.AnnotatedDatasets.where({ datasetId });
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 // Read annotated datasets by mode
 export const readAnnotatedDatasetsByMode = async (mode: "text_segmentation" | "datapoint_extraction") => {
-  return getCurrentDatabase().AnnotatedDatasets.where("mode").equals(mode).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.AnnotatedDatasets.where("mode").equals(mode);
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 export const updateAnnotatedDataset = async (
@@ -266,7 +306,7 @@ export const updateAnnotatedDataset = async (
 export const deleteAnnotatedDataset = async (id: string) => {
   // delete all annotated texts that belong to the annotated dataset
   const annotatedTexts = await readAnnotatedTextsByAnnotatedDataset(id);
-  annotatedTexts.forEach((annotatedText) => {
+  annotatedTexts.forEach((annotatedText: AnnotatedText) => {
     deleteAnnotatedText(annotatedText.id);
   });
   return getCurrentDatabase().AnnotatedDatasets.delete(id);
@@ -290,7 +330,11 @@ export const readAllTexts = async () => {
 
 // read texts by id
 export const readTextsByIds = async (ids: string[]) => {
-  return getCurrentDatabase().Texts.where("id").anyOf(ids).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.Texts.where("id").anyOf(ids);
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 // read all texts that belong to a specific dataset
@@ -298,7 +342,11 @@ export const readTextsByDataset = async (datasetId: string | undefined) => {
   if (!datasetId) {
     return [];
   }
-  return getCurrentDatabase().Texts.where({ datasetId }).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.Texts.where({ datasetId });
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 export const updateText = async (text: Text) => {
@@ -308,7 +356,7 @@ export const updateText = async (text: Text) => {
 export const deleteText = async (id: string) => {
   // delete all annotated texts that belong to the text
   const annotatedTexts = await readAnnotatedTextsByText(id);
-  await Promise.all(annotatedTexts.map((annotatedText) => 
+  await Promise.all(annotatedTexts.map((annotatedText: AnnotatedText) => 
     deleteAnnotatedText(annotatedText.id)
   ));
   return getCurrentDatabase().Texts.delete(id);
@@ -340,7 +388,11 @@ export const readDataPointsByAnnotatedText = async (
   if (!annotatedTextId) {
     return [];
   }
-  return getCurrentDatabase().DataPoints.where({ annotatedTextId }).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.DataPoints.where({ annotatedTextId });
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 export const updateDataPoint = async (dataPoint: DataPoint) => {
@@ -570,7 +622,11 @@ export const readSegmentDataPointsByAnnotatedText = async (
   if (!annotatedTextId) {
     return [];
   }
-  return getCurrentDatabase().SegmentDataPoints.where({ annotatedTextId }).toArray();
+  const database = getCurrentDatabase();
+  if (!database) return [];
+  const whereClause = database.SegmentDataPoints.where({ annotatedTextId });
+  if (!whereClause) return [];
+  return whereClause.toArray();
 };
 
 export const updateSegmentDataPoint = async (segmentDataPoint: SegmentDataPoint) => {

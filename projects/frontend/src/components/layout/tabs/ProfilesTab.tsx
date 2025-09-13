@@ -35,6 +35,10 @@ export function ProfilesTab<TProfilePoint extends BaseProfilePoint>({
   profiles,
   fileInputRef,
 }: ProfilesTabProps<TProfilePoint>) {
+  console.log('ProfilesTab - activeProfile:', state.activeProfile);
+  console.log('ProfilesTab - profiles:', profiles);
+  console.log('ProfilesTab - profile exists in list:', state.activeProfile?.id && profiles?.find(p => p.id === state.activeProfile?.id));
+  
   return (
     <TabsContent
       value="profiles"
@@ -44,7 +48,8 @@ export function ProfilesTab<TProfilePoint extends BaseProfilePoint>({
         <div className="flex flex-col gap-4 p-4">
           <div className="flex gap-4 items-center">
             <Select
-              value={state.activeProfile?.id}
+              key={`profile-select-${profiles?.length || 0}-${profiles?.map(p => p.id).join(',') || ''}`}
+              value={state.activeProfile?.id && profiles?.find(p => p.id === state.activeProfile?.id) ? state.activeProfile.id : ""}
               onValueChange={(value) => {
                 const profile = profiles?.find((p) => p.id === value);
                 handlers.setActiveProfile(profile);
@@ -58,9 +63,9 @@ export function ProfilesTab<TProfilePoint extends BaseProfilePoint>({
                 <SelectValue placeholder="Select a profile" />
               </SelectTrigger>
               <SelectContent data-cy="profile-select-content">
-                {profiles?.map((profile) => (
+                {profiles?.filter(profile => profile && profile.id && profile.name).map((profile, index) => (
                   <SelectItem
-                    key={profile.id}
+                    key={`${profile.id}-${index}`}
                     value={profile.id}
                     data-cy={`profile-option-${profile.id}`}
                   >

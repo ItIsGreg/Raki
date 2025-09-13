@@ -2,6 +2,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from app.config.environment import get_settings
 from app.models.user import User, UserSession
+from app.models.user_data_models import (
+    UserStorage, Profile, Dataset
+)
 import asyncio
 
 settings = get_settings()
@@ -24,7 +27,9 @@ async def init_db():
     # Initialize Beanie with document models
     await init_beanie(
         database=database,
-        document_models=[User, UserSession]
+        document_models=[
+            User, UserSession, UserStorage, Profile, Dataset
+        ]
     )
     
     print("✅ MongoDB connection initialized")
