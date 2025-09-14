@@ -4,7 +4,7 @@ This provides a clean way to expose 'id' instead of '_id' in API responses
 """
 
 from beanie import Document
-from pydantic import BaseModel, Field, ConfigDict, field_serializer
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from bson import ObjectId
 
@@ -15,25 +15,14 @@ class MongoDocument(Document):
     instead of the MongoDB-specific '_id' field
     """
     
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    # Define id field that maps to MongoDB's _id
+    id: ObjectId = Field(default_factory=ObjectId, alias="_id", serialization_alias="id")
     
-    def model_dump(self, **kwargs):
-        """Override model_dump to convert _id to id"""
-        data = super().model_dump(**kwargs)
-        # Convert _id to id for API responses
-        if '_id' in data:
-            data['id'] = str(data.pop('_id'))
-            print(f"DEBUG: model_dump called, converted _id to id: {data.get('id')}")
-        return data
-    
-    def dict(self, **kwargs):
-        """Override dict to convert _id to id"""
-        data = super().dict(**kwargs)
-        # Convert _id to id for API responses
-        if '_id' in data:
-            data['id'] = str(data.pop('_id'))
-            print(f"DEBUG: dict called, converted _id to id: {data.get('id')}")
-        return data
+    class Config:
+        # Makes FastAPI/Pydantic output "id" instead of "_id"
+        allow_population_by_field_name = True
+        json_encoders = {ObjectId: str}
+        arbitrary_types_allowed = True
     
     class Settings:
         use_revision = False

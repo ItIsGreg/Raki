@@ -101,32 +101,6 @@ class ProfileUpdate(BaseModel):
     mode: Optional[str] = None
     example: Optional[Dict[str, Any]] = None
 
-class ProfileResponse(MongoBaseModel):
-    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
-    
-    id: str
-    userId: str
-    storageId: str
-    createdAt: datetime
-    updatedAt: Optional[datetime] = None
-    name: str
-    description: str
-    mode: str
-    example: Optional[Dict[str, Any]] = None
-    
-    @classmethod
-    def from_document(cls, doc: Profile):
-        return cls(
-            id=str(doc.id),
-            userId=str(doc.userId),
-            storageId=str(doc.storageId),
-            createdAt=doc.createdAt,
-            updatedAt=doc.updatedAt,
-            name=doc.name,
-            description=doc.description,
-            mode=doc.mode,
-            example=doc.example
-        )
 
 # Dataset Models
 class Dataset(BaseDataModel):
@@ -388,44 +362,6 @@ class ProfilePointUpdate(BaseModel):
     previousPointId: Optional[str] = None
     nextPointId: Optional[str] = None
 
-class ProfilePointResponse(MongoBaseModel):
-    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
-    
-    id: str
-    userId: str
-    storageId: str
-    createdAt: datetime
-    updatedAt: Optional[datetime] = None
-    name: str
-    explanation: str
-    synonyms: List[str]
-    datatype: str
-    valueset: Optional[List[str]] = None
-    unit: Optional[str] = None
-    profileId: str
-    order: Optional[int] = None
-    previousPointId: Optional[str] = None
-    nextPointId: Optional[str] = None
-    
-    @classmethod
-    def from_document(cls, doc: ProfilePoint):
-        return cls(
-            id=str(doc.id),
-            userId=str(doc.userId),
-            storageId=str(doc.storageId),
-            createdAt=doc.createdAt,
-            updatedAt=doc.updatedAt,
-            name=doc.name,
-            explanation=doc.explanation,
-            synonyms=doc.synonyms,
-            datatype=doc.datatype,
-            valueset=doc.valueset,
-            unit=doc.unit,
-            profileId=str(doc.profileId),
-            order=doc.order,
-            previousPointId=str(doc.previousPointId) if doc.previousPointId else None,
-            nextPointId=str(doc.nextPointId) if doc.nextPointId else None
-        )
 
 # Segmentation Profile Point Models
 class SegmentationProfilePoint(BaseDataModel):

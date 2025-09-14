@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from bson import ObjectId
 from app.models.user_data_models import UserStorageCreate, UserStorageUpdate, UserStorageResponse, StorageDataExport, MigrateLocalToCloudRequest
-from app.models.user_data_models import Profile, ProfileCreate, ProfileUpdate, ProfileResponse, Dataset, DatasetCreate, DatasetUpdate
+from app.models.user_data_models import Profile, ProfileCreate, ProfileUpdate, Dataset, DatasetCreate, DatasetUpdate
 from app.models.user_data_models import DataPoint, DataPointCreate, DataPointUpdate, SegmentDataPoint, SegmentDataPointCreate, SegmentDataPointUpdate
-from app.models.user_data_models import ProfilePoint, ProfilePointCreate, ProfilePointUpdate, ProfilePointResponse, SegmentationProfilePoint, SegmentationProfilePointCreate, SegmentationProfilePointUpdate
+from app.models.user_data_models import ProfilePoint, ProfilePointCreate, ProfilePointUpdate, SegmentationProfilePoint, SegmentationProfilePointCreate, SegmentationProfilePointUpdate
 from app.models.user_data_models import Text, TextCreate, TextUpdate, AnnotatedText, AnnotatedTextCreate, AnnotatedTextUpdate, AnnotatedDataset, AnnotatedDatasetCreate, AnnotatedDatasetUpdate
 from app.models.user_data_models import ApiKey, ApiKeyCreate, ApiKeyUpdate, Model, ModelCreate, ModelUpdate, LLMProvider, LLMProviderCreate, LLMProviderUpdate
 from app.models.user_data_models import LLMUrl, LLMUrlCreate, LLMUrlUpdate, BatchSize, BatchSizeCreate, BatchSizeUpdate, MaxTokens, MaxTokensCreate, MaxTokensUpdate
@@ -189,7 +189,7 @@ async def export_cloud_data(
         )
 
 # Individual Profile CRUD operations
-@router.post("/{storage_id}/profiles", response_model=ProfileResponse)
+@router.post("/{storage_id}/profiles", response_model=Profile)
 async def create_profile(
     storage_id: str,
     profile_data: ProfileCreate,
@@ -199,7 +199,7 @@ async def create_profile(
     """Create a new profile in the specified cloud storage."""
     try:
         profile = await user_data_service.create_profile(ObjectId(storage_id), current_user.id, profile_data.model_dump())
-        return ProfileResponse.from_document(profile)
+        return profile
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -211,7 +211,7 @@ async def create_profile(
             detail=f"Failed to create profile: {str(e)}"
         )
 
-@router.get("/{storage_id}/profiles", response_model=List[ProfileResponse])
+@router.get("/{storage_id}/profiles", response_model=List[Profile])
 async def get_profiles(
     storage_id: str,
     current_user: User = Depends(get_current_user),
@@ -220,7 +220,7 @@ async def get_profiles(
     """Get all profiles from the specified cloud storage."""
     try:
         profiles = await user_data_service.get_profiles(ObjectId(storage_id), current_user.id)
-        return [ProfileResponse.from_document(profile) for profile in profiles]
+        return profiles
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -589,7 +589,7 @@ async def delete_segment_data_point(
         )
 
 # Individual ProfilePoint CRUD operations
-@router.post("/{storage_id}/profile-points", response_model=ProfilePointResponse)
+@router.post("/{storage_id}/profile-points", response_model=ProfilePoint)
 async def create_profile_point(
     storage_id: str,
     profile_point_data: ProfilePointCreate,
@@ -611,7 +611,7 @@ async def create_profile_point(
             detail=f"Failed to create profile point: {str(e)}"
         )
 
-@router.get("/{storage_id}/profile-points", response_model=List[ProfilePointResponse])
+@router.get("/{storage_id}/profile-points", response_model=List[ProfilePoint])
 async def get_profile_points(
     storage_id: str,
     current_user: User = Depends(get_current_user),
@@ -620,7 +620,7 @@ async def get_profile_points(
     """Get all profile points from the specified cloud storage."""
     try:
         profile_points = await user_data_service.get_profile_points(ObjectId(storage_id), current_user.id)
-        return [ProfilePointResponse.from_document(profile_point) for profile_point in profile_points]
+        return profile_points
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
