@@ -599,7 +599,7 @@ async def create_profile_point(
     """Create a new profile point in the specified cloud storage."""
     try:
         profile_point = await user_data_service.create_profile_point(ObjectId(storage_id), current_user.id, profile_point_data.model_dump())
-        return ProfilePointResponse.from_document(profile_point)
+        return profile_point
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
