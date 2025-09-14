@@ -21,10 +21,10 @@ export interface CloudStorage {
 
 export interface CloudStorageResponse {
   id: string;
-  user_id: string;
-  storage_name: string;
-  created_at: string;
-  updated_at?: string;
+  userId: string;
+  storageName: string;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface StorageDataExport {
@@ -99,7 +99,7 @@ class CloudStorageManager {
   async createStorage(name: string): Promise<CloudStorageResponse> {
     return this.makeRequest<CloudStorageResponse>('/', {
       method: 'POST',
-      body: JSON.stringify({ storage_name: name }),
+      body: JSON.stringify({ storageName: name }),
     });
   }
 
@@ -114,7 +114,7 @@ class CloudStorageManager {
   async updateStorage(storageId: string, name: string): Promise<CloudStorageResponse> {
     return this.makeRequest<CloudStorageResponse>(`/${storageId}`, {
       method: 'PUT',
-      body: JSON.stringify({ storage_name: name }),
+      body: JSON.stringify({ storageName: name }),
     });
   }
 
@@ -129,7 +129,7 @@ class CloudStorageManager {
     return this.makeRequest<CloudStorageResponse>('/migrate-local', {
       method: 'POST',
       body: JSON.stringify({
-        storage_name: storageName,
+        storageName: storageName,
         ...localData,
       }),
     });

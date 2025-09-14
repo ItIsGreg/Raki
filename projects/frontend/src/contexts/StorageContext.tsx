@@ -125,7 +125,7 @@ export const StorageProvider: React.FC<StorageProviderProps> = ({ children }) =>
       const cloudStorages = await cloudStorageManager.getStorages();
       const cloudStorageList: Storage[] = cloudStorages.map(cloudStorage => ({
         id: `cloud_${cloudStorage.id}`,
-        name: cloudStorage.storage_name,
+        name: cloudStorage.storageName,
         type: 'cloud' as const,
         storageId: cloudStorage.id
       }));
@@ -171,7 +171,7 @@ export const StorageProvider: React.FC<StorageProviderProps> = ({ children }) =>
         const cloudStorage = await cloudStorageManager.createStorage(name.trim());
         newStorage = {
           id: `cloud_${cloudStorage.id}`,
-          name: cloudStorage.storage_name,
+          name: cloudStorage.storageName,
           type: 'cloud',
           storageId: cloudStorage.id
         };
@@ -278,7 +278,7 @@ export const StorageProvider: React.FC<StorageProviderProps> = ({ children }) =>
       // Add cloud storage to the list
       const newCloudStorage: Storage = {
         id: `cloud_${cloudStorage.id}`,
-        name: cloudStorage.storage_name,
+        name: cloudStorage.storageName,
         type: 'cloud',
         storageId: cloudStorage.id
       };

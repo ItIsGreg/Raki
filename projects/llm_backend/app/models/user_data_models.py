@@ -9,69 +9,69 @@ from .base import MongoDocument, MongoBaseModel
 class UserStorage(MongoDocument):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
-    user_id: ObjectId
-    storage_name: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: Optional[datetime] = None
+    userId: ObjectId
+    storageName: str
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: Optional[datetime] = None
     
-    @field_serializer('user_id')
-    def serialize_user_id(self, user_id: ObjectId) -> str:
-        return str(user_id)
+    @field_serializer('userId')
+    def serialize_userId(self, userId: ObjectId) -> str:
+        return str(userId)
     
     class Settings:
         name = "user_storages"
         indexes = [
-            "user_id",
-            "storage_name",
+            "userId",
+            "storageName",
         ]
 
 class UserStorageCreate(BaseModel):
-    storage_name: str
+    storageName: str
 
 class UserStorageUpdate(BaseModel):
-    storage_name: Optional[str] = None
+    storageName: Optional[str] = None
 
 class UserStorageResponse(MongoBaseModel):
     model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
     
     id: str
-    user_id: str
-    storage_name: str
-    created_at: datetime
-    updated_at: Optional[datetime] = None
+    userId: str
+    storageName: str
+    createdAt: datetime
+    updatedAt: Optional[datetime] = None
     
     @classmethod
     def from_document(cls, doc: UserStorage):
         return cls(
             id=str(doc.id),
-            user_id=str(doc.user_id),
-            storage_name=doc.storage_name,
-            created_at=doc.created_at,
-            updated_at=doc.updated_at
+            userId=str(doc.userId),
+            storageName=doc.storageName,
+            createdAt=doc.createdAt,
+            updatedAt=doc.updatedAt
         )
 
 # Base model for all data entities
 class BaseDataModel(MongoDocument):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
-    user_id: ObjectId
-    storage_id: ObjectId
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: Optional[datetime] = None
+    userId: ObjectId
+    storageId: ObjectId
+    createdAt: datetime = Field(default_factory=datetime.utcnow)
+    updatedAt: Optional[datetime] = None
     
-    @field_serializer('user_id')
-    def serialize_user_id(self, user_id: ObjectId) -> str:
-        return str(user_id)
+    @field_serializer('userId')
+    def serialize_userId(self, userId: ObjectId) -> str:
+        return str(userId)
     
-    @field_serializer('storage_id')
-    def serialize_storage_id(self, storage_id: ObjectId) -> str:
-        return str(storage_id)
+    @field_serializer('storageId')
+    def serialize_storageId(self, storageId: ObjectId) -> str:
+        return str(storageId)
     
     class Settings:
         abstract = True
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
         ]
 
 # Profile Models
@@ -84,8 +84,8 @@ class Profile(BaseDataModel):
     class Settings:
         name = "profiles"
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
             "name",
         ]
 
@@ -101,6 +101,33 @@ class ProfileUpdate(BaseModel):
     mode: Optional[str] = None
     example: Optional[Dict[str, Any]] = None
 
+class ProfileResponse(MongoBaseModel):
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+    
+    id: str
+    userId: str
+    storageId: str
+    createdAt: datetime
+    updatedAt: Optional[datetime] = None
+    name: str
+    description: str
+    mode: str
+    example: Optional[Dict[str, Any]] = None
+    
+    @classmethod
+    def from_document(cls, doc: Profile):
+        return cls(
+            id=str(doc.id),
+            userId=str(doc.userId),
+            storageId=str(doc.storageId),
+            createdAt=doc.createdAt,
+            updatedAt=doc.updatedAt,
+            name=doc.name,
+            description=doc.description,
+            mode=doc.mode,
+            example=doc.example
+        )
+
 # Dataset Models
 class Dataset(BaseDataModel):
     name: str
@@ -110,8 +137,8 @@ class Dataset(BaseDataModel):
     class Settings:
         name = "datasets"
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
             "name",
         ]
 
@@ -127,181 +154,181 @@ class DatasetUpdate(BaseModel):
 
 # Text Models
 class Text(BaseDataModel):
-    dataset_id: ObjectId
+    datasetId: ObjectId
     filename: str
     text: str
     
     class Settings:
         name = "texts"
         indexes = [
-            "user_id",
-            "storage_id",
-            "dataset_id",
+            "userId",
+            "storageId",
+            "datasetId",
         ]
 
 class TextCreate(BaseModel):
-    dataset_id: str
+    datasetId: str
     filename: str
     text: str
 
 class TextUpdate(BaseModel):
     filename: Optional[str] = None
     text: Optional[str] = None
-    dataset_id: Optional[str] = None
+    datasetId: Optional[str] = None
 
 # Annotated Dataset Models
 class AnnotatedDataset(BaseDataModel):
     name: str
     description: str
-    dataset_id: ObjectId
-    profile_id: ObjectId
+    datasetId: ObjectId
+    profileId: ObjectId
     mode: str
     
-    @field_serializer('dataset_id')
-    def serialize_dataset_id(self, dataset_id: ObjectId) -> str:
-        return str(dataset_id)
+    @field_serializer('datasetId')
+    def serialize_datasetId(self, datasetId: ObjectId) -> str:
+        return str(datasetId)
     
-    @field_serializer('profile_id')
-    def serialize_profile_id(self, profile_id: ObjectId) -> str:
-        return str(profile_id)
+    @field_serializer('profileId')
+    def serialize_profileId(self, profileId: ObjectId) -> str:
+        return str(profileId)
     
     class Settings:
         name = "annotated_datasets"
         indexes = [
-            "user_id",
-            "storage_id",
-            "dataset_id",
-            "profile_id",
+            "userId",
+            "storageId",
+            "datasetId",
+            "profileId",
         ]
 
 # Annotated Text Models
 class AnnotatedText(BaseDataModel):
-    text_id: ObjectId
-    annotated_dataset_id: ObjectId
+    textId: ObjectId
+    annotatedDatasetId: ObjectId
     verified: Optional[bool] = None
-    ai_faulty: Optional[bool] = None
+    aiFaulty: Optional[bool] = None
     
-    @field_serializer('text_id')
-    def serialize_text_id(self, text_id: ObjectId) -> str:
-        return str(text_id)
+    @field_serializer('textId')
+    def serialize_textId(self, textId: ObjectId) -> str:
+        return str(textId)
     
-    @field_serializer('annotated_dataset_id')
-    def serialize_annotated_dataset_id(self, annotated_dataset_id: ObjectId) -> str:
-        return str(annotated_dataset_id)
+    @field_serializer('annotatedDatasetId')
+    def serialize_annotatedDatasetId(self, annotatedDatasetId: ObjectId) -> str:
+        return str(annotatedDatasetId)
     
     class Settings:
         name = "annotated_texts"
         indexes = [
-            "user_id",
-            "storage_id",
-            "text_id",
-            "annotated_dataset_id",
+            "userId",
+            "storageId",
+            "textId",
+            "annotatedDatasetId",
         ]
 
 class AnnotatedDatasetCreate(BaseModel):
     name: str
     description: str
-    dataset_id: str
-    profile_id: str
+    datasetId: str
+    profileId: str
     mode: str
 
 class AnnotatedDatasetUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-    dataset_id: Optional[str] = None
-    profile_id: Optional[str] = None
+    datasetId: Optional[str] = None
+    profileId: Optional[str] = None
     mode: Optional[str] = None
 
 class AnnotatedTextCreate(BaseModel):
-    text_id: str
-    annotated_dataset_id: str
+    textId: str
+    annotatedDatasetId: str
     verified: Optional[bool] = None
-    ai_faulty: Optional[bool] = None
+    aiFaulty: Optional[bool] = None
 
 class AnnotatedTextUpdate(BaseModel):
-    text_id: Optional[str] = None
-    annotated_dataset_id: Optional[str] = None
+    textId: Optional[str] = None
+    annotatedDatasetId: Optional[str] = None
     verified: Optional[bool] = None
-    ai_faulty: Optional[bool] = None
+    aiFaulty: Optional[bool] = None
 
 # Data Point Models
 class DataPoint(BaseDataModel):
-    annotated_text_id: ObjectId
+    annotatedTextId: ObjectId
     name: str
     value: Optional[Union[str, int, float]] = None
     match: Optional[List[int]] = None
-    profile_point_id: Optional[ObjectId] = None
+    profilePointId: Optional[ObjectId] = None
     verified: Optional[bool] = None
     
-    @field_serializer('annotated_text_id')
-    def serialize_annotated_text_id(self, annotated_text_id: ObjectId) -> str:
-        return str(annotated_text_id)
+    @field_serializer('annotatedTextId')
+    def serialize_annotatedTextId(self, annotatedTextId: ObjectId) -> str:
+        return str(annotatedTextId)
     
-    @field_serializer('profile_point_id')
-    def serialize_profile_point_id(self, profile_point_id: Optional[ObjectId]) -> Optional[str]:
-        return str(profile_point_id) if profile_point_id else None
+    @field_serializer('profilePointId')
+    def serialize_profilePointId(self, profilePointId: Optional[ObjectId]) -> Optional[str]:
+        return str(profilePointId) if profilePointId else None
     
     class Settings:
         name = "data_points"
         indexes = [
-            "user_id",
-            "storage_id",
-            "annotated_text_id",
+            "userId",
+            "storageId",
+            "annotatedTextId",
         ]
 
 class DataPointCreate(BaseModel):
-    annotated_text_id: str
+    annotatedTextId: str
     name: str
     value: Optional[Union[str, int, float]] = None
     match: Optional[List[int]] = None
-    profile_point_id: Optional[str] = None
+    profilePointId: Optional[str] = None
     verified: Optional[bool] = None
 
 class DataPointUpdate(BaseModel):
     name: Optional[str] = None
     value: Optional[Union[str, int, float]] = None
     match: Optional[List[int]] = None
-    profile_point_id: Optional[str] = None
+    profilePointId: Optional[str] = None
     verified: Optional[bool] = None
 
 # Segment Data Point Models
 class SegmentDataPoint(BaseDataModel):
-    annotated_text_id: ObjectId
+    annotatedTextId: ObjectId
     name: str
-    begin_match: Optional[List[int]] = None
-    end_match: Optional[List[int]] = None
-    profile_point_id: Optional[ObjectId] = None
+    beginMatch: Optional[List[int]] = None
+    endMatch: Optional[List[int]] = None
+    profilePointId: Optional[ObjectId] = None
     verified: Optional[bool] = None
     
-    @field_serializer('annotated_text_id')
-    def serialize_annotated_text_id(self, annotated_text_id: ObjectId) -> str:
-        return str(annotated_text_id)
+    @field_serializer('annotatedTextId')
+    def serialize_annotatedTextId(self, annotatedTextId: ObjectId) -> str:
+        return str(annotatedTextId)
     
-    @field_serializer('profile_point_id')
-    def serialize_profile_point_id(self, profile_point_id: Optional[ObjectId]) -> Optional[str]:
-        return str(profile_point_id) if profile_point_id else None
+    @field_serializer('profilePointId')
+    def serialize_profilePointId(self, profilePointId: Optional[ObjectId]) -> Optional[str]:
+        return str(profilePointId) if profilePointId else None
     
     class Settings:
         name = "segment_data_points"
         indexes = [
-            "user_id",
-            "storage_id",
-            "annotated_text_id",
+            "userId",
+            "storageId",
+            "annotatedTextId",
         ]
 
 class SegmentDataPointCreate(BaseModel):
-    annotated_text_id: str
+    annotatedTextId: str
     name: str
-    begin_match: Optional[List[int]] = None
-    end_match: Optional[List[int]] = None
-    profile_point_id: Optional[str] = None
+    beginMatch: Optional[List[int]] = None
+    endMatch: Optional[List[int]] = None
+    profilePointId: Optional[str] = None
     verified: Optional[bool] = None
 
 class SegmentDataPointUpdate(BaseModel):
     name: Optional[str] = None
-    begin_match: Optional[List[int]] = None
-    end_match: Optional[List[int]] = None
-    profile_point_id: Optional[str] = None
+    beginMatch: Optional[List[int]] = None
+    endMatch: Optional[List[int]] = None
+    profilePointId: Optional[str] = None
     verified: Optional[bool] = None
 
 # Profile Point Models
@@ -312,29 +339,29 @@ class ProfilePoint(BaseDataModel):
     datatype: str
     valueset: Optional[List[str]] = None
     unit: Optional[str] = None
-    profile_id: ObjectId
+    profileId: ObjectId
     order: Optional[int] = None
-    previous_point_id: Optional[ObjectId] = None
-    next_point_id: Optional[ObjectId] = None
+    previousPointId: Optional[ObjectId] = None
+    nextPointId: Optional[ObjectId] = None
     
-    @field_serializer('profile_id')
-    def serialize_profile_id(self, profile_id: ObjectId) -> str:
-        return str(profile_id)
+    @field_serializer('profileId')
+    def serialize_profileId(self, profileId: ObjectId) -> str:
+        return str(profileId)
     
-    @field_serializer('previous_point_id')
-    def serialize_previous_point_id(self, previous_point_id: Optional[ObjectId]) -> Optional[str]:
-        return str(previous_point_id) if previous_point_id else None
+    @field_serializer('previousPointId')
+    def serialize_previousPointId(self, previousPointId: Optional[ObjectId]) -> Optional[str]:
+        return str(previousPointId) if previousPointId else None
     
-    @field_serializer('next_point_id')
-    def serialize_next_point_id(self, next_point_id: Optional[ObjectId]) -> Optional[str]:
-        return str(next_point_id) if next_point_id else None
+    @field_serializer('nextPointId')
+    def serialize_nextPointId(self, nextPointId: Optional[ObjectId]) -> Optional[str]:
+        return str(nextPointId) if nextPointId else None
     
     class Settings:
         name = "profile_points"
         indexes = [
-            "user_id",
-            "storage_id",
-            "profile_id",
+            "userId",
+            "storageId",
+            "profileId",
         ]
 
 class ProfilePointCreate(BaseModel):
@@ -344,10 +371,10 @@ class ProfilePointCreate(BaseModel):
     datatype: str
     valueset: Optional[List[str]] = None
     unit: Optional[str] = None
-    profile_id: str
+    profileId: str
     order: Optional[int] = None
-    previous_point_id: Optional[str] = None
-    next_point_id: Optional[str] = None
+    previousPointId: Optional[str] = None
+    nextPointId: Optional[str] = None
 
 class ProfilePointUpdate(BaseModel):
     name: Optional[str] = None
@@ -356,58 +383,97 @@ class ProfilePointUpdate(BaseModel):
     datatype: Optional[str] = None
     valueset: Optional[List[str]] = None
     unit: Optional[str] = None
-    profile_id: Optional[str] = None
+    profileId: Optional[str] = None
     order: Optional[int] = None
-    previous_point_id: Optional[str] = None
-    next_point_id: Optional[str] = None
+    previousPointId: Optional[str] = None
+    nextPointId: Optional[str] = None
+
+class ProfilePointResponse(MongoBaseModel):
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+    
+    id: str
+    userId: str
+    storageId: str
+    createdAt: datetime
+    updatedAt: Optional[datetime] = None
+    name: str
+    explanation: str
+    synonyms: List[str]
+    datatype: str
+    valueset: Optional[List[str]] = None
+    unit: Optional[str] = None
+    profileId: str
+    order: Optional[int] = None
+    previousPointId: Optional[str] = None
+    nextPointId: Optional[str] = None
+    
+    @classmethod
+    def from_document(cls, doc: ProfilePoint):
+        return cls(
+            id=str(doc.id),
+            userId=str(doc.userId),
+            storageId=str(doc.storageId),
+            createdAt=doc.createdAt,
+            updatedAt=doc.updatedAt,
+            name=doc.name,
+            explanation=doc.explanation,
+            synonyms=doc.synonyms,
+            datatype=doc.datatype,
+            valueset=doc.valueset,
+            unit=doc.unit,
+            profileId=str(doc.profileId),
+            order=doc.order,
+            previousPointId=str(doc.previousPointId) if doc.previousPointId else None,
+            nextPointId=str(doc.nextPointId) if doc.nextPointId else None
+        )
 
 # Segmentation Profile Point Models
 class SegmentationProfilePoint(BaseDataModel):
     name: str
     explanation: str
     synonyms: List[str] = []
-    profile_id: ObjectId
+    profileId: ObjectId
     order: Optional[int] = None
-    previous_point_id: Optional[ObjectId] = None
-    next_point_id: Optional[ObjectId] = None
+    previousPointId: Optional[ObjectId] = None
+    nextPointId: Optional[ObjectId] = None
     
-    @field_serializer('profile_id')
-    def serialize_profile_id(self, profile_id: ObjectId) -> str:
-        return str(profile_id)
+    @field_serializer('profileId')
+    def serialize_profileId(self, profileId: ObjectId) -> str:
+        return str(profileId)
     
-    @field_serializer('previous_point_id')
-    def serialize_previous_point_id(self, previous_point_id: Optional[ObjectId]) -> Optional[str]:
-        return str(previous_point_id) if previous_point_id else None
+    @field_serializer('previousPointId')
+    def serialize_previousPointId(self, previousPointId: Optional[ObjectId]) -> Optional[str]:
+        return str(previousPointId) if previousPointId else None
     
-    @field_serializer('next_point_id')
-    def serialize_next_point_id(self, next_point_id: Optional[ObjectId]) -> Optional[str]:
-        return str(next_point_id) if next_point_id else None
+    @field_serializer('nextPointId')
+    def serialize_nextPointId(self, nextPointId: Optional[ObjectId]) -> Optional[str]:
+        return str(nextPointId) if nextPointId else None
     
     class Settings:
         name = "segmentation_profile_points"
         indexes = [
-            "user_id",
-            "storage_id",
-            "profile_id",
+            "userId",
+            "storageId",
+            "profileId",
         ]
 
 class SegmentationProfilePointCreate(BaseModel):
     name: str
     explanation: str
     synonyms: List[str] = []
-    profile_id: str
+    profileId: str
     order: Optional[int] = None
-    previous_point_id: Optional[str] = None
-    next_point_id: Optional[str] = None
+    previousPointId: Optional[str] = None
+    nextPointId: Optional[str] = None
 
 class SegmentationProfilePointUpdate(BaseModel):
     name: Optional[str] = None
     explanation: Optional[str] = None
     synonyms: Optional[List[str]] = None
-    profile_id: Optional[str] = None
+    profileId: Optional[str] = None
     order: Optional[int] = None
-    previous_point_id: Optional[str] = None
-    next_point_id: Optional[str] = None
+    previousPointId: Optional[str] = None
+    nextPointId: Optional[str] = None
 
 # Settings Models
 class ApiKey(BaseDataModel):
@@ -416,8 +482,8 @@ class ApiKey(BaseDataModel):
     class Settings:
         name = "api_keys"
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
         ]
 
 class Model(BaseDataModel):
@@ -426,8 +492,8 @@ class Model(BaseDataModel):
     class Settings:
         name = "models"
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
         ]
 
 class LLMProvider(BaseDataModel):
@@ -436,8 +502,8 @@ class LLMProvider(BaseDataModel):
     class Settings:
         name = "llm_providers"
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
         ]
 
 class LLMUrl(BaseDataModel):
@@ -446,8 +512,8 @@ class LLMUrl(BaseDataModel):
     class Settings:
         name = "llm_urls"
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
         ]
 
 class BatchSize(BaseDataModel):
@@ -456,8 +522,8 @@ class BatchSize(BaseDataModel):
     class Settings:
         name = "batch_sizes"
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
         ]
 
 class MaxTokens(BaseDataModel):
@@ -466,18 +532,18 @@ class MaxTokens(BaseDataModel):
     class Settings:
         name = "max_tokens"
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
         ]
 
 class UserSettings(BaseDataModel):
-    tutorial_completed: bool = False
+    tutorialCompleted: bool = False
     
     class Settings:
         name = "user_settings"
         indexes = [
-            "user_id",
-            "storage_id",
+            "userId",
+            "storageId",
         ]
 
 # Settings Create/Update Models
@@ -518,30 +584,30 @@ class MaxTokensUpdate(BaseModel):
     value: Optional[int] = None
 
 class UserSettingsCreate(BaseModel):
-    tutorial_completed: bool = False
+    tutorialCompleted: bool = False
 
 class UserSettingsUpdate(BaseModel):
-    tutorial_completed: Optional[bool] = None
+    tutorialCompleted: Optional[bool] = None
 
 # Migration and Export Models
 class MigrateLocalToCloudRequest(BaseModel):
-    storage_name: str
+    storageName: str
     profiles: List[Dict[str, Any]] = []
     datasets: List[Dict[str, Any]] = []
     texts: List[Dict[str, Any]] = []
-    annotated_datasets: List[Dict[str, Any]] = []
-    annotated_texts: List[Dict[str, Any]] = []
-    data_points: List[Dict[str, Any]] = []
-    segment_data_points: List[Dict[str, Any]] = []
-    profile_points: List[Dict[str, Any]] = []
-    segmentation_profile_points: List[Dict[str, Any]] = []
-    api_keys: List[Dict[str, Any]] = []
+    annotatedDatasets: List[Dict[str, Any]] = []
+    annotatedTexts: List[Dict[str, Any]] = []
+    dataPoints: List[Dict[str, Any]] = []
+    segmentDataPoints: List[Dict[str, Any]] = []
+    profilePoints: List[Dict[str, Any]] = []
+    segmentationProfilePoints: List[Dict[str, Any]] = []
+    apiKeys: List[Dict[str, Any]] = []
     models: List[Dict[str, Any]] = []
-    llm_providers: List[Dict[str, Any]] = []
-    llm_urls: List[Dict[str, Any]] = []
-    batch_sizes: List[Dict[str, Any]] = []
-    max_tokens: List[Dict[str, Any]] = []
-    user_settings: List[Dict[str, Any]] = []
+    llmProviders: List[Dict[str, Any]] = []
+    llmUrls: List[Dict[str, Any]] = []
+    batchSizes: List[Dict[str, Any]] = []
+    maxTokens: List[Dict[str, Any]] = []
+    userSettings: List[Dict[str, Any]] = []
 
 class StorageDataExport(BaseModel):
     profiles: List[Dict[str, Any]] = []

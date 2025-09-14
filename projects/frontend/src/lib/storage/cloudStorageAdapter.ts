@@ -68,17 +68,9 @@ export class CloudStorageAdapter {
         
         try {
           const profiles = await cloudStorageManager.getProfiles(this.storageId);
-          // Transform backend response to match frontend format
-          const transformedProfiles = profiles.map(profile => {
-            const profileWithId = profile as any; // Type assertion for MongoDB _id field
-            return {
-              ...profile,
-              id: profileWithId._id || profile.id, // Use _id as id for MongoDB compatibility
-              _id: undefined // Remove _id to avoid confusion
-            };
-          });
-          this.setCachedData(cacheKey, transformedProfiles);
-          return transformedProfiles;
+          // Backend now returns camelCase field names that match frontend
+          this.setCachedData(cacheKey, profiles);
+          return profiles;
         } catch (error) {
           console.warn('Failed to fetch profiles from cloud storage:', error);
           return [];
@@ -88,9 +80,8 @@ export class CloudStorageAdapter {
         try {
           const result = await cloudStorageManager.createProfile(this.storageId, profile);
           this.incrementVersion(); // Increment version to trigger useLiveQuery refresh
-          // Transform the result to ensure it has the correct id field
-          const resultWithId = result as any;
-          return resultWithId._id || result.id;
+          // Backend now returns id directly
+          return result.id;
         } catch (error) {
           console.warn('Failed to create profile in cloud storage:', error);
           return 'mock-profile-id';
@@ -109,21 +100,8 @@ export class CloudStorageAdapter {
       get: async (id: string): Promise<Profile | undefined> => {
         try {
           const profiles = await cloudStorageManager.getProfiles(this.storageId);
-          const profile = profiles.find(p => {
-            const profileWithId = p as any;
-            return (profileWithId._id || p.id) === id;
-          });
-          
-          if (profile) {
-            // Transform the profile to match frontend format
-            const profileWithId = profile as any;
-            return {
-              ...profile,
-              id: profileWithId._id || profile.id
-            } as Profile;
-          }
-          
-          return undefined;
+          const profile = profiles.find(p => p.id === id);
+          return profile;
         } catch (error) {
           console.warn('Failed to get profile from cloud storage:', error);
           return undefined;
@@ -150,16 +128,9 @@ export class CloudStorageAdapter {
                 
                 try {
                   const profiles = await cloudStorageManager.getProfiles(this.storageId);
-                  const transformedProfiles = profiles.map(profile => {
-                    const profileWithId = profile as any;
-                    return {
-                      ...profile,
-                      id: profileWithId._id || profile.id,
-                      _id: undefined
-                    };
-                  });
-                  this.setCachedData(cacheKey, transformedProfiles);
-                  return transformedProfiles.filter(p => (p as any)[fieldOrQuery] === value);
+                  // Backend now returns camelCase field names that match frontend
+                  this.setCachedData(cacheKey, profiles);
+                  return profiles.filter(p => (p as any)[fieldOrQuery] === value);
                 } catch (error) {
                   console.warn('Failed to fetch profiles with filter from cloud storage:', error);
                   return [];
@@ -181,16 +152,9 @@ export class CloudStorageAdapter {
               
               try {
                 const profiles = await cloudStorageManager.getProfiles(this.storageId);
-                const transformedProfiles = profiles.map(profile => {
-                  const profileWithId = profile as any;
-                  return {
-                    ...profile,
-                    id: profileWithId._id || profile.id,
-                    _id: undefined
-                  };
-                });
-                this.setCachedData(cacheKey, transformedProfiles);
-                return transformedProfiles.filter(p => {
+                // Backend now returns camelCase field names that match frontend
+                this.setCachedData(cacheKey, profiles);
+                return profiles.filter(p => {
                   const query = fieldOrQuery as any;
                   return Object.keys(query).every(key => (p as any)[key] === query[key]);
                 });
@@ -218,18 +182,9 @@ export class CloudStorageAdapter {
         try {
           const datasets = await cloudStorageManager.getDatasets(this.storageId);
           
-          // Transform backend response to match frontend format
-          const transformedDatasets = datasets.map(dataset => {
-            const datasetWithId = dataset as any; // Type assertion for MongoDB _id field
-            return {
-              ...dataset,
-              id: datasetWithId._id || dataset.id, // Use _id as id for MongoDB compatibility
-              _id: undefined // Remove _id to avoid confusion
-            };
-          });
-          
-          this.setCachedData(cacheKey, transformedDatasets);
-          return transformedDatasets;
+          // Backend now returns camelCase field names that match frontend
+          this.setCachedData(cacheKey, datasets);
+          return datasets;
         } catch (error) {
           console.warn('Failed to fetch datasets from cloud storage:', error);
           return [];
@@ -282,16 +237,9 @@ export class CloudStorageAdapter {
                 
                 try {
                   const datasets = await cloudStorageManager.getDatasets(this.storageId);
-                  const transformedDatasets = datasets.map(dataset => {
-                    const datasetWithId = dataset as any;
-                    return {
-                      ...dataset,
-                      id: datasetWithId._id || dataset.id,
-                      _id: undefined
-                    };
-                  });
-                  this.setCachedData(cacheKey, transformedDatasets);
-                  return transformedDatasets.filter(d => (d as any)[fieldOrQuery] === value);
+                  // Backend now returns camelCase field names that match frontend
+                  this.setCachedData(cacheKey, datasets);
+                  return datasets.filter(d => (d as any)[fieldOrQuery] === value);
                 } catch (error) {
                   console.warn('Failed to fetch datasets with filter from cloud storage:', error);
                   return [];
@@ -313,16 +261,9 @@ export class CloudStorageAdapter {
               
               try {
                 const datasets = await cloudStorageManager.getDatasets(this.storageId);
-                const transformedDatasets = datasets.map(dataset => {
-                  const datasetWithId = dataset as any;
-                  return {
-                    ...dataset,
-                    id: datasetWithId._id || dataset.id,
-                    _id: undefined
-                  };
-                });
-                this.setCachedData(cacheKey, transformedDatasets);
-                return transformedDatasets.filter(d => {
+                // Backend now returns camelCase field names that match frontend
+                this.setCachedData(cacheKey, datasets);
+                return datasets.filter(d => {
                   const query = fieldOrQuery as any;
                   return Object.keys(query).every(key => (d as any)[key] === query[key]);
                 });
@@ -352,7 +293,7 @@ export class CloudStorageAdapter {
           const data = await response.json();
           return data.map((text: any) => ({
             id: text.id,
-            datasetId: text.dataset_id,
+            datasetId: text.datasetId,
             filename: text.filename,
             text: text.text
           }));
@@ -367,7 +308,7 @@ export class CloudStorageAdapter {
             method: 'POST',
             headers: this.getAuthHeaders(),
             body: JSON.stringify({
-              dataset_id: text.datasetId,
+              datasetId: text.datasetId,
               filename: text.filename,
               text: text.text
             })
@@ -388,7 +329,7 @@ export class CloudStorageAdapter {
             body: JSON.stringify({
               filename: text.filename,
               text: text.text,
-              dataset_id: text.datasetId
+              datasetId: text.datasetId
             })
           });
           if (!response.ok) throw new Error('Failed to update text');
@@ -409,7 +350,7 @@ export class CloudStorageAdapter {
           if (!text) return undefined;
           return {
             id: text.id,
-            datasetId: text.dataset_id,
+            datasetId: text.datasetId,
             filename: text.filename,
             text: text.text
           };
@@ -447,7 +388,7 @@ export class CloudStorageAdapter {
                     .filter((text: any) => text[fieldOrQuery] === value)
                     .map((text: any) => ({
                       id: text.id,
-                      datasetId: text.dataset_id,
+                      datasetId: text.datasetId,
                       filename: text.filename,
                       text: text.text
                     }));
@@ -471,7 +412,7 @@ export class CloudStorageAdapter {
                     .filter((text: any) => values.includes(text[fieldOrQuery]))
                     .map((text: any) => ({
                       id: text.id,
-                      datasetId: text.dataset_id,
+                      datasetId: text.datasetId,
                       filename: text.filename,
                       text: text.text
                     }));
@@ -495,7 +436,7 @@ export class CloudStorageAdapter {
                 const data = await response.json();
                 return data.map((text: any) => ({
                   id: text.id,
-                  datasetId: text.dataset_id,
+                  datasetId: text.datasetId,
                   filename: text.filename,
                   text: text.text
                 }));
@@ -523,8 +464,8 @@ export class CloudStorageAdapter {
             id: ad.id,
             name: ad.name,
             description: ad.description,
-            datasetId: ad.dataset_id,
-            profileId: ad.profile_id,
+            datasetId: ad.datasetId,
+            profileId: ad.profileId,
             mode: ad.mode
           }));
         } catch (error) {
@@ -540,8 +481,8 @@ export class CloudStorageAdapter {
             body: JSON.stringify({
               name: annotatedDataset.name,
               description: annotatedDataset.description,
-              dataset_id: annotatedDataset.datasetId,
-              profile_id: annotatedDataset.profileId,
+              datasetId: annotatedDataset.datasetId,
+              profileId: annotatedDataset.profileId,
               mode: annotatedDataset.mode
             })
           });
@@ -561,8 +502,8 @@ export class CloudStorageAdapter {
             body: JSON.stringify({
               name: annotatedDataset.name,
               description: annotatedDataset.description,
-              dataset_id: annotatedDataset.datasetId,
-              profile_id: annotatedDataset.profileId,
+              datasetId: annotatedDataset.datasetId,
+              profileId: annotatedDataset.profileId,
               mode: annotatedDataset.mode
             })
           });
@@ -586,8 +527,8 @@ export class CloudStorageAdapter {
             id: annotatedDataset.id,
             name: annotatedDataset.name,
             description: annotatedDataset.description,
-            datasetId: annotatedDataset.dataset_id,
-            profileId: annotatedDataset.profile_id,
+            datasetId: annotatedDataset.datasetId,
+            profileId: annotatedDataset.profileId,
             mode: annotatedDataset.mode
           };
         } catch (error) {
@@ -626,8 +567,8 @@ export class CloudStorageAdapter {
                       id: ad.id,
                       name: ad.name,
                       description: ad.description,
-                      datasetId: ad.dataset_id,
-                      profileId: ad.profile_id,
+                      datasetId: ad.datasetId,
+                      profileId: ad.profileId,
                       mode: ad.mode
                     }));
                 } catch (error) {
@@ -652,8 +593,8 @@ export class CloudStorageAdapter {
                       id: ad.id,
                       name: ad.name,
                       description: ad.description,
-                      datasetId: ad.dataset_id,
-                      profileId: ad.profile_id,
+                      datasetId: ad.datasetId,
+                      profileId: ad.profileId,
                       mode: ad.mode
                     }));
                 } catch (error) {
@@ -678,8 +619,8 @@ export class CloudStorageAdapter {
                   id: ad.id,
                   name: ad.name,
                   description: ad.description,
-                  datasetId: ad.dataset_id,
-                  profileId: ad.profile_id,
+                  datasetId: ad.datasetId,
+                  profileId: ad.profileId,
                   mode: ad.mode
                 }));
               } catch (error) {
@@ -704,10 +645,10 @@ export class CloudStorageAdapter {
           const data = await response.json();
           return data.map((at: any) => ({
             id: at.id,
-            textId: at.text_id,
-            annotatedDatasetId: at.annotated_dataset_id,
+            textId: at.textId,
+            annotatedDatasetId: at.annotatedDatasetId,
             verified: at.verified,
-            aiFaulty: at.ai_faulty
+            aiFaulty: at.aiFaulty
           }));
         } catch (error) {
           console.error('Error fetching annotated texts:', error);
@@ -720,10 +661,10 @@ export class CloudStorageAdapter {
             method: 'POST',
             headers: this.getAuthHeaders(),
             body: JSON.stringify({
-              text_id: annotatedText.textId,
-              annotated_dataset_id: annotatedText.annotatedDatasetId,
+              textId: annotatedText.textId,
+              annotatedDatasetId: annotatedText.annotatedDatasetId,
               verified: annotatedText.verified,
-              ai_faulty: annotatedText.aiFaulty
+              aiFaulty: annotatedText.aiFaulty
             })
           });
           if (!response.ok) throw new Error('Failed to create annotated text');
@@ -740,10 +681,10 @@ export class CloudStorageAdapter {
             method: 'PUT',
             headers: this.getAuthHeaders(),
             body: JSON.stringify({
-              text_id: annotatedText.textId,
-              annotated_dataset_id: annotatedText.annotatedDatasetId,
+              textId: annotatedText.textId,
+              annotatedDatasetId: annotatedText.annotatedDatasetId,
               verified: annotatedText.verified,
-              ai_faulty: annotatedText.aiFaulty
+              aiFaulty: annotatedText.aiFaulty
             })
           });
           if (!response.ok) throw new Error('Failed to update annotated text');
@@ -764,10 +705,10 @@ export class CloudStorageAdapter {
           if (!annotatedText) return undefined;
           return {
             id: annotatedText.id,
-            textId: annotatedText.text_id,
-            annotatedDatasetId: annotatedText.annotated_dataset_id,
+            textId: annotatedText.textId,
+            annotatedDatasetId: annotatedText.annotatedDatasetId,
             verified: annotatedText.verified,
-            aiFaulty: annotatedText.ai_faulty
+            aiFaulty: annotatedText.aiFaulty
           };
         } catch (error) {
           console.error('Error fetching annotated text:', error);
@@ -803,10 +744,10 @@ export class CloudStorageAdapter {
                     .filter((at: any) => at[fieldOrQuery] === value)
                     .map((at: any) => ({
                       id: at.id,
-                      textId: at.text_id,
-                      annotatedDatasetId: at.annotated_dataset_id,
+                      textId: at.textId,
+                      annotatedDatasetId: at.annotatedDatasetId,
                       verified: at.verified,
-                      aiFaulty: at.ai_faulty
+                      aiFaulty: at.aiFaulty
                     }));
                 } catch (error) {
                   console.error('Error filtering annotated texts:', error);
@@ -828,10 +769,10 @@ export class CloudStorageAdapter {
                     .filter((at: any) => values.includes(at[fieldOrQuery]))
                     .map((at: any) => ({
                       id: at.id,
-                      textId: at.text_id,
-                      annotatedDatasetId: at.annotated_dataset_id,
+                      textId: at.textId,
+                      annotatedDatasetId: at.annotatedDatasetId,
                       verified: at.verified,
-                      aiFaulty: at.ai_faulty
+                      aiFaulty: at.aiFaulty
                     }));
                 } catch (error) {
                   console.error('Error filtering annotated texts:', error);
@@ -854,10 +795,10 @@ export class CloudStorageAdapter {
                 const data = await response.json();
                 return data.map((at: any) => ({
                   id: at.id,
-                  textId: at.text_id,
-                  annotatedDatasetId: at.annotated_dataset_id,
+                  textId: at.textId,
+                  annotatedDatasetId: at.annotatedDatasetId,
                   verified: at.verified,
-                  aiFaulty: at.ai_faulty
+                  aiFaulty: at.aiFaulty
                 }));
               } catch (error) {
                 console.error('Error fetching annotated texts:', error);
@@ -881,11 +822,11 @@ export class CloudStorageAdapter {
           const data = await response.json();
           return data.map((dp: any) => ({
             id: dp.id,
-            annotatedTextId: dp.annotated_text_id,
+            annotatedTextId: dp.annotatedTextId,
             name: dp.name,
             value: dp.value,
             match: dp.match,
-            profilePointId: dp.profile_point_id,
+            profilePointId: dp.profilePointId,
             verified: dp.verified
           }));
         } catch (error) {
@@ -899,11 +840,11 @@ export class CloudStorageAdapter {
             method: 'POST',
             headers: this.getAuthHeaders(),
             body: JSON.stringify({
-              annotated_text_id: dataPoint.annotatedTextId,
+              annotatedTextId: dataPoint.annotatedTextId,
               name: dataPoint.name,
               value: dataPoint.value,
               match: dataPoint.match,
-              profile_point_id: dataPoint.profilePointId,
+              profilePointId: dataPoint.profilePointId,
               verified: dataPoint.verified
             })
           });
@@ -924,7 +865,7 @@ export class CloudStorageAdapter {
               name: dataPoint.name,
               value: dataPoint.value,
               match: dataPoint.match,
-              profile_point_id: dataPoint.profilePointId,
+              profilePointId: dataPoint.profilePointId,
               verified: dataPoint.verified
             })
           });
@@ -946,11 +887,11 @@ export class CloudStorageAdapter {
           if (!dataPoint) return undefined;
           return {
             id: dataPoint.id,
-            annotatedTextId: dataPoint.annotated_text_id,
+            annotatedTextId: dataPoint.annotatedTextId,
             name: dataPoint.name,
             value: dataPoint.value,
             match: dataPoint.match,
-            profilePointId: dataPoint.profile_point_id,
+            profilePointId: dataPoint.profilePointId,
             verified: dataPoint.verified
           };
         } catch (error) {
@@ -987,11 +928,11 @@ export class CloudStorageAdapter {
                     .filter((dp: any) => dp[fieldOrQuery] === value)
                     .map((dp: any) => ({
                       id: dp.id,
-                      annotatedTextId: dp.annotated_text_id,
+                      annotatedTextId: dp.annotatedTextId,
                       name: dp.name,
                       value: dp.value,
                       match: dp.match,
-                      profilePointId: dp.profile_point_id,
+                      profilePointId: dp.profilePointId,
                       verified: dp.verified
                     }));
                 } catch (error) {
@@ -1014,11 +955,11 @@ export class CloudStorageAdapter {
                     .filter((dp: any) => values.includes(dp[fieldOrQuery]))
                     .map((dp: any) => ({
                       id: dp.id,
-                      annotatedTextId: dp.annotated_text_id,
+                      annotatedTextId: dp.annotatedTextId,
                       name: dp.name,
                       value: dp.value,
                       match: dp.match,
-                      profilePointId: dp.profile_point_id,
+                      profilePointId: dp.profilePointId,
                       verified: dp.verified
                     }));
                 } catch (error) {
@@ -1041,11 +982,11 @@ export class CloudStorageAdapter {
                 const data = await response.json();
                 return data.map((dp: any) => ({
                   id: dp.id,
-                  annotatedTextId: dp.annotated_text_id,
+                  annotatedTextId: dp.annotatedTextId,
                   name: dp.name,
                   value: dp.value,
                   match: dp.match,
-                  profilePointId: dp.profile_point_id,
+                  profilePointId: dp.profilePointId,
                   verified: dp.verified
                 }));
               } catch (error) {
@@ -1070,11 +1011,11 @@ export class CloudStorageAdapter {
           const data = await response.json();
           return data.map((sdp: any) => ({
             id: sdp.id,
-            annotatedTextId: sdp.annotated_text_id,
+            annotatedTextId: sdp.annotatedTextId,
             name: sdp.name,
-            beginMatch: sdp.begin_match,
-            endMatch: sdp.end_match,
-            profilePointId: sdp.profile_point_id,
+            beginMatch: sdp.beginMatch,
+            endMatch: sdp.endMatch,
+            profilePointId: sdp.profilePointId,
             verified: sdp.verified
           }));
         } catch (error) {
@@ -1088,11 +1029,11 @@ export class CloudStorageAdapter {
             method: 'POST',
             headers: this.getAuthHeaders(),
             body: JSON.stringify({
-              annotated_text_id: segmentDataPoint.annotatedTextId,
+              annotatedTextId: segmentDataPoint.annotatedTextId,
               name: segmentDataPoint.name,
-              begin_match: segmentDataPoint.beginMatch,
-              end_match: segmentDataPoint.endMatch,
-              profile_point_id: segmentDataPoint.profilePointId,
+              beginMatch: segmentDataPoint.beginMatch,
+              endMatch: segmentDataPoint.endMatch,
+              profilePointId: segmentDataPoint.profilePointId,
               verified: segmentDataPoint.verified
             })
           });
@@ -1111,9 +1052,9 @@ export class CloudStorageAdapter {
             headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: segmentDataPoint.name,
-              begin_match: segmentDataPoint.beginMatch,
-              end_match: segmentDataPoint.endMatch,
-              profile_point_id: segmentDataPoint.profilePointId,
+              beginMatch: segmentDataPoint.beginMatch,
+              endMatch: segmentDataPoint.endMatch,
+              profilePointId: segmentDataPoint.profilePointId,
               verified: segmentDataPoint.verified
             })
           });
@@ -1135,11 +1076,11 @@ export class CloudStorageAdapter {
           if (!segmentDataPoint) return undefined;
           return {
             id: segmentDataPoint.id,
-            annotatedTextId: segmentDataPoint.annotated_text_id,
+            annotatedTextId: segmentDataPoint.annotatedTextId,
             name: segmentDataPoint.name,
-            beginMatch: segmentDataPoint.begin_match,
-            endMatch: segmentDataPoint.end_match,
-            profilePointId: segmentDataPoint.profile_point_id,
+            beginMatch: segmentDataPoint.beginMatch,
+            endMatch: segmentDataPoint.endMatch,
+            profilePointId: segmentDataPoint.profilePointId,
             verified: segmentDataPoint.verified
           };
         } catch (error) {
@@ -1176,11 +1117,11 @@ export class CloudStorageAdapter {
                     .filter((sdp: any) => sdp[fieldOrQuery] === value)
                     .map((sdp: any) => ({
                       id: sdp.id,
-                      annotatedTextId: sdp.annotated_text_id,
+                      annotatedTextId: sdp.annotatedTextId,
                       name: sdp.name,
-                      beginMatch: sdp.begin_match,
-                      endMatch: sdp.end_match,
-                      profilePointId: sdp.profile_point_id,
+                      beginMatch: sdp.beginMatch,
+                      endMatch: sdp.endMatch,
+                      profilePointId: sdp.profilePointId,
                       verified: sdp.verified
                     }));
                 } catch (error) {
@@ -1203,11 +1144,11 @@ export class CloudStorageAdapter {
                     .filter((sdp: any) => values.includes(sdp[fieldOrQuery]))
                     .map((sdp: any) => ({
                       id: sdp.id,
-                      annotatedTextId: sdp.annotated_text_id,
+                      annotatedTextId: sdp.annotatedTextId,
                       name: sdp.name,
-                      beginMatch: sdp.begin_match,
-                      endMatch: sdp.end_match,
-                      profilePointId: sdp.profile_point_id,
+                      beginMatch: sdp.beginMatch,
+                      endMatch: sdp.endMatch,
+                      profilePointId: sdp.profilePointId,
                       verified: sdp.verified
                     }));
                 } catch (error) {
@@ -1230,11 +1171,11 @@ export class CloudStorageAdapter {
                 const data = await response.json();
                 return data.map((sdp: any) => ({
                   id: sdp.id,
-                  annotatedTextId: sdp.annotated_text_id,
+                  annotatedTextId: sdp.annotatedTextId,
                   name: sdp.name,
-                  beginMatch: sdp.begin_match,
-                  endMatch: sdp.end_match,
-                  profilePointId: sdp.profile_point_id,
+                  beginMatch: sdp.beginMatch,
+                  endMatch: sdp.endMatch,
+                  profilePointId: sdp.profilePointId,
                   verified: sdp.verified
                 }));
               } catch (error) {
@@ -1265,10 +1206,10 @@ export class CloudStorageAdapter {
             datatype: pp.datatype,
             valueset: pp.valueset,
             unit: pp.unit,
-            profileId: pp.profile_id,
+            profileId: pp.profileId,
             order: pp.order,
-            previousPointId: pp.previous_point_id,
-            nextPointId: pp.next_point_id
+            previousPointId: pp.previousPointId,
+            nextPointId: pp.nextPointId
           }));
         } catch (error) {
           console.error('Error fetching profile points:', error);
@@ -1287,10 +1228,10 @@ export class CloudStorageAdapter {
               datatype: profilePoint.datatype,
               valueset: profilePoint.valueset,
               unit: profilePoint.unit,
-              profile_id: profilePoint.profileId,
+              profileId: profilePoint.profileId,
               order: profilePoint.order,
-              previous_point_id: profilePoint.previousPointId,
-              next_point_id: profilePoint.nextPointId
+              previousPointId: profilePoint.previousPointId,
+              nextPointId: profilePoint.nextPointId
             })
           });
           if (!response.ok) throw new Error('Failed to create profile point');
@@ -1313,10 +1254,10 @@ export class CloudStorageAdapter {
               datatype: profilePoint.datatype,
               valueset: profilePoint.valueset,
               unit: profilePoint.unit,
-              profile_id: profilePoint.profileId,
+              profileId: profilePoint.profileId,
               order: profilePoint.order,
-              previous_point_id: profilePoint.previousPointId,
-              next_point_id: profilePoint.nextPointId
+              previousPointId: profilePoint.previousPointId,
+              nextPointId: profilePoint.nextPointId
             })
           });
           if (!response.ok) throw new Error('Failed to update profile point');
@@ -1343,10 +1284,10 @@ export class CloudStorageAdapter {
             datatype: profilePoint.datatype,
             valueset: profilePoint.valueset,
             unit: profilePoint.unit,
-            profileId: profilePoint.profile_id,
+            profileId: profilePoint.profileId,
             order: profilePoint.order,
-            previousPointId: profilePoint.previous_point_id,
-            nextPointId: profilePoint.next_point_id
+            previousPointId: profilePoint.previousPointId,
+            nextPointId: profilePoint.nextPointId
           };
         } catch (error) {
           console.error('Error fetching profile point:', error);
@@ -1386,10 +1327,10 @@ export class CloudStorageAdapter {
                   datatype: pp.datatype,
                   valueset: pp.valueset,
                   unit: pp.unit,
-                  profileId: pp.profile_id,
+                  profileId: pp.profileId,
                   order: pp.order,
-                  previousPointId: pp.previous_point_id,
-                  nextPointId: pp.next_point_id
+                  previousPointId: pp.previousPointId,
+                  nextPointId: pp.nextPointId
                 }));
             } catch (error) {
               console.error('Error filtering profile points:', error);
@@ -1410,10 +1351,10 @@ export class CloudStorageAdapter {
               datatype: changes.datatype,
               valueset: changes.valueset,
               unit: changes.unit,
-              profile_id: changes.profileId,
+              profileId: changes.profileId,
               order: changes.order,
-              previous_point_id: changes.previousPointId,
-              next_point_id: changes.nextPointId
+              previousPointId: changes.previousPointId,
+              nextPointId: changes.nextPointId
             })
           });
           if (!response.ok) throw new Error('Failed to update profile point');
@@ -1439,10 +1380,10 @@ export class CloudStorageAdapter {
             name: spp.name,
             explanation: spp.explanation,
             synonyms: spp.synonyms,
-            profileId: spp.profile_id,
+            profileId: spp.profileId,
             order: spp.order,
-            previousPointId: spp.previous_point_id,
-            nextPointId: spp.next_point_id
+            previousPointId: spp.previousPointId,
+            nextPointId: spp.nextPointId
           }));
         } catch (error) {
           console.error('Error fetching segmentation profile points:', error);
@@ -1458,10 +1399,10 @@ export class CloudStorageAdapter {
               name: segmentationProfilePoint.name,
               explanation: segmentationProfilePoint.explanation,
               synonyms: segmentationProfilePoint.synonyms,
-              profile_id: segmentationProfilePoint.profileId,
+              profileId: segmentationProfilePoint.profileId,
               order: segmentationProfilePoint.order,
-              previous_point_id: segmentationProfilePoint.previousPointId,
-              next_point_id: segmentationProfilePoint.nextPointId
+              previousPointId: segmentationProfilePoint.previousPointId,
+              nextPointId: segmentationProfilePoint.nextPointId
             })
           });
           if (!response.ok) throw new Error('Failed to create segmentation profile point');
@@ -1481,10 +1422,10 @@ export class CloudStorageAdapter {
               name: segmentationProfilePoint.name,
               explanation: segmentationProfilePoint.explanation,
               synonyms: segmentationProfilePoint.synonyms,
-              profile_id: segmentationProfilePoint.profileId,
+              profileId: segmentationProfilePoint.profileId,
               order: segmentationProfilePoint.order,
-              previous_point_id: segmentationProfilePoint.previousPointId,
-              next_point_id: segmentationProfilePoint.nextPointId
+              previousPointId: segmentationProfilePoint.previousPointId,
+              nextPointId: segmentationProfilePoint.nextPointId
             })
           });
           if (!response.ok) throw new Error('Failed to update segmentation profile point');
@@ -1508,10 +1449,10 @@ export class CloudStorageAdapter {
             name: segmentationProfilePoint.name,
             explanation: segmentationProfilePoint.explanation,
             synonyms: segmentationProfilePoint.synonyms,
-            profileId: segmentationProfilePoint.profile_id,
+            profileId: segmentationProfilePoint.profileId,
             order: segmentationProfilePoint.order,
-            previousPointId: segmentationProfilePoint.previous_point_id,
-            nextPointId: segmentationProfilePoint.next_point_id
+            previousPointId: segmentationProfilePoint.previousPointId,
+            nextPointId: segmentationProfilePoint.nextPointId
           };
         } catch (error) {
           console.error('Error fetching segmentation profile point:', error);
@@ -1548,10 +1489,10 @@ export class CloudStorageAdapter {
                   name: spp.name,
                   explanation: spp.explanation,
                   synonyms: spp.synonyms,
-                  profileId: spp.profile_id,
+                  profileId: spp.profileId,
                   order: spp.order,
-                  previousPointId: spp.previous_point_id,
-                  nextPointId: spp.next_point_id
+                  previousPointId: spp.previousPointId,
+                  nextPointId: spp.nextPointId
                 }));
             } catch (error) {
               console.error('Error filtering segmentation profile points:', error);
@@ -1569,10 +1510,10 @@ export class CloudStorageAdapter {
               name: changes.name,
               explanation: changes.explanation,
               synonyms: changes.synonyms,
-              profile_id: changes.profileId,
+              profileId: changes.profileId,
               order: changes.order,
-              previous_point_id: changes.previousPointId,
-              next_point_id: changes.nextPointId
+              previousPointId: changes.previousPointId,
+              nextPointId: changes.nextPointId
             })
           });
           if (!response.ok) throw new Error('Failed to update segmentation profile point');
@@ -2099,7 +2040,7 @@ export class CloudStorageAdapter {
           const data = await response.json();
           return data.map((us: any) => ({
             id: us.id,
-            tutorialCompleted: us.tutorial_completed
+            tutorialCompleted: us.tutorialCompleted
           }));
         } catch (error) {
           console.error('Error fetching user settings:', error);
@@ -2112,7 +2053,7 @@ export class CloudStorageAdapter {
             method: 'POST',
             headers: this.getAuthHeaders(),
             body: JSON.stringify({
-              tutorial_completed: userSettings.tutorialCompleted
+              tutorialCompleted: userSettings.tutorialCompleted
             })
           });
           if (!response.ok) throw new Error('Failed to create user settings');
@@ -2129,7 +2070,7 @@ export class CloudStorageAdapter {
             method: 'PUT',
             headers: this.getAuthHeaders(),
             body: JSON.stringify({
-              tutorial_completed: userSettings.tutorialCompleted
+              tutorialCompleted: userSettings.tutorialCompleted
             })
           });
           if (!response.ok) throw new Error('Failed to update user settings');
@@ -2150,7 +2091,7 @@ export class CloudStorageAdapter {
           if (!settings) return undefined;
           return {
             id: settings.id,
-            tutorialCompleted: settings.tutorial_completed
+            tutorialCompleted: settings.tutorialCompleted
           };
         } catch (error) {
           console.error('Error fetching user settings:', error);
@@ -2163,7 +2104,7 @@ export class CloudStorageAdapter {
             method: 'PUT',
             headers: this.getAuthHeaders(),
             body: JSON.stringify({
-              tutorial_completed: changes.tutorialCompleted
+              tutorialCompleted: changes.tutorialCompleted
             })
           });
           if (!response.ok) throw new Error('Failed to update user settings');

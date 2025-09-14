@@ -4,7 +4,7 @@ This provides a clean way to expose 'id' instead of '_id' in API responses
 """
 
 from beanie import Document
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_serializer
 from typing import Optional
 from bson import ObjectId
 
@@ -17,26 +17,25 @@ class MongoDocument(Document):
     
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
-    @property
-    def id(self) -> str:
-        """Return the MongoDB _id as a string 'id' field"""
-        return str(self._id)
-    
-    def dict(self, **kwargs):
-        """Override dict to include id field in API responses"""
-        data = super().dict(**kwargs)
-        data['id'] = self.id
+    def model_dump(self, **kwargs):
+        """Override model_dump to convert _id to id"""
+        data = super().model_dump(**kwargs)
+        # Convert _id to id for API responses
+        if '_id' in data:
+            data['id'] = str(data.pop('_id'))
+            print(f"DEBUG: model_dump called, converted _id to id: {data.get('id')}")
         return data
     
-    def model_dump(self, **kwargs):
-        """Override model_dump to include id field in API responses"""
-        data = super().model_dump(**kwargs)
-        data['id'] = self.id
+    def dict(self, **kwargs):
+        """Override dict to convert _id to id"""
+        data = super().dict(**kwargs)
+        # Convert _id to id for API responses
+        if '_id' in data:
+            data['id'] = str(data.pop('_id'))
+            print(f"DEBUG: dict called, converted _id to id: {data.get('id')}")
         return data
     
     class Settings:
-        # This ensures the computed 'id' field is not saved to MongoDB
-        # It's only available in Python/API responses
         use_revision = False
 
 class MongoBaseModel(BaseModel):

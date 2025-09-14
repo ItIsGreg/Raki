@@ -21,15 +21,15 @@ class UserDataService:
         
         # Check if storage name already exists for this user
         existing = await UserStorage.find_one(
-            UserStorage.user_id == user_id,
-            UserStorage.storage_name == storage_name
+            UserStorage.userId == user_id,
+            UserStorage.storageName == storage_name
         )
         if existing:
             raise ValueError("Storage name already exists")
         
         user_storage = UserStorage(
-            user_id=user_id,
-            storage_name=storage_name
+            userId=user_id,
+            storageName=storage_name
         )
         
         await user_storage.insert()
@@ -40,21 +40,21 @@ class UserDataService:
         # Ensure user_id is an ObjectId
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
-        return await UserStorage.find(UserStorage.user_id == user_id).sort("created_at").to_list()
+        return await UserStorage.find(UserStorage.userId == user_id).sort("createdAt").to_list()
     
     async def get_user_storage_by_id(self, storage_id: ObjectId, user_id: ObjectId) -> Optional[UserStorage]:
         """Get a specific cloud storage by ID for a user."""
         # Ensure user_id is an ObjectId
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
-        return await UserStorage.find_one(UserStorage.id == storage_id, UserStorage.user_id == user_id)
+        return await UserStorage.find_one(UserStorage.id == storage_id, UserStorage.userId == user_id)
     
     async def get_user_storage_by_name(self, storage_name: str, user_id: ObjectId) -> Optional[UserStorage]:
         """Get a specific cloud storage by name for a user."""
         # Ensure user_id is an ObjectId
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
-        return await UserStorage.find_one(UserStorage.storage_name == storage_name, UserStorage.user_id == user_id)
+        return await UserStorage.find_one(UserStorage.storageName == storage_name, UserStorage.userId == user_id)
     
     async def update_user_storage(self, storage_id: ObjectId, user_id: ObjectId, update_data: UserStorageUpdate) -> Optional[UserStorage]:
         """Update a cloud storage."""
@@ -64,7 +64,7 @@ class UserDataService:
         
         update_dict = update_data.model_dump(exclude_unset=True)
         if update_dict:
-            update_dict["updated_at"] = datetime.utcnow()
+            update_dict["updatedAt"] = datetime.utcnow()
             await user_storage.update({"$set": update_dict})
             # Refresh the document
             user_storage = await self.get_user_storage_by_id(storage_id, user_id)
@@ -87,22 +87,22 @@ class UserDataService:
     async def _delete_storage_data(self, storage_id: ObjectId, user_id: ObjectId):
         """Delete all data associated with a storage."""
         # Delete all data from all collections
-        await Profile.find(Profile.user_id == user_id, Profile.storage_id == storage_id).delete()
-        await Dataset.find(Dataset.user_id == user_id, Dataset.storage_id == storage_id).delete()
-        await Text.find(Text.user_id == user_id, Text.storage_id == storage_id).delete()
-        await AnnotatedDataset.find(AnnotatedDataset.user_id == user_id, AnnotatedDataset.storage_id == storage_id).delete()
-        await AnnotatedText.find(AnnotatedText.user_id == user_id, AnnotatedText.storage_id == storage_id).delete()
-        await DataPoint.find(DataPoint.user_id == user_id, DataPoint.storage_id == storage_id).delete()
-        await SegmentDataPoint.find(SegmentDataPoint.user_id == user_id, SegmentDataPoint.storage_id == storage_id).delete()
-        await ProfilePoint.find(ProfilePoint.user_id == user_id, ProfilePoint.storage_id == storage_id).delete()
-        await SegmentationProfilePoint.find(SegmentationProfilePoint.user_id == user_id, SegmentationProfilePoint.storage_id == storage_id).delete()
-        await ApiKey.find(ApiKey.user_id == user_id, ApiKey.storage_id == storage_id).delete()
-        await Model.find(Model.user_id == user_id, Model.storage_id == storage_id).delete()
-        await LLMProvider.find(LLMProvider.user_id == user_id, LLMProvider.storage_id == storage_id).delete()
-        await LLMUrl.find(LLMUrl.user_id == user_id, LLMUrl.storage_id == storage_id).delete()
-        await BatchSize.find(BatchSize.user_id == user_id, BatchSize.storage_id == storage_id).delete()
-        await MaxTokens.find(MaxTokens.user_id == user_id, MaxTokens.storage_id == storage_id).delete()
-        await UserSettings.find(UserSettings.user_id == user_id, UserSettings.storage_id == storage_id).delete()
+        await Profile.find(Profile.userId == user_id, Profile.storageId == storage_id).delete()
+        await Dataset.find(Dataset.userId == user_id, Dataset.storageId == storage_id).delete()
+        await Text.find(Text.userId == user_id, Text.storageId == storage_id).delete()
+        await AnnotatedDataset.find(AnnotatedDataset.userId == user_id, AnnotatedDataset.storageId == storage_id).delete()
+        await AnnotatedText.find(AnnotatedText.userId == user_id, AnnotatedText.storageId == storage_id).delete()
+        await DataPoint.find(DataPoint.userId == user_id, DataPoint.storageId == storage_id).delete()
+        await SegmentDataPoint.find(SegmentDataPoint.userId == user_id, SegmentDataPoint.storageId == storage_id).delete()
+        await ProfilePoint.find(ProfilePoint.userId == user_id, ProfilePoint.storageId == storage_id).delete()
+        await SegmentationProfilePoint.find(SegmentationProfilePoint.userId == user_id, SegmentationProfilePoint.storageId == storage_id).delete()
+        await ApiKey.find(ApiKey.userId == user_id, ApiKey.storageId == storage_id).delete()
+        await Model.find(Model.userId == user_id, Model.storageId == storage_id).delete()
+        await LLMProvider.find(LLMProvider.userId == user_id, LLMProvider.storageId == storage_id).delete()
+        await LLMUrl.find(LLMUrl.userId == user_id, LLMUrl.storageId == storage_id).delete()
+        await BatchSize.find(BatchSize.userId == user_id, BatchSize.storageId == storage_id).delete()
+        await MaxTokens.find(MaxTokens.userId == user_id, MaxTokens.storageId == storage_id).delete()
+        await UserSettings.find(UserSettings.userId == user_id, UserSettings.storageId == storage_id).delete()
     
     async def migrate_local_to_cloud(self, user_id: ObjectId, storage_name: str, local_data: Dict[str, Any]) -> UserStorage:
         """Migrate local storage data to cloud storage."""
@@ -127,8 +127,8 @@ class UserDataService:
         # Import profiles
         for profile_data in data.get('profiles', []):
             profile = Profile(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 name=profile_data['name'],
                 description=profile_data['description'],
                 mode=profile_data['mode'],
@@ -139,8 +139,8 @@ class UserDataService:
         # Import datasets
         for dataset_data in data.get('datasets', []):
             dataset = Dataset(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 name=dataset_data['name'],
                 description=dataset_data['description'],
                 mode=dataset_data['mode']
@@ -150,9 +150,9 @@ class UserDataService:
         # Import texts
         for text_data in data.get('texts', []):
             text = Text(
-                user_id=user_id,
-                storage_id=storage_id,
-                dataset_id=ObjectId(text_data['datasetId']),
+                userId=user_id,
+                storageId=storage_id,
+                datasetId=ObjectId(text_data['datasetId']),
                 filename=text_data['filename'],
                 text=text_data['text']
             )
@@ -161,12 +161,12 @@ class UserDataService:
         # Import annotated datasets
         for annotated_dataset_data in data.get('annotated_datasets', []):
             annotated_dataset = AnnotatedDataset(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 name=annotated_dataset_data['name'],
                 description=annotated_dataset_data['description'],
-                dataset_id=ObjectId(annotated_dataset_data['datasetId']),
-                profile_id=ObjectId(annotated_dataset_data['profileId']),
+                datasetId=ObjectId(annotated_dataset_data['datasetId']),
+                profileId=ObjectId(annotated_dataset_data['profileId']),
                 mode=annotated_dataset_data['mode']
             )
             await annotated_dataset.insert()
@@ -174,25 +174,25 @@ class UserDataService:
         # Import annotated texts
         for annotated_text_data in data.get('annotated_texts', []):
             annotated_text = AnnotatedText(
-                user_id=user_id,
-                storage_id=storage_id,
-                text_id=ObjectId(annotated_text_data['textId']),
-                annotated_dataset_id=ObjectId(annotated_text_data['annotatedDatasetId']),
+                userId=user_id,
+                storageId=storage_id,
+                textId=ObjectId(annotated_text_data['textId']),
+                annotatedDatasetId=ObjectId(annotated_text_data['annotatedDatasetId']),
                 verified=annotated_text_data.get('verified'),
-                ai_faulty=annotated_text_data.get('aiFaulty')
+                aiFaulty=annotated_text_data.get('aiFaulty')
             )
             await annotated_text.insert()
         
         # Import data points
         for data_point_data in data.get('data_points', []):
             data_point = DataPoint(
-                user_id=user_id,
-                storage_id=storage_id,
-                annotated_text_id=ObjectId(data_point_data['annotatedTextId']),
+                userId=user_id,
+                storageId=storage_id,
+                annotatedTextId=ObjectId(data_point_data['annotatedTextId']),
                 name=data_point_data['name'],
                 value=data_point_data.get('value'),
                 match=data_point_data.get('match'),
-                profile_point_id=ObjectId(data_point_data['profilePointId']) if data_point_data.get('profilePointId') else None,
+                profilePointId=ObjectId(data_point_data['profilePointId']) if data_point_data.get('profilePointId') else None,
                 verified=data_point_data.get('verified')
             )
             await data_point.insert()
@@ -200,13 +200,13 @@ class UserDataService:
         # Import segment data points
         for segment_data_point_data in data.get('segment_data_points', []):
             segment_data_point = SegmentDataPoint(
-                user_id=user_id,
-                storage_id=storage_id,
-                annotated_text_id=ObjectId(segment_data_point_data['annotatedTextId']),
+                userId=user_id,
+                storageId=storage_id,
+                annotatedTextId=ObjectId(segment_data_point_data['annotatedTextId']),
                 name=segment_data_point_data['name'],
-                begin_match=segment_data_point_data.get('beginMatch'),
-                end_match=segment_data_point_data.get('endMatch'),
-                profile_point_id=ObjectId(segment_data_point_data['profilePointId']) if segment_data_point_data.get('profilePointId') else None,
+                beginMatch=segment_data_point_data.get('beginMatch'),
+                endMatch=segment_data_point_data.get('endMatch'),
+                profilePointId=ObjectId(segment_data_point_data['profilePointId']) if segment_data_point_data.get('profilePointId') else None,
                 verified=segment_data_point_data.get('verified')
             )
             await segment_data_point.insert()
@@ -214,89 +214,89 @@ class UserDataService:
         # Import profile points
         for profile_point_data in data.get('profile_points', []):
             profile_point = ProfilePoint(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 name=profile_point_data['name'],
                 explanation=profile_point_data['explanation'],
                 synonyms=profile_point_data.get('synonyms', []),
                 datatype=profile_point_data['datatype'],
                 valueset=profile_point_data.get('valueset'),
                 unit=profile_point_data.get('unit'),
-                profile_id=ObjectId(profile_point_data['profileId']),
+                profileId=ObjectId(profile_point_data['profileId']),
                 order=profile_point_data.get('order'),
-                previous_point_id=ObjectId(profile_point_data['previousPointId']) if profile_point_data.get('previousPointId') else None,
-                next_point_id=ObjectId(profile_point_data['nextPointId']) if profile_point_data.get('nextPointId') else None
+                previousPointId=ObjectId(profile_point_data['previousPointId']) if profile_point_data.get('previousPointId') else None,
+                nextPointId=ObjectId(profile_point_data['nextPointId']) if profile_point_data.get('nextPointId') else None
             )
             await profile_point.insert()
         
         # Import segmentation profile points
         for segmentation_profile_point_data in data.get('segmentation_profile_points', []):
             segmentation_profile_point = SegmentationProfilePoint(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 name=segmentation_profile_point_data['name'],
                 explanation=segmentation_profile_point_data['explanation'],
                 synonyms=segmentation_profile_point_data.get('synonyms', []),
-                profile_id=ObjectId(segmentation_profile_point_data['profileId']),
+                profileId=ObjectId(segmentation_profile_point_data['profileId']),
                 order=segmentation_profile_point_data.get('order'),
-                previous_point_id=ObjectId(segmentation_profile_point_data['previousPointId']) if segmentation_profile_point_data.get('previousPointId') else None,
-                next_point_id=ObjectId(segmentation_profile_point_data['nextPointId']) if segmentation_profile_point_data.get('nextPointId') else None
+                previousPointId=ObjectId(segmentation_profile_point_data['previousPointId']) if segmentation_profile_point_data.get('previousPointId') else None,
+                nextPointId=ObjectId(segmentation_profile_point_data['nextPointId']) if segmentation_profile_point_data.get('nextPointId') else None
             )
             await segmentation_profile_point.insert()
         
         # Import other data
         for api_key_data in data.get('api_keys', []):
             api_key = ApiKey(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 key=api_key_data['key']
             )
             await api_key.insert()
         
         for model_data in data.get('models', []):
             model = Model(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 name=model_data['name']
             )
             await model.insert()
         
         for llm_provider_data in data.get('llm_providers', []):
             llm_provider = LLMProvider(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 provider=llm_provider_data['provider']
             )
             await llm_provider.insert()
         
         for llm_url_data in data.get('llm_urls', []):
             llm_url = LLMUrl(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 url=llm_url_data['url']
             )
             await llm_url.insert()
         
         for batch_size_data in data.get('batch_sizes', []):
             batch_size = BatchSize(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 value=batch_size_data['value']
             )
             await batch_size.insert()
         
         for max_tokens_data in data.get('max_tokens', []):
             max_tokens = MaxTokens(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 value=max_tokens_data.get('value')
             )
             await max_tokens.insert()
         
         for user_settings_data in data.get('user_settings', []):
             user_settings = UserSettings(
-                user_id=user_id,
-                storage_id=storage_id,
+                userId=user_id,
+                storageId=storage_id,
                 tutorial_completed=user_settings_data.get('tutorialCompleted', False)
             )
             await user_settings.insert()
@@ -312,22 +312,22 @@ class UserDataService:
             return None
         
         # Export all data from the storage
-        profiles = await Profile.find(Profile.user_id == user_id, Profile.storage_id == storage_id).to_list()
-        datasets = await Dataset.find(Dataset.user_id == user_id, Dataset.storage_id == storage_id).to_list()
-        texts = await Text.find(Text.user_id == user_id, Text.storage_id == storage_id).to_list()
-        annotated_datasets = await AnnotatedDataset.find(AnnotatedDataset.user_id == user_id, AnnotatedDataset.storage_id == storage_id).to_list()
-        annotated_texts = await AnnotatedText.find(AnnotatedText.user_id == user_id, AnnotatedText.storage_id == storage_id).to_list()
-        data_points = await DataPoint.find(DataPoint.user_id == user_id, DataPoint.storage_id == storage_id).to_list()
-        segment_data_points = await SegmentDataPoint.find(SegmentDataPoint.user_id == user_id, SegmentDataPoint.storage_id == storage_id).to_list()
-        profile_points = await ProfilePoint.find(ProfilePoint.user_id == user_id, ProfilePoint.storage_id == storage_id).to_list()
-        segmentation_profile_points = await SegmentationProfilePoint.find(SegmentationProfilePoint.user_id == user_id, SegmentationProfilePoint.storage_id == storage_id).to_list()
-        api_keys = await ApiKey.find(ApiKey.user_id == user_id, ApiKey.storage_id == storage_id).to_list()
-        models = await Model.find(Model.user_id == user_id, Model.storage_id == storage_id).to_list()
-        llm_providers = await LLMProvider.find(LLMProvider.user_id == user_id, LLMProvider.storage_id == storage_id).to_list()
-        llm_urls = await LLMUrl.find(LLMUrl.user_id == user_id, LLMUrl.storage_id == storage_id).to_list()
-        batch_sizes = await BatchSize.find(BatchSize.user_id == user_id, BatchSize.storage_id == storage_id).to_list()
-        max_tokens = await MaxTokens.find(MaxTokens.user_id == user_id, MaxTokens.storage_id == storage_id).to_list()
-        user_settings = await UserSettings.find(UserSettings.user_id == user_id, UserSettings.storage_id == storage_id).to_list()
+        profiles = await Profile.find(Profile.userId == user_id, Profile.storageId == storage_id).to_list()
+        datasets = await Dataset.find(Dataset.userId == user_id, Dataset.storageId == storage_id).to_list()
+        texts = await Text.find(Text.userId == user_id, Text.storageId == storage_id).to_list()
+        annotated_datasets = await AnnotatedDataset.find(AnnotatedDataset.userId == user_id, AnnotatedDataset.storageId == storage_id).to_list()
+        annotated_texts = await AnnotatedText.find(AnnotatedText.userId == user_id, AnnotatedText.storageId == storage_id).to_list()
+        data_points = await DataPoint.find(DataPoint.userId == user_id, DataPoint.storageId == storage_id).to_list()
+        segment_data_points = await SegmentDataPoint.find(SegmentDataPoint.userId == user_id, SegmentDataPoint.storageId == storage_id).to_list()
+        profile_points = await ProfilePoint.find(ProfilePoint.userId == user_id, ProfilePoint.storageId == storage_id).to_list()
+        segmentation_profile_points = await SegmentationProfilePoint.find(SegmentationProfilePoint.userId == user_id, SegmentationProfilePoint.storageId == storage_id).to_list()
+        api_keys = await ApiKey.find(ApiKey.userId == user_id, ApiKey.storageId == storage_id).to_list()
+        models = await Model.find(Model.userId == user_id, Model.storageId == storage_id).to_list()
+        llm_providers = await LLMProvider.find(LLMProvider.userId == user_id, LLMProvider.storageId == storage_id).to_list()
+        llm_urls = await LLMUrl.find(LLMUrl.userId == user_id, LLMUrl.storageId == storage_id).to_list()
+        batch_sizes = await BatchSize.find(BatchSize.userId == user_id, BatchSize.storageId == storage_id).to_list()
+        max_tokens = await MaxTokens.find(MaxTokens.userId == user_id, MaxTokens.storageId == storage_id).to_list()
+        user_settings = await UserSettings.find(UserSettings.userId == user_id, UserSettings.storageId == storage_id).to_list()
         
         return StorageDataExport(
             profiles=[profile.model_dump() for profile in profiles],
@@ -362,8 +362,8 @@ class UserDataService:
         
         # Create the profile
         profile = Profile(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             name=profile_data['name'],
             description=profile_data['description'],
             mode=profile_data['mode'],
@@ -384,7 +384,7 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         # Get all profiles for this storage
-        profiles = await Profile.find(Profile.user_id == user_id, Profile.storage_id == storage_id).to_list()
+        profiles = await Profile.find(Profile.userId == user_id, Profile.storageId == storage_id).to_list()
         return profiles
     
     async def update_profile(self, storage_id: ObjectId, profile_id: ObjectId, user_id: ObjectId, profile_data: dict) -> Profile:
@@ -394,7 +394,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the profile
-        profile = await Profile.find_one(Profile.id == profile_id, Profile.user_id == user_id, Profile.storage_id == storage_id)
+        profile = await Profile.find_one(Profile.id == profile_id, Profile.userId == user_id, Profile.storageId == storage_id)
         if not profile:
             raise ValueError("Profile not found or access denied")
         
@@ -413,7 +413,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the profile
-        profile = await Profile.find_one(Profile.id == profile_id, Profile.user_id == user_id, Profile.storage_id == storage_id)
+        profile = await Profile.find_one(Profile.id == profile_id, Profile.userId == user_id, Profile.storageId == storage_id)
         if not profile:
             raise ValueError("Profile not found or access denied")
         
@@ -434,8 +434,8 @@ class UserDataService:
         
         # Create the dataset
         dataset = Dataset(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             name=dataset_data['name'],
             description=dataset_data['description'],
             mode=dataset_data['mode']
@@ -455,7 +455,7 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         # Get all datasets for this storage
-        datasets = await Dataset.find(Dataset.user_id == user_id, Dataset.storage_id == storage_id).to_list()
+        datasets = await Dataset.find(Dataset.userId == user_id, Dataset.storageId == storage_id).to_list()
         return datasets
     
     async def update_dataset(self, storage_id: ObjectId, dataset_id: ObjectId, user_id: ObjectId, dataset_data: dict) -> Dataset:
@@ -465,7 +465,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the dataset
-        dataset = await Dataset.find_one(Dataset.id == dataset_id, Dataset.user_id == user_id, Dataset.storage_id == storage_id)
+        dataset = await Dataset.find_one(Dataset.id == dataset_id, Dataset.userId == user_id, Dataset.storageId == storage_id)
         if not dataset:
             raise ValueError("Dataset not found or access denied")
         
@@ -484,7 +484,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the dataset
-        dataset = await Dataset.find_one(Dataset.id == dataset_id, Dataset.user_id == user_id, Dataset.storage_id == storage_id)
+        dataset = await Dataset.find_one(Dataset.id == dataset_id, Dataset.userId == user_id, Dataset.storageId == storage_id)
         if not dataset:
             raise ValueError("Dataset not found or access denied")
         
@@ -505,13 +505,13 @@ class UserDataService:
         
         # Create the data point
         data_point = DataPoint(
-            user_id=user_id,
-            storage_id=storage_id,
-            annotated_text_id=ObjectId(data_point_data['annotated_text_id']),
+            userId=user_id,
+            storageId=storage_id,
+            annotatedTextId=ObjectId(data_point_data['annotatedTextId']),
             name=data_point_data['name'],
             value=data_point_data.get('value'),
             match=data_point_data.get('match'),
-            profile_point_id=ObjectId(data_point_data['profile_point_id']) if data_point_data.get('profile_point_id') else None,
+            profilePointId=ObjectId(data_point_data['profilePointId']) if data_point_data.get('profilePointId') else None,
             verified=data_point_data.get('verified')
         )
         await data_point.insert()
@@ -529,7 +529,7 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         # Get all data points for this storage
-        data_points = await DataPoint.find(DataPoint.user_id == user_id, DataPoint.storage_id == storage_id).to_list()
+        data_points = await DataPoint.find(DataPoint.userId == user_id, DataPoint.storageId == storage_id).to_list()
         return data_points
     
     async def get_data_points_by_annotated_text(self, storage_id: ObjectId, annotated_text_id: ObjectId, user_id: ObjectId) -> List[DataPoint]:
@@ -545,8 +545,8 @@ class UserDataService:
         
         # Get data points for this annotated text
         data_points = await DataPoint.find(
-            DataPoint.user_id == user_id, 
-            DataPoint.storage_id == storage_id,
+            DataPoint.userId == user_id, 
+            DataPoint.storageId == storage_id,
             DataPoint.annotated_text_id == annotated_text_id
         ).to_list()
         return data_points
@@ -558,7 +558,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the data point
-        data_point = await DataPoint.find_one(DataPoint.id == data_point_id, DataPoint.user_id == user_id, DataPoint.storage_id == storage_id)
+        data_point = await DataPoint.find_one(DataPoint.id == data_point_id, DataPoint.userId == user_id, DataPoint.storageId == storage_id)
         if not data_point:
             raise ValueError("Data point not found or access denied")
         
@@ -580,7 +580,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the data point
-        data_point = await DataPoint.find_one(DataPoint.id == data_point_id, DataPoint.user_id == user_id, DataPoint.storage_id == storage_id)
+        data_point = await DataPoint.find_one(DataPoint.id == data_point_id, DataPoint.userId == user_id, DataPoint.storageId == storage_id)
         if not data_point:
             raise ValueError("Data point not found or access denied")
         
@@ -601,13 +601,13 @@ class UserDataService:
         
         # Create the segment data point
         segment_data_point = SegmentDataPoint(
-            user_id=user_id,
-            storage_id=storage_id,
-            annotated_text_id=ObjectId(segment_data_point_data['annotated_text_id']),
+            userId=user_id,
+            storageId=storage_id,
+            annotatedTextId=ObjectId(segment_data_point_data['annotatedTextId']),
             name=segment_data_point_data['name'],
-            begin_match=segment_data_point_data.get('begin_match'),
-            end_match=segment_data_point_data.get('end_match'),
-            profile_point_id=ObjectId(segment_data_point_data['profile_point_id']) if segment_data_point_data.get('profile_point_id') else None,
+            beginMatch=segment_data_point_data.get('beginMatch'),
+            endMatch=segment_data_point_data.get('endMatch'),
+            profilePointId=ObjectId(segment_data_point_data['profilePointId']) if segment_data_point_data.get('profilePointId') else None,
             verified=segment_data_point_data.get('verified')
         )
         await segment_data_point.insert()
@@ -625,7 +625,7 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         # Get all segment data points for this storage
-        segment_data_points = await SegmentDataPoint.find(SegmentDataPoint.user_id == user_id, SegmentDataPoint.storage_id == storage_id).to_list()
+        segment_data_points = await SegmentDataPoint.find(SegmentDataPoint.userId == user_id, SegmentDataPoint.storageId == storage_id).to_list()
         return segment_data_points
     
     async def get_segment_data_points_by_annotated_text(self, storage_id: ObjectId, annotated_text_id: ObjectId, user_id: ObjectId) -> List[SegmentDataPoint]:
@@ -641,8 +641,8 @@ class UserDataService:
         
         # Get segment data points for this annotated text
         segment_data_points = await SegmentDataPoint.find(
-            SegmentDataPoint.user_id == user_id, 
-            SegmentDataPoint.storage_id == storage_id,
+            SegmentDataPoint.userId == user_id, 
+            SegmentDataPoint.storageId == storage_id,
             SegmentDataPoint.annotated_text_id == annotated_text_id
         ).to_list()
         return segment_data_points
@@ -654,7 +654,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the segment data point
-        segment_data_point = await SegmentDataPoint.find_one(SegmentDataPoint.id == segment_data_point_id, SegmentDataPoint.user_id == user_id, SegmentDataPoint.storage_id == storage_id)
+        segment_data_point = await SegmentDataPoint.find_one(SegmentDataPoint.id == segment_data_point_id, SegmentDataPoint.userId == user_id, SegmentDataPoint.storageId == storage_id)
         if not segment_data_point:
             raise ValueError("Segment data point not found or access denied")
         
@@ -676,7 +676,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the segment data point
-        segment_data_point = await SegmentDataPoint.find_one(SegmentDataPoint.id == segment_data_point_id, SegmentDataPoint.user_id == user_id, SegmentDataPoint.storage_id == storage_id)
+        segment_data_point = await SegmentDataPoint.find_one(SegmentDataPoint.id == segment_data_point_id, SegmentDataPoint.userId == user_id, SegmentDataPoint.storageId == storage_id)
         if not segment_data_point:
             raise ValueError("Segment data point not found or access denied")
         
@@ -697,18 +697,18 @@ class UserDataService:
         
         # Create the profile point
         profile_point = ProfilePoint(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             name=profile_point_data['name'],
             explanation=profile_point_data['explanation'],
             synonyms=profile_point_data.get('synonyms', []),
             datatype=profile_point_data['datatype'],
             valueset=profile_point_data.get('valueset'),
             unit=profile_point_data.get('unit'),
-            profile_id=ObjectId(profile_point_data['profile_id']),
+            profileId=ObjectId(profile_point_data['profileId']),
             order=profile_point_data.get('order'),
-            previous_point_id=ObjectId(profile_point_data['previous_point_id']) if profile_point_data.get('previous_point_id') else None,
-            next_point_id=ObjectId(profile_point_data['next_point_id']) if profile_point_data.get('next_point_id') else None
+            previousPointId=ObjectId(profile_point_data['previousPointId']) if profile_point_data.get('previousPointId') else None,
+            nextPointId=ObjectId(profile_point_data['nextPointId']) if profile_point_data.get('nextPointId') else None
         )
         await profile_point.insert()
         return profile_point
@@ -725,7 +725,7 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         # Get all profile points for this storage
-        profile_points = await ProfilePoint.find(ProfilePoint.user_id == user_id, ProfilePoint.storage_id == storage_id).to_list()
+        profile_points = await ProfilePoint.find(ProfilePoint.userId == user_id, ProfilePoint.storageId == storage_id).to_list()
         return profile_points
     
     async def get_profile_points_by_profile(self, storage_id: ObjectId, profile_id: ObjectId, user_id: ObjectId) -> List[ProfilePoint]:
@@ -741,8 +741,8 @@ class UserDataService:
         
         # Get profile points for this profile
         profile_points = await ProfilePoint.find(
-            ProfilePoint.user_id == user_id, 
-            ProfilePoint.storage_id == storage_id,
+            ProfilePoint.userId == user_id, 
+            ProfilePoint.storageId == storage_id,
             ProfilePoint.profile_id == profile_id
         ).to_list()
         return profile_points
@@ -754,7 +754,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the profile point
-        profile_point = await ProfilePoint.find_one(ProfilePoint.id == profile_point_id, ProfilePoint.user_id == user_id, ProfilePoint.storage_id == storage_id)
+        profile_point = await ProfilePoint.find_one(ProfilePoint.id == profile_point_id, ProfilePoint.userId == user_id, ProfilePoint.storageId == storage_id)
         if not profile_point:
             raise ValueError("Profile point not found or access denied")
         
@@ -776,7 +776,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the profile point
-        profile_point = await ProfilePoint.find_one(ProfilePoint.id == profile_point_id, ProfilePoint.user_id == user_id, ProfilePoint.storage_id == storage_id)
+        profile_point = await ProfilePoint.find_one(ProfilePoint.id == profile_point_id, ProfilePoint.userId == user_id, ProfilePoint.storageId == storage_id)
         if not profile_point:
             raise ValueError("Profile point not found or access denied")
         
@@ -797,15 +797,15 @@ class UserDataService:
         
         # Create the segmentation profile point
         segmentation_profile_point = SegmentationProfilePoint(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             name=segmentation_profile_point_data['name'],
             explanation=segmentation_profile_point_data['explanation'],
             synonyms=segmentation_profile_point_data.get('synonyms', []),
-            profile_id=ObjectId(segmentation_profile_point_data['profile_id']),
+            profileId=ObjectId(segmentation_profile_point_data['profileId']),
             order=segmentation_profile_point_data.get('order'),
-            previous_point_id=ObjectId(segmentation_profile_point_data['previous_point_id']) if segmentation_profile_point_data.get('previous_point_id') else None,
-            next_point_id=ObjectId(segmentation_profile_point_data['next_point_id']) if segmentation_profile_point_data.get('next_point_id') else None
+            previousPointId=ObjectId(segmentation_profile_point_data['previousPointId']) if segmentation_profile_point_data.get('previousPointId') else None,
+            nextPointId=ObjectId(segmentation_profile_point_data['nextPointId']) if segmentation_profile_point_data.get('nextPointId') else None
         )
         await segmentation_profile_point.insert()
         return segmentation_profile_point
@@ -822,7 +822,7 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         # Get all segmentation profile points for this storage
-        segmentation_profile_points = await SegmentationProfilePoint.find(SegmentationProfilePoint.user_id == user_id, SegmentationProfilePoint.storage_id == storage_id).to_list()
+        segmentation_profile_points = await SegmentationProfilePoint.find(SegmentationProfilePoint.userId == user_id, SegmentationProfilePoint.storageId == storage_id).to_list()
         return segmentation_profile_points
     
     async def get_segmentation_profile_points_by_profile(self, storage_id: ObjectId, profile_id: ObjectId, user_id: ObjectId) -> List[SegmentationProfilePoint]:
@@ -838,8 +838,8 @@ class UserDataService:
         
         # Get segmentation profile points for this profile
         segmentation_profile_points = await SegmentationProfilePoint.find(
-            SegmentationProfilePoint.user_id == user_id, 
-            SegmentationProfilePoint.storage_id == storage_id,
+            SegmentationProfilePoint.userId == user_id, 
+            SegmentationProfilePoint.storageId == storage_id,
             SegmentationProfilePoint.profile_id == profile_id
         ).to_list()
         return segmentation_profile_points
@@ -851,7 +851,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the segmentation profile point
-        segmentation_profile_point = await SegmentationProfilePoint.find_one(SegmentationProfilePoint.id == segmentation_profile_point_id, SegmentationProfilePoint.user_id == user_id, SegmentationProfilePoint.storage_id == storage_id)
+        segmentation_profile_point = await SegmentationProfilePoint.find_one(SegmentationProfilePoint.id == segmentation_profile_point_id, SegmentationProfilePoint.userId == user_id, SegmentationProfilePoint.storageId == storage_id)
         if not segmentation_profile_point:
             raise ValueError("Segmentation profile point not found or access denied")
         
@@ -873,7 +873,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the segmentation profile point
-        segmentation_profile_point = await SegmentationProfilePoint.find_one(SegmentationProfilePoint.id == segmentation_profile_point_id, SegmentationProfilePoint.user_id == user_id, SegmentationProfilePoint.storage_id == storage_id)
+        segmentation_profile_point = await SegmentationProfilePoint.find_one(SegmentationProfilePoint.id == segmentation_profile_point_id, SegmentationProfilePoint.userId == user_id, SegmentationProfilePoint.storageId == storage_id)
         if not segmentation_profile_point:
             raise ValueError("Segmentation profile point not found or access denied")
         
@@ -894,9 +894,9 @@ class UserDataService:
         
         # Create the text
         text = Text(
-            user_id=user_id,
-            storage_id=storage_id,
-            dataset_id=ObjectId(text_data['dataset_id']),
+            userId=user_id,
+            storageId=storage_id,
+            datasetId=ObjectId(text_data['datasetId']),
             filename=text_data['filename'],
             text=text_data['text']
         )
@@ -915,7 +915,7 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         # Get all texts for this storage
-        texts = await Text.find(Text.user_id == user_id, Text.storage_id == storage_id).to_list()
+        texts = await Text.find(Text.userId == user_id, Text.storageId == storage_id).to_list()
         return texts
     
     async def get_texts_by_dataset(self, storage_id: ObjectId, dataset_id: ObjectId, user_id: ObjectId) -> List[Text]:
@@ -931,8 +931,8 @@ class UserDataService:
         
         # Get texts for this dataset
         texts = await Text.find(
-            Text.user_id == user_id, 
-            Text.storage_id == storage_id,
+            Text.userId == user_id, 
+            Text.storageId == storage_id,
             Text.dataset_id == dataset_id
         ).to_list()
         return texts
@@ -944,7 +944,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the text
-        text = await Text.find_one(Text.id == text_id, Text.user_id == user_id, Text.storage_id == storage_id)
+        text = await Text.find_one(Text.id == text_id, Text.userId == user_id, Text.storageId == storage_id)
         if not text:
             raise ValueError("Text not found or access denied")
         
@@ -966,7 +966,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the text
-        text = await Text.find_one(Text.id == text_id, Text.user_id == user_id, Text.storage_id == storage_id)
+        text = await Text.find_one(Text.id == text_id, Text.userId == user_id, Text.storageId == storage_id)
         if not text:
             raise ValueError("Text not found or access denied")
         
@@ -987,12 +987,12 @@ class UserDataService:
         
         # Create the annotated dataset
         annotated_dataset = AnnotatedDataset(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             name=annotated_dataset_data['name'],
             description=annotated_dataset_data['description'],
-            dataset_id=ObjectId(annotated_dataset_data['dataset_id']),
-            profile_id=ObjectId(annotated_dataset_data['profile_id']),
+            datasetId=ObjectId(annotated_dataset_data['datasetId']),
+            profileId=ObjectId(annotated_dataset_data['profileId']),
             mode=annotated_dataset_data['mode']
         )
         await annotated_dataset.insert()
@@ -1010,7 +1010,7 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         # Get all annotated datasets for this storage
-        annotated_datasets = await AnnotatedDataset.find(AnnotatedDataset.user_id == user_id, AnnotatedDataset.storage_id == storage_id).to_list()
+        annotated_datasets = await AnnotatedDataset.find(AnnotatedDataset.userId == user_id, AnnotatedDataset.storageId == storage_id).to_list()
         return annotated_datasets
     
     async def get_annotated_datasets_by_dataset(self, storage_id: ObjectId, dataset_id: ObjectId, user_id: ObjectId) -> List[AnnotatedDataset]:
@@ -1026,8 +1026,8 @@ class UserDataService:
         
         # Get annotated datasets for this dataset
         annotated_datasets = await AnnotatedDataset.find(
-            AnnotatedDataset.user_id == user_id, 
-            AnnotatedDataset.storage_id == storage_id,
+            AnnotatedDataset.userId == user_id, 
+            AnnotatedDataset.storageId == storage_id,
             AnnotatedDataset.dataset_id == dataset_id
         ).to_list()
         return annotated_datasets
@@ -1039,7 +1039,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the annotated dataset
-        annotated_dataset = await AnnotatedDataset.find_one(AnnotatedDataset.id == annotated_dataset_id, AnnotatedDataset.user_id == user_id, AnnotatedDataset.storage_id == storage_id)
+        annotated_dataset = await AnnotatedDataset.find_one(AnnotatedDataset.id == annotated_dataset_id, AnnotatedDataset.userId == user_id, AnnotatedDataset.storageId == storage_id)
         if not annotated_dataset:
             raise ValueError("Annotated dataset not found or access denied")
         
@@ -1061,7 +1061,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the annotated dataset
-        annotated_dataset = await AnnotatedDataset.find_one(AnnotatedDataset.id == annotated_dataset_id, AnnotatedDataset.user_id == user_id, AnnotatedDataset.storage_id == storage_id)
+        annotated_dataset = await AnnotatedDataset.find_one(AnnotatedDataset.id == annotated_dataset_id, AnnotatedDataset.userId == user_id, AnnotatedDataset.storageId == storage_id)
         if not annotated_dataset:
             raise ValueError("Annotated dataset not found or access denied")
         
@@ -1082,12 +1082,12 @@ class UserDataService:
         
         # Create the annotated text
         annotated_text = AnnotatedText(
-            user_id=user_id,
-            storage_id=storage_id,
-            text_id=ObjectId(annotated_text_data['text_id']),
-            annotated_dataset_id=ObjectId(annotated_text_data['annotated_dataset_id']),
+            userId=user_id,
+            storageId=storage_id,
+            textId=ObjectId(annotated_text_data['textId']),
+            annotatedDatasetId=ObjectId(annotated_text_data['annotatedDatasetId']),
             verified=annotated_text_data.get('verified'),
-            ai_faulty=annotated_text_data.get('ai_faulty')
+            aiFaulty=annotated_text_data.get('aiFaulty')
         )
         await annotated_text.insert()
         return annotated_text
@@ -1104,7 +1104,7 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         # Get all annotated texts for this storage
-        annotated_texts = await AnnotatedText.find(AnnotatedText.user_id == user_id, AnnotatedText.storage_id == storage_id).to_list()
+        annotated_texts = await AnnotatedText.find(AnnotatedText.userId == user_id, AnnotatedText.storageId == storage_id).to_list()
         return annotated_texts
     
     async def get_annotated_texts_by_dataset(self, storage_id: ObjectId, annotated_dataset_id: ObjectId, user_id: ObjectId) -> List[AnnotatedText]:
@@ -1120,8 +1120,8 @@ class UserDataService:
         
         # Get annotated texts for this annotated dataset
         annotated_texts = await AnnotatedText.find(
-            AnnotatedText.user_id == user_id, 
-            AnnotatedText.storage_id == storage_id,
+            AnnotatedText.userId == user_id, 
+            AnnotatedText.storageId == storage_id,
             AnnotatedText.annotated_dataset_id == annotated_dataset_id
         ).to_list()
         return annotated_texts
@@ -1133,7 +1133,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the annotated text
-        annotated_text = await AnnotatedText.find_one(AnnotatedText.id == annotated_text_id, AnnotatedText.user_id == user_id, AnnotatedText.storage_id == storage_id)
+        annotated_text = await AnnotatedText.find_one(AnnotatedText.id == annotated_text_id, AnnotatedText.userId == user_id, AnnotatedText.storageId == storage_id)
         if not annotated_text:
             raise ValueError("Annotated text not found or access denied")
         
@@ -1155,7 +1155,7 @@ class UserDataService:
             user_id = ObjectId(user_id)
         
         # Find the annotated text
-        annotated_text = await AnnotatedText.find_one(AnnotatedText.id == annotated_text_id, AnnotatedText.user_id == user_id, AnnotatedText.storage_id == storage_id)
+        annotated_text = await AnnotatedText.find_one(AnnotatedText.id == annotated_text_id, AnnotatedText.userId == user_id, AnnotatedText.storageId == storage_id)
         if not annotated_text:
             raise ValueError("Annotated text not found or access denied")
         
@@ -1174,8 +1174,8 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         api_key = ApiKey(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             key=api_key_data['key']
         )
         await api_key.insert()
@@ -1190,7 +1190,7 @@ class UserDataService:
         if not storage:
             raise ValueError("Storage not found or access denied")
         
-        api_keys = await ApiKey.find(ApiKey.user_id == user_id, ApiKey.storage_id == storage_id).to_list()
+        api_keys = await ApiKey.find(ApiKey.userId == user_id, ApiKey.storageId == storage_id).to_list()
         return api_keys
     
     async def update_api_key(self, storage_id: ObjectId, api_key_id: ObjectId, user_id: ObjectId, api_key_data: dict) -> ApiKey:
@@ -1198,7 +1198,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        api_key = await ApiKey.find_one(ApiKey.id == api_key_id, ApiKey.user_id == user_id, ApiKey.storage_id == storage_id)
+        api_key = await ApiKey.find_one(ApiKey.id == api_key_id, ApiKey.userId == user_id, ApiKey.storageId == storage_id)
         if not api_key:
             raise ValueError("API key not found or access denied")
         
@@ -1214,7 +1214,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        api_key = await ApiKey.find_one(ApiKey.id == api_key_id, ApiKey.user_id == user_id, ApiKey.storage_id == storage_id)
+        api_key = await ApiKey.find_one(ApiKey.id == api_key_id, ApiKey.userId == user_id, ApiKey.storageId == storage_id)
         if not api_key:
             raise ValueError("API key not found or access denied")
         
@@ -1231,8 +1231,8 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         model = Model(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             name=model_data['name']
         )
         await model.insert()
@@ -1247,7 +1247,7 @@ class UserDataService:
         if not storage:
             raise ValueError("Storage not found or access denied")
         
-        models = await Model.find(Model.user_id == user_id, Model.storage_id == storage_id).to_list()
+        models = await Model.find(Model.userId == user_id, Model.storageId == storage_id).to_list()
         return models
     
     async def update_model(self, storage_id: ObjectId, model_id: ObjectId, user_id: ObjectId, model_data: dict) -> Model:
@@ -1255,7 +1255,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        model = await Model.find_one(Model.id == model_id, Model.user_id == user_id, Model.storage_id == storage_id)
+        model = await Model.find_one(Model.id == model_id, Model.userId == user_id, Model.storageId == storage_id)
         if not model:
             raise ValueError("Model not found or access denied")
         
@@ -1271,7 +1271,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        model = await Model.find_one(Model.id == model_id, Model.user_id == user_id, Model.storage_id == storage_id)
+        model = await Model.find_one(Model.id == model_id, Model.userId == user_id, Model.storageId == storage_id)
         if not model:
             raise ValueError("Model not found or access denied")
         
@@ -1288,8 +1288,8 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         provider = LLMProvider(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             provider=provider_data['provider']
         )
         await provider.insert()
@@ -1304,7 +1304,7 @@ class UserDataService:
         if not storage:
             raise ValueError("Storage not found or access denied")
         
-        providers = await LLMProvider.find(LLMProvider.user_id == user_id, LLMProvider.storage_id == storage_id).to_list()
+        providers = await LLMProvider.find(LLMProvider.userId == user_id, LLMProvider.storageId == storage_id).to_list()
         return providers
     
     async def update_llm_provider(self, storage_id: ObjectId, provider_id: ObjectId, user_id: ObjectId, provider_data: dict) -> LLMProvider:
@@ -1312,7 +1312,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        provider = await LLMProvider.find_one(LLMProvider.id == provider_id, LLMProvider.user_id == user_id, LLMProvider.storage_id == storage_id)
+        provider = await LLMProvider.find_one(LLMProvider.id == provider_id, LLMProvider.userId == user_id, LLMProvider.storageId == storage_id)
         if not provider:
             raise ValueError("LLM provider not found or access denied")
         
@@ -1328,7 +1328,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        provider = await LLMProvider.find_one(LLMProvider.id == provider_id, LLMProvider.user_id == user_id, LLMProvider.storage_id == storage_id)
+        provider = await LLMProvider.find_one(LLMProvider.id == provider_id, LLMProvider.userId == user_id, LLMProvider.storageId == storage_id)
         if not provider:
             raise ValueError("LLM provider not found or access denied")
         
@@ -1345,8 +1345,8 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         url = LLMUrl(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             url=url_data['url']
         )
         await url.insert()
@@ -1361,7 +1361,7 @@ class UserDataService:
         if not storage:
             raise ValueError("Storage not found or access denied")
         
-        urls = await LLMUrl.find(LLMUrl.user_id == user_id, LLMUrl.storage_id == storage_id).to_list()
+        urls = await LLMUrl.find(LLMUrl.userId == user_id, LLMUrl.storageId == storage_id).to_list()
         return urls
     
     async def update_llm_url(self, storage_id: ObjectId, url_id: ObjectId, user_id: ObjectId, url_data: dict) -> LLMUrl:
@@ -1369,7 +1369,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        url = await LLMUrl.find_one(LLMUrl.id == url_id, LLMUrl.user_id == user_id, LLMUrl.storage_id == storage_id)
+        url = await LLMUrl.find_one(LLMUrl.id == url_id, LLMUrl.userId == user_id, LLMUrl.storageId == storage_id)
         if not url:
             raise ValueError("LLM URL not found or access denied")
         
@@ -1385,7 +1385,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        url = await LLMUrl.find_one(LLMUrl.id == url_id, LLMUrl.user_id == user_id, LLMUrl.storage_id == storage_id)
+        url = await LLMUrl.find_one(LLMUrl.id == url_id, LLMUrl.userId == user_id, LLMUrl.storageId == storage_id)
         if not url:
             raise ValueError("LLM URL not found or access denied")
         
@@ -1402,8 +1402,8 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         batch_size = BatchSize(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             value=batch_size_data['value']
         )
         await batch_size.insert()
@@ -1418,7 +1418,7 @@ class UserDataService:
         if not storage:
             raise ValueError("Storage not found or access denied")
         
-        batch_sizes = await BatchSize.find(BatchSize.user_id == user_id, BatchSize.storage_id == storage_id).to_list()
+        batch_sizes = await BatchSize.find(BatchSize.userId == user_id, BatchSize.storageId == storage_id).to_list()
         return batch_sizes
     
     async def update_batch_size(self, storage_id: ObjectId, batch_size_id: ObjectId, user_id: ObjectId, batch_size_data: dict) -> BatchSize:
@@ -1426,7 +1426,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        batch_size = await BatchSize.find_one(BatchSize.id == batch_size_id, BatchSize.user_id == user_id, BatchSize.storage_id == storage_id)
+        batch_size = await BatchSize.find_one(BatchSize.id == batch_size_id, BatchSize.userId == user_id, BatchSize.storageId == storage_id)
         if not batch_size:
             raise ValueError("Batch size not found or access denied")
         
@@ -1442,7 +1442,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        batch_size = await BatchSize.find_one(BatchSize.id == batch_size_id, BatchSize.user_id == user_id, BatchSize.storage_id == storage_id)
+        batch_size = await BatchSize.find_one(BatchSize.id == batch_size_id, BatchSize.userId == user_id, BatchSize.storageId == storage_id)
         if not batch_size:
             raise ValueError("Batch size not found or access denied")
         
@@ -1459,8 +1459,8 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         max_tokens = MaxTokens(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             value=max_tokens_data.get('value')
         )
         await max_tokens.insert()
@@ -1475,7 +1475,7 @@ class UserDataService:
         if not storage:
             raise ValueError("Storage not found or access denied")
         
-        max_tokens = await MaxTokens.find(MaxTokens.user_id == user_id, MaxTokens.storage_id == storage_id).to_list()
+        max_tokens = await MaxTokens.find(MaxTokens.userId == user_id, MaxTokens.storageId == storage_id).to_list()
         return max_tokens
     
     async def update_max_tokens(self, storage_id: ObjectId, max_tokens_id: ObjectId, user_id: ObjectId, max_tokens_data: dict) -> MaxTokens:
@@ -1483,7 +1483,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        max_tokens = await MaxTokens.find_one(MaxTokens.id == max_tokens_id, MaxTokens.user_id == user_id, MaxTokens.storage_id == storage_id)
+        max_tokens = await MaxTokens.find_one(MaxTokens.id == max_tokens_id, MaxTokens.userId == user_id, MaxTokens.storageId == storage_id)
         if not max_tokens:
             raise ValueError("Max tokens not found or access denied")
         
@@ -1499,7 +1499,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        max_tokens = await MaxTokens.find_one(MaxTokens.id == max_tokens_id, MaxTokens.user_id == user_id, MaxTokens.storage_id == storage_id)
+        max_tokens = await MaxTokens.find_one(MaxTokens.id == max_tokens_id, MaxTokens.userId == user_id, MaxTokens.storageId == storage_id)
         if not max_tokens:
             raise ValueError("Max tokens not found or access denied")
         
@@ -1516,8 +1516,8 @@ class UserDataService:
             raise ValueError("Storage not found or access denied")
         
         settings = UserSettings(
-            user_id=user_id,
-            storage_id=storage_id,
+            userId=user_id,
+            storageId=storage_id,
             tutorial_completed=settings_data.get('tutorial_completed', False)
         )
         await settings.insert()
@@ -1532,7 +1532,7 @@ class UserDataService:
         if not storage:
             raise ValueError("Storage not found or access denied")
         
-        settings = await UserSettings.find(UserSettings.user_id == user_id, UserSettings.storage_id == storage_id).to_list()
+        settings = await UserSettings.find(UserSettings.userId == user_id, UserSettings.storageId == storage_id).to_list()
         return settings
     
     async def update_user_settings(self, storage_id: ObjectId, settings_id: ObjectId, user_id: ObjectId, settings_data: dict) -> UserSettings:
@@ -1540,7 +1540,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        settings = await UserSettings.find_one(UserSettings.id == settings_id, UserSettings.user_id == user_id, UserSettings.storage_id == storage_id)
+        settings = await UserSettings.find_one(UserSettings.id == settings_id, UserSettings.userId == user_id, UserSettings.storageId == storage_id)
         if not settings:
             raise ValueError("User settings not found or access denied")
         
@@ -1556,7 +1556,7 @@ class UserDataService:
         if isinstance(user_id, str):
             user_id = ObjectId(user_id)
         
-        settings = await UserSettings.find_one(UserSettings.id == settings_id, UserSettings.user_id == user_id, UserSettings.storage_id == storage_id)
+        settings = await UserSettings.find_one(UserSettings.id == settings_id, UserSettings.userId == user_id, UserSettings.storageId == storage_id)
         if not settings:
             raise ValueError("User settings not found or access denied")
         
