@@ -35,10 +35,6 @@ export function ProfilesTab<TProfilePoint extends BaseProfilePoint>({
   profiles,
   fileInputRef,
 }: ProfilesTabProps<TProfilePoint>) {
-  console.log('ProfilesTab - activeProfile:', state.activeProfile);
-  console.log('ProfilesTab - profiles:', profiles);
-  console.log('ProfilesTab - profile exists in list:', state.activeProfile?.id && profiles?.find(p => p.id === state.activeProfile?.id));
-  
   return (
     <TabsContent
       value="profiles"

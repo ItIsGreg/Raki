@@ -14,12 +14,14 @@ import {
 
 export class CloudStorageAdapter {
   private storageId: string;
+  private baseUrl: string;
   private cache: Map<string, { data: any; timestamp: number }> = new Map();
   private cacheTimeout = 5000; // 5 seconds
   private version = 0; // Version number for cache invalidation
 
   constructor(storageId: string) {
     this.storageId = storageId;
+    this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   }
 
   private getCachedData<T>(key: string): T | null {
@@ -32,6 +34,14 @@ export class CloudStorageAdapter {
 
   private setCachedData<T>(key: string, data: T): void {
     this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  private getAuthHeaders(): HeadersInit {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
+    };
   }
 
   public clearCache(): void {
@@ -335,10 +345,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<Text[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/texts`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch texts');
           const data = await response.json();
@@ -355,12 +363,9 @@ export class CloudStorageAdapter {
       },
       add: async (text: TextCreate): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/texts`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               dataset_id: text.datasetId,
               filename: text.filename,
@@ -377,12 +382,9 @@ export class CloudStorageAdapter {
       },
       put: async (text: Text): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/texts/${text.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/texts/${text.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               filename: text.filename,
               text: text.text,
@@ -398,10 +400,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<Text | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/texts`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch texts');
           const data = await response.json();
@@ -420,11 +420,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/texts/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/texts/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete text');
         } catch (error) {
@@ -438,9 +436,9 @@ export class CloudStorageAdapter {
             equals: (value: any) => ({
               toArray: async (): Promise<Text[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/texts`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch texts');
@@ -462,9 +460,9 @@ export class CloudStorageAdapter {
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<Text[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/texts`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch texts');
@@ -488,9 +486,9 @@ export class CloudStorageAdapter {
           return {
             toArray: async (): Promise<Text[]> => {
               try {
-                const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+                const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/texts`, {
                   headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                   }
                 });
                 if (!response.ok) throw new Error('Failed to fetch texts');
@@ -516,10 +514,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<AnnotatedDataset[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-datasets`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch annotated datasets');
           const data = await response.json();
@@ -538,12 +534,9 @@ export class CloudStorageAdapter {
       },
       add: async (annotatedDataset: AnnotatedDatasetCreate): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-datasets`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: annotatedDataset.name,
               description: annotatedDataset.description,
@@ -562,12 +555,9 @@ export class CloudStorageAdapter {
       },
       put: async (annotatedDataset: AnnotatedDataset): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets/${annotatedDataset.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-datasets/${annotatedDataset.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: annotatedDataset.name,
               description: annotatedDataset.description,
@@ -585,10 +575,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<AnnotatedDataset | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-datasets`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch annotated datasets');
           const data = await response.json();
@@ -609,11 +597,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-datasets/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete annotated dataset');
         } catch (error) {
@@ -627,9 +613,9 @@ export class CloudStorageAdapter {
             equals: (value: any) => ({
               toArray: async (): Promise<AnnotatedDataset[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-datasets`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch annotated datasets');
@@ -653,9 +639,9 @@ export class CloudStorageAdapter {
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<AnnotatedDataset[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-datasets`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch annotated datasets');
@@ -681,9 +667,9 @@ export class CloudStorageAdapter {
           return {
             toArray: async (): Promise<AnnotatedDataset[]> => {
               try {
-                const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+                const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-datasets`, {
                   headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                   }
                 });
                 if (!response.ok) throw new Error('Failed to fetch annotated datasets');
@@ -711,10 +697,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<AnnotatedText[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-texts`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch annotated texts');
           const data = await response.json();
@@ -732,12 +716,9 @@ export class CloudStorageAdapter {
       },
       add: async (annotatedText: AnnotatedTextCreate): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-texts`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               text_id: annotatedText.textId,
               annotated_dataset_id: annotatedText.annotatedDatasetId,
@@ -755,12 +736,9 @@ export class CloudStorageAdapter {
       },
       put: async (annotatedText: AnnotatedText): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts/${annotatedText.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-texts/${annotatedText.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               text_id: annotatedText.textId,
               annotated_dataset_id: annotatedText.annotatedDatasetId,
@@ -777,10 +755,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<AnnotatedText | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-texts`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch annotated texts');
           const data = await response.json();
@@ -800,11 +776,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-texts/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete annotated text');
         } catch (error) {
@@ -818,9 +792,9 @@ export class CloudStorageAdapter {
             equals: (value: any) => ({
               toArray: async (): Promise<AnnotatedText[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-texts`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch annotated texts');
@@ -843,9 +817,9 @@ export class CloudStorageAdapter {
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<AnnotatedText[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-texts`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch annotated texts');
@@ -871,9 +845,9 @@ export class CloudStorageAdapter {
           return {
             toArray: async (): Promise<AnnotatedText[]> => {
               try {
-                const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+                const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/annotated-texts`, {
                   headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                   }
                 });
                 if (!response.ok) throw new Error('Failed to fetch annotated texts');
@@ -900,10 +874,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<DataPoint[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/data-points`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch data points');
           const data = await response.json();
@@ -923,12 +895,9 @@ export class CloudStorageAdapter {
       },
       add: async (dataPoint: DataPointCreate): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/data-points`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               annotated_text_id: dataPoint.annotatedTextId,
               name: dataPoint.name,
@@ -948,12 +917,9 @@ export class CloudStorageAdapter {
       },
       put: async (dataPoint: DataPoint): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/data-points/${dataPoint.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/data-points/${dataPoint.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: dataPoint.name,
               value: dataPoint.value,
@@ -971,10 +937,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<DataPoint | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/data-points`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch data points');
           const data = await response.json();
@@ -996,11 +960,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/data-points/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/data-points/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete data point');
         } catch (error) {
@@ -1014,9 +976,9 @@ export class CloudStorageAdapter {
             equals: (value: any) => ({
               toArray: async (): Promise<DataPoint[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/data-points`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch data points');
@@ -1041,9 +1003,9 @@ export class CloudStorageAdapter {
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<DataPoint[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/data-points`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch data points');
@@ -1070,9 +1032,9 @@ export class CloudStorageAdapter {
           return {
             toArray: async (): Promise<DataPoint[]> => {
               try {
-                const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+                const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/data-points`, {
                   headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                   }
                 });
                 if (!response.ok) throw new Error('Failed to fetch data points');
@@ -1101,10 +1063,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<SegmentDataPoint[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segment-data-points`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch segment data points');
           const data = await response.json();
@@ -1124,12 +1084,9 @@ export class CloudStorageAdapter {
       },
       add: async (segmentDataPoint: SegmentDataPointCreate): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segment-data-points`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               annotated_text_id: segmentDataPoint.annotatedTextId,
               name: segmentDataPoint.name,
@@ -1149,12 +1106,9 @@ export class CloudStorageAdapter {
       },
       put: async (segmentDataPoint: SegmentDataPoint): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points/${segmentDataPoint.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segment-data-points/${segmentDataPoint.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: segmentDataPoint.name,
               begin_match: segmentDataPoint.beginMatch,
@@ -1172,10 +1126,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<SegmentDataPoint | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segment-data-points`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch segment data points');
           const data = await response.json();
@@ -1197,11 +1149,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segment-data-points/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete segment data point');
         } catch (error) {
@@ -1215,9 +1165,9 @@ export class CloudStorageAdapter {
             equals: (value: any) => ({
               toArray: async (): Promise<SegmentDataPoint[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segment-data-points`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch segment data points');
@@ -1242,9 +1192,9 @@ export class CloudStorageAdapter {
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<SegmentDataPoint[]> => {
                 try {
-                  const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+                  const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segment-data-points`, {
                     headers: {
-                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                     }
                   });
                   if (!response.ok) throw new Error('Failed to fetch segment data points');
@@ -1271,9 +1221,9 @@ export class CloudStorageAdapter {
           return {
             toArray: async (): Promise<SegmentDataPoint[]> => {
               try {
-                const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+                const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segment-data-points`, {
                   headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                   }
                 });
                 if (!response.ok) throw new Error('Failed to fetch segment data points');
@@ -1302,10 +1252,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<ProfilePoint[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/profile-points`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/profile-points`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch profile points');
           const data = await response.json();
@@ -1329,12 +1277,9 @@ export class CloudStorageAdapter {
       },
       add: async (profilePoint: ProfilePointCreate): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/profile-points`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/profile-points`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: profilePoint.name,
               explanation: profilePoint.explanation,
@@ -1358,12 +1303,9 @@ export class CloudStorageAdapter {
       },
       put: async (profilePoint: ProfilePoint): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/profile-points/${profilePoint.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/profile-points/${profilePoint.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: profilePoint.name,
               explanation: profilePoint.explanation,
@@ -1386,10 +1328,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<ProfilePoint | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/profile-points`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/profile-points`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch profile points');
           const data = await response.json();
@@ -1415,11 +1355,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/profile-points/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/profile-points/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete profile point');
         } catch (error) {
@@ -1431,9 +1369,9 @@ export class CloudStorageAdapter {
         equals: (value: any) => ({
           toArray: async (): Promise<ProfilePoint[]> => {
             try {
-              const response = await fetch(`/api/user-data/${this.storageId}/profile-points`, {
+              const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/profile-points`, {
                 headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                 }
               });
               if (!response.ok) throw new Error('Failed to fetch profile points');
@@ -1462,12 +1400,9 @@ export class CloudStorageAdapter {
       }),
       update: async (id: string, changes: Partial<ProfilePoint>): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/profile-points/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/profile-points/${id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: changes.name,
               explanation: changes.explanation,
@@ -1494,10 +1429,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<SegmentationProfilePoint[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segmentation-profile-points`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch segmentation profile points');
           const data = await response.json();
@@ -1518,12 +1451,9 @@ export class CloudStorageAdapter {
       },
       add: async (segmentationProfilePoint: SegmentationProfilePointCreate): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segmentation-profile-points`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: segmentationProfilePoint.name,
               explanation: segmentationProfilePoint.explanation,
@@ -1544,12 +1474,9 @@ export class CloudStorageAdapter {
       },
       put: async (segmentationProfilePoint: SegmentationProfilePoint): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points/${segmentationProfilePoint.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segmentation-profile-points/${segmentationProfilePoint.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: segmentationProfilePoint.name,
               explanation: segmentationProfilePoint.explanation,
@@ -1569,10 +1496,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<SegmentationProfilePoint | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segmentation-profile-points`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch segmentation profile points');
           const data = await response.json();
@@ -1595,11 +1520,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segmentation-profile-points/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete segmentation profile point');
         } catch (error) {
@@ -1611,9 +1534,9 @@ export class CloudStorageAdapter {
         equals: (value: any) => ({
           toArray: async (): Promise<SegmentationProfilePoint[]> => {
             try {
-              const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points`, {
+              const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segmentation-profile-points`, {
                 headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
                 }
               });
               if (!response.ok) throw new Error('Failed to fetch segmentation profile points');
@@ -1639,12 +1562,9 @@ export class CloudStorageAdapter {
       }),
       update: async (id: string, changes: Partial<SegmentationProfilePoint>): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/segmentation-profile-points/${id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: changes.name,
               explanation: changes.explanation,
@@ -1668,10 +1588,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<ApiKey[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/api-keys`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/api-keys`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch API keys');
           const data = await response.json();
@@ -1686,12 +1604,9 @@ export class CloudStorageAdapter {
       },
       add: async (apiKey: ApiKey): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/api-keys`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/api-keys`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               key: apiKey.key
             })
@@ -1706,12 +1621,9 @@ export class CloudStorageAdapter {
       },
       put: async (apiKey: ApiKey): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/api-keys/${apiKey.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/api-keys/${apiKey.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               key: apiKey.key
             })
@@ -1725,10 +1637,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<ApiKey | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/api-keys`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/api-keys`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch API keys');
           const data = await response.json();
@@ -1745,11 +1655,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/api-keys/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/api-keys/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete API key');
         } catch (error) {
@@ -1764,10 +1672,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<Model[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/models`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/models`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch models');
           const data = await response.json();
@@ -1782,12 +1688,9 @@ export class CloudStorageAdapter {
       },
       add: async (model: Model): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/models`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/models`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: model.name
             })
@@ -1802,12 +1705,9 @@ export class CloudStorageAdapter {
       },
       put: async (model: Model): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/models/${model.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/models/${model.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               name: model.name
             })
@@ -1821,10 +1721,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<Model | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/models`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/models`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch models');
           const data = await response.json();
@@ -1841,11 +1739,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/models/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/models/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete model');
         } catch (error) {
@@ -1860,10 +1756,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<LLMProvider[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-providers`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch LLM providers');
           const data = await response.json();
@@ -1878,12 +1772,9 @@ export class CloudStorageAdapter {
       },
       add: async (llmProvider: LLMProvider): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-providers`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               provider: llmProvider.provider
             })
@@ -1898,12 +1789,9 @@ export class CloudStorageAdapter {
       },
       put: async (llmProvider: LLMProvider): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers/${llmProvider.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-providers/${llmProvider.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               provider: llmProvider.provider
             })
@@ -1917,10 +1805,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<LLMProvider | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-providers`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch LLM providers');
           const data = await response.json();
@@ -1937,11 +1823,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-providers/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete LLM provider');
         } catch (error) {
@@ -1956,10 +1840,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<LLMUrl[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-urls`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch LLM URLs');
           const data = await response.json();
@@ -1974,12 +1856,9 @@ export class CloudStorageAdapter {
       },
       add: async (llmUrl: LLMUrl): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-urls`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               url: llmUrl.url
             })
@@ -1994,12 +1873,9 @@ export class CloudStorageAdapter {
       },
       put: async (llmUrl: LLMUrl): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls/${llmUrl.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-urls/${llmUrl.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               url: llmUrl.url
             })
@@ -2013,10 +1889,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<LLMUrl | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-urls`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch LLM URLs');
           const data = await response.json();
@@ -2033,11 +1907,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/llm-urls/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete LLM URL');
         } catch (error) {
@@ -2052,10 +1924,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<BatchSize[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/batch-sizes`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch batch sizes');
           const data = await response.json();
@@ -2070,12 +1940,9 @@ export class CloudStorageAdapter {
       },
       add: async (batchSize: BatchSize): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/batch-sizes`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               value: batchSize.value
             })
@@ -2090,12 +1957,9 @@ export class CloudStorageAdapter {
       },
       put: async (batchSize: BatchSize): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes/${batchSize.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/batch-sizes/${batchSize.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               value: batchSize.value
             })
@@ -2109,10 +1973,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<BatchSize | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/batch-sizes`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch batch sizes');
           const data = await response.json();
@@ -2129,11 +1991,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/batch-sizes/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete batch size');
         } catch (error) {
@@ -2148,10 +2008,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<MaxTokens[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/max-tokens`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch max tokens');
           const data = await response.json();
@@ -2166,12 +2024,9 @@ export class CloudStorageAdapter {
       },
       add: async (maxTokens: MaxTokens): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/max-tokens`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               value: maxTokens.value
             })
@@ -2186,12 +2041,9 @@ export class CloudStorageAdapter {
       },
       put: async (maxTokens: MaxTokens): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens/${maxTokens.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/max-tokens/${maxTokens.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               value: maxTokens.value
             })
@@ -2205,10 +2057,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<MaxTokens | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/max-tokens`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch max tokens');
           const data = await response.json();
@@ -2225,11 +2075,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/max-tokens/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete max tokens');
         } catch (error) {
@@ -2244,10 +2092,8 @@ export class CloudStorageAdapter {
     return {
       toArray: async (): Promise<UserSettings[]> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/user-settings`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/user-settings`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch user settings');
           const data = await response.json();
@@ -2262,12 +2108,9 @@ export class CloudStorageAdapter {
       },
       add: async (userSettings: UserSettings): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/user-settings`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/user-settings`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               tutorial_completed: userSettings.tutorialCompleted
             })
@@ -2282,12 +2125,9 @@ export class CloudStorageAdapter {
       },
       put: async (userSettings: UserSettings): Promise<string> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/user-settings/${userSettings.id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/user-settings/${userSettings.id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               tutorial_completed: userSettings.tutorialCompleted
             })
@@ -2301,10 +2141,8 @@ export class CloudStorageAdapter {
       },
       get: async (id: string): Promise<UserSettings | undefined> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/user-settings`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/user-settings`, {
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to fetch user settings');
           const data = await response.json();
@@ -2321,12 +2159,9 @@ export class CloudStorageAdapter {
       },
       update: async (id: string, changes: Partial<UserSettings>): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/user-settings/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/user-settings/${id}`, {
             method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
+            headers: this.getAuthHeaders(),
             body: JSON.stringify({
               tutorial_completed: changes.tutorialCompleted
             })
@@ -2339,11 +2174,9 @@ export class CloudStorageAdapter {
       },
       delete: async (id: string): Promise<void> => {
         try {
-          const response = await fetch(`/api/user-data/${this.storageId}/user-settings/${id}`, {
+          const response = await fetch(`${this.baseUrl}/user-data/${this.storageId}/user-settings/${id}`, {
             method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: this.getAuthHeaders()
           });
           if (!response.ok) throw new Error('Failed to delete user settings');
         } catch (error) {

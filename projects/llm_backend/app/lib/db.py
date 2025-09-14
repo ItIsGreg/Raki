@@ -3,7 +3,9 @@ from beanie import init_beanie
 from app.config.environment import get_settings
 from app.models.user import User, UserSession
 from app.models.user_data_models import (
-    UserStorage, Profile, Dataset
+    UserStorage, Profile, Dataset, Text, AnnotatedDataset, AnnotatedText,
+    DataPoint, SegmentDataPoint, ProfilePoint, SegmentationProfilePoint,
+    ApiKey, Model, LLMProvider, LLMUrl, BatchSize, MaxTokens, UserSettings
 )
 import asyncio
 
@@ -28,7 +30,9 @@ async def init_db():
     await init_beanie(
         database=database,
         document_models=[
-            User, UserSession, UserStorage, Profile, Dataset
+            User, UserSession, UserStorage, Profile, Dataset, Text, AnnotatedDataset, AnnotatedText,
+            DataPoint, SegmentDataPoint, ProfilePoint, SegmentationProfilePoint,
+            ApiKey, Model, LLMProvider, LLMUrl, BatchSize, MaxTokens, UserSettings
         ]
     )
     

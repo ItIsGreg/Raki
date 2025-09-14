@@ -156,6 +156,14 @@ class AnnotatedDataset(BaseDataModel):
     profile_id: ObjectId
     mode: str
     
+    @field_serializer('dataset_id')
+    def serialize_dataset_id(self, dataset_id: ObjectId) -> str:
+        return str(dataset_id)
+    
+    @field_serializer('profile_id')
+    def serialize_profile_id(self, profile_id: ObjectId) -> str:
+        return str(profile_id)
+    
     class Settings:
         name = "annotated_datasets"
         indexes = [
@@ -171,6 +179,14 @@ class AnnotatedText(BaseDataModel):
     annotated_dataset_id: ObjectId
     verified: Optional[bool] = None
     ai_faulty: Optional[bool] = None
+    
+    @field_serializer('text_id')
+    def serialize_text_id(self, text_id: ObjectId) -> str:
+        return str(text_id)
+    
+    @field_serializer('annotated_dataset_id')
+    def serialize_annotated_dataset_id(self, annotated_dataset_id: ObjectId) -> str:
+        return str(annotated_dataset_id)
     
     class Settings:
         name = "annotated_texts"
@@ -216,6 +232,14 @@ class DataPoint(BaseDataModel):
     profile_point_id: Optional[ObjectId] = None
     verified: Optional[bool] = None
     
+    @field_serializer('annotated_text_id')
+    def serialize_annotated_text_id(self, annotated_text_id: ObjectId) -> str:
+        return str(annotated_text_id)
+    
+    @field_serializer('profile_point_id')
+    def serialize_profile_point_id(self, profile_point_id: Optional[ObjectId]) -> Optional[str]:
+        return str(profile_point_id) if profile_point_id else None
+    
     class Settings:
         name = "data_points"
         indexes = [
@@ -247,6 +271,14 @@ class SegmentDataPoint(BaseDataModel):
     end_match: Optional[List[int]] = None
     profile_point_id: Optional[ObjectId] = None
     verified: Optional[bool] = None
+    
+    @field_serializer('annotated_text_id')
+    def serialize_annotated_text_id(self, annotated_text_id: ObjectId) -> str:
+        return str(annotated_text_id)
+    
+    @field_serializer('profile_point_id')
+    def serialize_profile_point_id(self, profile_point_id: Optional[ObjectId]) -> Optional[str]:
+        return str(profile_point_id) if profile_point_id else None
     
     class Settings:
         name = "segment_data_points"
@@ -283,6 +315,18 @@ class ProfilePoint(BaseDataModel):
     order: Optional[int] = None
     previous_point_id: Optional[ObjectId] = None
     next_point_id: Optional[ObjectId] = None
+    
+    @field_serializer('profile_id')
+    def serialize_profile_id(self, profile_id: ObjectId) -> str:
+        return str(profile_id)
+    
+    @field_serializer('previous_point_id')
+    def serialize_previous_point_id(self, previous_point_id: Optional[ObjectId]) -> Optional[str]:
+        return str(previous_point_id) if previous_point_id else None
+    
+    @field_serializer('next_point_id')
+    def serialize_next_point_id(self, next_point_id: Optional[ObjectId]) -> Optional[str]:
+        return str(next_point_id) if next_point_id else None
     
     class Settings:
         name = "profile_points"
@@ -325,6 +369,18 @@ class SegmentationProfilePoint(BaseDataModel):
     order: Optional[int] = None
     previous_point_id: Optional[ObjectId] = None
     next_point_id: Optional[ObjectId] = None
+    
+    @field_serializer('profile_id')
+    def serialize_profile_id(self, profile_id: ObjectId) -> str:
+        return str(profile_id)
+    
+    @field_serializer('previous_point_id')
+    def serialize_previous_point_id(self, previous_point_id: Optional[ObjectId]) -> Optional[str]:
+        return str(previous_point_id) if previous_point_id else None
+    
+    @field_serializer('next_point_id')
+    def serialize_next_point_id(self, next_point_id: Optional[ObjectId]) -> Optional[str]:
+        return str(next_point_id) if next_point_id else None
     
     class Settings:
         name = "segmentation_profile_points"
