@@ -334,46 +334,177 @@ export class CloudStorageAdapter {
   get Texts() {
     return {
       toArray: async (): Promise<Text[]> => {
-        // Return empty array for now - cloud storage texts not yet implemented
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch texts');
+          const data = await response.json();
+          return data.map((text: any) => ({
+            id: text.id,
+            datasetId: text.dataset_id,
+            filename: text.filename,
+            text: text.text
+          }));
+        } catch (error) {
+          console.error('Error fetching texts:', error);
+          return [];
+        }
       },
       add: async (text: TextCreate): Promise<string> => {
-        // Return a mock ID for now
-        return 'mock-text-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              dataset_id: text.datasetId,
+              filename: text.filename,
+              text: text.text
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create text');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating text:', error);
+          throw error;
+        }
       },
       put: async (text: Text): Promise<string> => {
-        // Return the same ID for now
-        return text.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/texts/${text.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              filename: text.filename,
+              text: text.text,
+              dataset_id: text.datasetId
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update text');
+          return text.id;
+        } catch (error) {
+          console.error('Error updating text:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<Text | undefined> => {
-        // Return undefined for now
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch texts');
+          const data = await response.json();
+          const text = data.find((t: any) => t.id === id);
+          if (!text) return undefined;
+          return {
+            id: text.id,
+            datasetId: text.dataset_id,
+            filename: text.filename,
+            text: text.text
+          };
+        } catch (error) {
+          console.error('Error fetching text:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        // No-op for now
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/texts/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete text');
+        } catch (error) {
+          console.error('Error deleting text:', error);
+          throw error;
+        }
       },
       where: (fieldOrQuery: string | object): any => {
         if (typeof fieldOrQuery === 'string') {
           return {
             equals: (value: any) => ({
               toArray: async (): Promise<Text[]> => {
-                // Return empty array for now
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch texts');
+                  const data = await response.json();
+                  return data
+                    .filter((text: any) => text[fieldOrQuery] === value)
+                    .map((text: any) => ({
+                      id: text.id,
+                      datasetId: text.dataset_id,
+                      filename: text.filename,
+                      text: text.text
+                    }));
+                } catch (error) {
+                  console.error('Error filtering texts:', error);
+                  return [];
+                }
               }
             }),
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<Text[]> => {
-                // Return empty array for now
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch texts');
+                  const data = await response.json();
+                  return data
+                    .filter((text: any) => values.includes(text[fieldOrQuery]))
+                    .map((text: any) => ({
+                      id: text.id,
+                      datasetId: text.dataset_id,
+                      filename: text.filename,
+                      text: text.text
+                    }));
+                } catch (error) {
+                  console.error('Error filtering texts:', error);
+                  return [];
+                }
               }
             })
           };
         } else {
           return {
             toArray: async (): Promise<Text[]> => {
-              // Return empty array for now
-              return [];
+              try {
+                const response = await fetch(`/api/user-data/${this.storageId}/texts`, {
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  }
+                });
+                if (!response.ok) throw new Error('Failed to fetch texts');
+                const data = await response.json();
+                return data.map((text: any) => ({
+                  id: text.id,
+                  datasetId: text.dataset_id,
+                  filename: text.filename,
+                  text: text.text
+                }));
+              } catch (error) {
+                console.error('Error fetching texts:', error);
+                return [];
+              }
             }
           };
         }
@@ -384,38 +515,191 @@ export class CloudStorageAdapter {
   get AnnotatedDatasets() {
     return {
       toArray: async (): Promise<AnnotatedDataset[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch annotated datasets');
+          const data = await response.json();
+          return data.map((ad: any) => ({
+            id: ad.id,
+            name: ad.name,
+            description: ad.description,
+            datasetId: ad.dataset_id,
+            profileId: ad.profile_id,
+            mode: ad.mode
+          }));
+        } catch (error) {
+          console.error('Error fetching annotated datasets:', error);
+          return [];
+        }
       },
       add: async (annotatedDataset: AnnotatedDatasetCreate): Promise<string> => {
-        return 'mock-annotated-dataset-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: annotatedDataset.name,
+              description: annotatedDataset.description,
+              dataset_id: annotatedDataset.datasetId,
+              profile_id: annotatedDataset.profileId,
+              mode: annotatedDataset.mode
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create annotated dataset');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating annotated dataset:', error);
+          throw error;
+        }
       },
       put: async (annotatedDataset: AnnotatedDataset): Promise<string> => {
-        return annotatedDataset.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets/${annotatedDataset.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: annotatedDataset.name,
+              description: annotatedDataset.description,
+              dataset_id: annotatedDataset.datasetId,
+              profile_id: annotatedDataset.profileId,
+              mode: annotatedDataset.mode
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update annotated dataset');
+          return annotatedDataset.id;
+        } catch (error) {
+          console.error('Error updating annotated dataset:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<AnnotatedDataset | undefined> => {
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch annotated datasets');
+          const data = await response.json();
+          const annotatedDataset = data.find((ad: any) => ad.id === id);
+          if (!annotatedDataset) return undefined;
+          return {
+            id: annotatedDataset.id,
+            name: annotatedDataset.name,
+            description: annotatedDataset.description,
+            datasetId: annotatedDataset.dataset_id,
+            profileId: annotatedDataset.profile_id,
+            mode: annotatedDataset.mode
+          };
+        } catch (error) {
+          console.error('Error fetching annotated dataset:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete annotated dataset');
+        } catch (error) {
+          console.error('Error deleting annotated dataset:', error);
+          throw error;
+        }
       },
       where: (fieldOrQuery: string | object): any => {
         if (typeof fieldOrQuery === 'string') {
           return {
             equals: (value: any) => ({
               toArray: async (): Promise<AnnotatedDataset[]> => {
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch annotated datasets');
+                  const data = await response.json();
+                  return data
+                    .filter((ad: any) => ad[fieldOrQuery] === value)
+                    .map((ad: any) => ({
+                      id: ad.id,
+                      name: ad.name,
+                      description: ad.description,
+                      datasetId: ad.dataset_id,
+                      profileId: ad.profile_id,
+                      mode: ad.mode
+                    }));
+                } catch (error) {
+                  console.error('Error filtering annotated datasets:', error);
+                  return [];
+                }
               }
             }),
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<AnnotatedDataset[]> => {
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch annotated datasets');
+                  const data = await response.json();
+                  return data
+                    .filter((ad: any) => values.includes(ad[fieldOrQuery]))
+                    .map((ad: any) => ({
+                      id: ad.id,
+                      name: ad.name,
+                      description: ad.description,
+                      datasetId: ad.dataset_id,
+                      profileId: ad.profile_id,
+                      mode: ad.mode
+                    }));
+                } catch (error) {
+                  console.error('Error filtering annotated datasets:', error);
+                  return [];
+                }
               }
             })
           };
         } else {
           return {
             toArray: async (): Promise<AnnotatedDataset[]> => {
-              return [];
+              try {
+                const response = await fetch(`/api/user-data/${this.storageId}/annotated-datasets`, {
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  }
+                });
+                if (!response.ok) throw new Error('Failed to fetch annotated datasets');
+                const data = await response.json();
+                return data.map((ad: any) => ({
+                  id: ad.id,
+                  name: ad.name,
+                  description: ad.description,
+                  datasetId: ad.dataset_id,
+                  profileId: ad.profile_id,
+                  mode: ad.mode
+                }));
+              } catch (error) {
+                console.error('Error fetching annotated datasets:', error);
+                return [];
+              }
             }
           };
         }
@@ -426,31 +710,159 @@ export class CloudStorageAdapter {
   get AnnotatedTexts() {
     return {
       toArray: async (): Promise<AnnotatedText[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch annotated texts');
+          const data = await response.json();
+          return data.map((at: any) => ({
+            id: at.id,
+            textId: at.text_id,
+            annotatedDatasetId: at.annotated_dataset_id,
+            verified: at.verified,
+            aiFaulty: at.ai_faulty
+          }));
+        } catch (error) {
+          console.error('Error fetching annotated texts:', error);
+          return [];
+        }
       },
       add: async (annotatedText: AnnotatedTextCreate): Promise<string> => {
-        return 'mock-annotated-text-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              text_id: annotatedText.textId,
+              annotated_dataset_id: annotatedText.annotatedDatasetId,
+              verified: annotatedText.verified,
+              ai_faulty: annotatedText.aiFaulty
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create annotated text');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating annotated text:', error);
+          throw error;
+        }
       },
       put: async (annotatedText: AnnotatedText): Promise<string> => {
-        return annotatedText.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts/${annotatedText.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              text_id: annotatedText.textId,
+              annotated_dataset_id: annotatedText.annotatedDatasetId,
+              verified: annotatedText.verified,
+              ai_faulty: annotatedText.aiFaulty
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update annotated text');
+          return annotatedText.id;
+        } catch (error) {
+          console.error('Error updating annotated text:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<AnnotatedText | undefined> => {
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch annotated texts');
+          const data = await response.json();
+          const annotatedText = data.find((at: any) => at.id === id);
+          if (!annotatedText) return undefined;
+          return {
+            id: annotatedText.id,
+            textId: annotatedText.text_id,
+            annotatedDatasetId: annotatedText.annotated_dataset_id,
+            verified: annotatedText.verified,
+            aiFaulty: annotatedText.ai_faulty
+          };
+        } catch (error) {
+          console.error('Error fetching annotated text:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete annotated text');
+        } catch (error) {
+          console.error('Error deleting annotated text:', error);
+          throw error;
+        }
       },
       where: (fieldOrQuery: string | object): any => {
         if (typeof fieldOrQuery === 'string') {
           return {
             equals: (value: any) => ({
               toArray: async (): Promise<AnnotatedText[]> => {
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch annotated texts');
+                  const data = await response.json();
+                  return data
+                    .filter((at: any) => at[fieldOrQuery] === value)
+                    .map((at: any) => ({
+                      id: at.id,
+                      textId: at.text_id,
+                      annotatedDatasetId: at.annotated_dataset_id,
+                      verified: at.verified,
+                      aiFaulty: at.ai_faulty
+                    }));
+                } catch (error) {
+                  console.error('Error filtering annotated texts:', error);
+                  return [];
+                }
               }
             }),
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<AnnotatedText[]> => {
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch annotated texts');
+                  const data = await response.json();
+                  return data
+                    .filter((at: any) => values.includes(at[fieldOrQuery]))
+                    .map((at: any) => ({
+                      id: at.id,
+                      textId: at.text_id,
+                      annotatedDatasetId: at.annotated_dataset_id,
+                      verified: at.verified,
+                      aiFaulty: at.ai_faulty
+                    }));
+                } catch (error) {
+                  console.error('Error filtering annotated texts:', error);
+                  return [];
+                }
               }
             })
           };
@@ -458,7 +870,25 @@ export class CloudStorageAdapter {
           // Handle object query like { field: value }
           return {
             toArray: async (): Promise<AnnotatedText[]> => {
-              return [];
+              try {
+                const response = await fetch(`/api/user-data/${this.storageId}/annotated-texts`, {
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  }
+                });
+                if (!response.ok) throw new Error('Failed to fetch annotated texts');
+                const data = await response.json();
+                return data.map((at: any) => ({
+                  id: at.id,
+                  textId: at.text_id,
+                  annotatedDatasetId: at.annotated_dataset_id,
+                  verified: at.verified,
+                  aiFaulty: at.ai_faulty
+                }));
+              } catch (error) {
+                console.error('Error fetching annotated texts:', error);
+                return [];
+              }
             }
           };
         }
@@ -1063,29 +1493,173 @@ export class CloudStorageAdapter {
   get segmentationProfilePoints() {
     return {
       toArray: async (): Promise<SegmentationProfilePoint[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch segmentation profile points');
+          const data = await response.json();
+          return data.map((spp: any) => ({
+            id: spp.id,
+            name: spp.name,
+            explanation: spp.explanation,
+            synonyms: spp.synonyms,
+            profileId: spp.profile_id,
+            order: spp.order,
+            previousPointId: spp.previous_point_id,
+            nextPointId: spp.next_point_id
+          }));
+        } catch (error) {
+          console.error('Error fetching segmentation profile points:', error);
+          return [];
+        }
       },
       add: async (segmentationProfilePoint: SegmentationProfilePointCreate): Promise<string> => {
-        return 'mock-segmentation-profile-point-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: segmentationProfilePoint.name,
+              explanation: segmentationProfilePoint.explanation,
+              synonyms: segmentationProfilePoint.synonyms,
+              profile_id: segmentationProfilePoint.profileId,
+              order: segmentationProfilePoint.order,
+              previous_point_id: segmentationProfilePoint.previousPointId,
+              next_point_id: segmentationProfilePoint.nextPointId
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create segmentation profile point');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating segmentation profile point:', error);
+          throw error;
+        }
       },
       put: async (segmentationProfilePoint: SegmentationProfilePoint): Promise<string> => {
-        return segmentationProfilePoint.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points/${segmentationProfilePoint.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: segmentationProfilePoint.name,
+              explanation: segmentationProfilePoint.explanation,
+              synonyms: segmentationProfilePoint.synonyms,
+              profile_id: segmentationProfilePoint.profileId,
+              order: segmentationProfilePoint.order,
+              previous_point_id: segmentationProfilePoint.previousPointId,
+              next_point_id: segmentationProfilePoint.nextPointId
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update segmentation profile point');
+          return segmentationProfilePoint.id;
+        } catch (error) {
+          console.error('Error updating segmentation profile point:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<SegmentationProfilePoint | undefined> => {
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch segmentation profile points');
+          const data = await response.json();
+          const segmentationProfilePoint = data.find((spp: any) => spp.id === id);
+          if (!segmentationProfilePoint) return undefined;
+          return {
+            id: segmentationProfilePoint.id,
+            name: segmentationProfilePoint.name,
+            explanation: segmentationProfilePoint.explanation,
+            synonyms: segmentationProfilePoint.synonyms,
+            profileId: segmentationProfilePoint.profile_id,
+            order: segmentationProfilePoint.order,
+            previousPointId: segmentationProfilePoint.previous_point_id,
+            nextPointId: segmentationProfilePoint.next_point_id
+          };
+        } catch (error) {
+          console.error('Error fetching segmentation profile point:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete segmentation profile point');
+        } catch (error) {
+          console.error('Error deleting segmentation profile point:', error);
+          throw error;
+        }
       },
       where: (field: string) => ({
         equals: (value: any) => ({
           toArray: async (): Promise<SegmentationProfilePoint[]> => {
-            return [];
+            try {
+              const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points`, {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+              });
+              if (!response.ok) throw new Error('Failed to fetch segmentation profile points');
+              const data = await response.json();
+              return data
+                .filter((spp: any) => spp[field] === value)
+                .map((spp: any) => ({
+                  id: spp.id,
+                  name: spp.name,
+                  explanation: spp.explanation,
+                  synonyms: spp.synonyms,
+                  profileId: spp.profile_id,
+                  order: spp.order,
+                  previousPointId: spp.previous_point_id,
+                  nextPointId: spp.next_point_id
+                }));
+            } catch (error) {
+              console.error('Error filtering segmentation profile points:', error);
+              return [];
+            }
           }
         })
       }),
       update: async (id: string, changes: Partial<SegmentationProfilePoint>): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segmentation-profile-points/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: changes.name,
+              explanation: changes.explanation,
+              synonyms: changes.synonyms,
+              profile_id: changes.profileId,
+              order: changes.order,
+              previous_point_id: changes.previousPointId,
+              next_point_id: changes.nextPointId
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update segmentation profile point');
+        } catch (error) {
+          console.error('Error updating segmentation profile point:', error);
+          throw error;
+        }
       }
     };
   }
@@ -1093,19 +1667,95 @@ export class CloudStorageAdapter {
   get ApiKeys() {
     return {
       toArray: async (): Promise<ApiKey[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/api-keys`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch API keys');
+          const data = await response.json();
+          return data.map((ak: any) => ({
+            id: ak.id,
+            key: ak.key
+          }));
+        } catch (error) {
+          console.error('Error fetching API keys:', error);
+          return [];
+        }
       },
       add: async (apiKey: ApiKey): Promise<string> => {
-        return 'mock-api-key-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/api-keys`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              key: apiKey.key
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create API key');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating API key:', error);
+          throw error;
+        }
       },
       put: async (apiKey: ApiKey): Promise<string> => {
-        return apiKey.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/api-keys/${apiKey.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              key: apiKey.key
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update API key');
+          return apiKey.id;
+        } catch (error) {
+          console.error('Error updating API key:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<ApiKey | undefined> => {
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/api-keys`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch API keys');
+          const data = await response.json();
+          const apiKey = data.find((ak: any) => ak.id === id);
+          if (!apiKey) return undefined;
+          return {
+            id: apiKey.id,
+            key: apiKey.key
+          };
+        } catch (error) {
+          console.error('Error fetching API key:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/api-keys/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete API key');
+        } catch (error) {
+          console.error('Error deleting API key:', error);
+          throw error;
+        }
       }
     };
   }
@@ -1113,16 +1763,95 @@ export class CloudStorageAdapter {
   get models() {
     return {
       toArray: async (): Promise<Model[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/models`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch models');
+          const data = await response.json();
+          return data.map((m: any) => ({
+            id: m.id,
+            name: m.name
+          }));
+        } catch (error) {
+          console.error('Error fetching models:', error);
+          return [];
+        }
       },
       add: async (model: Model): Promise<string> => {
-        return 'mock-model-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/models`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: model.name
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create model');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating model:', error);
+          throw error;
+        }
       },
       put: async (model: Model): Promise<string> => {
-        return model.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/models/${model.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: model.name
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update model');
+          return model.id;
+        } catch (error) {
+          console.error('Error updating model:', error);
+          throw error;
+        }
+      },
+      get: async (id: string): Promise<Model | undefined> => {
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/models`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch models');
+          const data = await response.json();
+          const model = data.find((m: any) => m.id === id);
+          if (!model) return undefined;
+          return {
+            id: model.id,
+            name: model.name
+          };
+        } catch (error) {
+          console.error('Error fetching model:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/models/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete model');
+        } catch (error) {
+          console.error('Error deleting model:', error);
+          throw error;
+        }
       }
     };
   }
@@ -1130,16 +1859,95 @@ export class CloudStorageAdapter {
   get llmProviders() {
     return {
       toArray: async (): Promise<LLMProvider[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch LLM providers');
+          const data = await response.json();
+          return data.map((lp: any) => ({
+            id: lp.id,
+            provider: lp.provider
+          }));
+        } catch (error) {
+          console.error('Error fetching LLM providers:', error);
+          return [];
+        }
       },
       add: async (llmProvider: LLMProvider): Promise<string> => {
-        return 'mock-llm-provider-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              provider: llmProvider.provider
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create LLM provider');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating LLM provider:', error);
+          throw error;
+        }
       },
       put: async (llmProvider: LLMProvider): Promise<string> => {
-        return llmProvider.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers/${llmProvider.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              provider: llmProvider.provider
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update LLM provider');
+          return llmProvider.id;
+        } catch (error) {
+          console.error('Error updating LLM provider:', error);
+          throw error;
+        }
+      },
+      get: async (id: string): Promise<LLMProvider | undefined> => {
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch LLM providers');
+          const data = await response.json();
+          const provider = data.find((lp: any) => lp.id === id);
+          if (!provider) return undefined;
+          return {
+            id: provider.id,
+            provider: provider.provider
+          };
+        } catch (error) {
+          console.error('Error fetching LLM provider:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-providers/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete LLM provider');
+        } catch (error) {
+          console.error('Error deleting LLM provider:', error);
+          throw error;
+        }
       }
     };
   }
@@ -1147,19 +1955,95 @@ export class CloudStorageAdapter {
   get llmUrls() {
     return {
       toArray: async (): Promise<LLMUrl[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch LLM URLs');
+          const data = await response.json();
+          return data.map((lu: any) => ({
+            id: lu.id,
+            url: lu.url
+          }));
+        } catch (error) {
+          console.error('Error fetching LLM URLs:', error);
+          return [];
+        }
       },
       add: async (llmUrl: LLMUrl): Promise<string> => {
-        return 'mock-llm-url-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              url: llmUrl.url
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create LLM URL');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating LLM URL:', error);
+          throw error;
+        }
       },
       put: async (llmUrl: LLMUrl): Promise<string> => {
-        return llmUrl.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls/${llmUrl.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              url: llmUrl.url
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update LLM URL');
+          return llmUrl.id;
+        } catch (error) {
+          console.error('Error updating LLM URL:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<LLMUrl | undefined> => {
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch LLM URLs');
+          const data = await response.json();
+          const url = data.find((lu: any) => lu.id === id);
+          if (!url) return undefined;
+          return {
+            id: url.id,
+            url: url.url
+          };
+        } catch (error) {
+          console.error('Error fetching LLM URL:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/llm-urls/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete LLM URL');
+        } catch (error) {
+          console.error('Error deleting LLM URL:', error);
+          throw error;
+        }
       }
     };
   }
@@ -1167,16 +2051,95 @@ export class CloudStorageAdapter {
   get batchSizes() {
     return {
       toArray: async (): Promise<BatchSize[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch batch sizes');
+          const data = await response.json();
+          return data.map((bs: any) => ({
+            id: bs.id,
+            value: bs.value
+          }));
+        } catch (error) {
+          console.error('Error fetching batch sizes:', error);
+          return [];
+        }
       },
       add: async (batchSize: BatchSize): Promise<string> => {
-        return 'mock-batch-size-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              value: batchSize.value
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create batch size');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating batch size:', error);
+          throw error;
+        }
       },
       put: async (batchSize: BatchSize): Promise<string> => {
-        return batchSize.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes/${batchSize.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              value: batchSize.value
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update batch size');
+          return batchSize.id;
+        } catch (error) {
+          console.error('Error updating batch size:', error);
+          throw error;
+        }
+      },
+      get: async (id: string): Promise<BatchSize | undefined> => {
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch batch sizes');
+          const data = await response.json();
+          const batchSize = data.find((bs: any) => bs.id === id);
+          if (!batchSize) return undefined;
+          return {
+            id: batchSize.id,
+            value: batchSize.value
+          };
+        } catch (error) {
+          console.error('Error fetching batch size:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/batch-sizes/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete batch size');
+        } catch (error) {
+          console.error('Error deleting batch size:', error);
+          throw error;
+        }
       }
     };
   }
@@ -1184,19 +2147,95 @@ export class CloudStorageAdapter {
   get maxTokens() {
     return {
       toArray: async (): Promise<MaxTokens[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch max tokens');
+          const data = await response.json();
+          return data.map((mt: any) => ({
+            id: mt.id,
+            value: mt.value
+          }));
+        } catch (error) {
+          console.error('Error fetching max tokens:', error);
+          return [];
+        }
       },
       add: async (maxTokens: MaxTokens): Promise<string> => {
-        return 'mock-max-tokens-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              value: maxTokens.value
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create max tokens');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating max tokens:', error);
+          throw error;
+        }
       },
       put: async (maxTokens: MaxTokens): Promise<string> => {
-        return maxTokens.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens/${maxTokens.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              value: maxTokens.value
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update max tokens');
+          return maxTokens.id;
+        } catch (error) {
+          console.error('Error updating max tokens:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<MaxTokens | undefined> => {
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch max tokens');
+          const data = await response.json();
+          const maxTokens = data.find((mt: any) => mt.id === id);
+          if (!maxTokens) return undefined;
+          return {
+            id: maxTokens.id,
+            value: maxTokens.value
+          };
+        } catch (error) {
+          console.error('Error fetching max tokens:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/max-tokens/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete max tokens');
+        } catch (error) {
+          console.error('Error deleting max tokens:', error);
+          throw error;
+        }
       }
     };
   }
@@ -1204,24 +2243,113 @@ export class CloudStorageAdapter {
   get userSettings() {
     return {
       toArray: async (): Promise<UserSettings[]> => {
-        // Return empty array for now - cloud storage user settings not yet implemented
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/user-settings`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch user settings');
+          const data = await response.json();
+          return data.map((us: any) => ({
+            id: us.id,
+            tutorialCompleted: us.tutorial_completed
+          }));
+        } catch (error) {
+          console.error('Error fetching user settings:', error);
+          return [];
+        }
       },
       add: async (userSettings: UserSettings): Promise<string> => {
-        // Return a mock ID for now
-        return 'mock-user-settings-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/user-settings`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              tutorial_completed: userSettings.tutorialCompleted
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create user settings');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating user settings:', error);
+          throw error;
+        }
       },
       put: async (userSettings: UserSettings): Promise<string> => {
-        // Return the same ID for now
-        return userSettings.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/user-settings/${userSettings.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              tutorial_completed: userSettings.tutorialCompleted
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update user settings');
+          return userSettings.id;
+        } catch (error) {
+          console.error('Error updating user settings:', error);
+          throw error;
+        }
+      },
+      get: async (id: string): Promise<UserSettings | undefined> => {
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/user-settings`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch user settings');
+          const data = await response.json();
+          const settings = data.find((us: any) => us.id === id);
+          if (!settings) return undefined;
+          return {
+            id: settings.id,
+            tutorialCompleted: settings.tutorial_completed
+          };
+        } catch (error) {
+          console.error('Error fetching user settings:', error);
+          return undefined;
+        }
       },
       update: async (id: string, changes: Partial<UserSettings>): Promise<void> => {
-        // No-op for now
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/user-settings/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              tutorial_completed: changes.tutorialCompleted
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update user settings');
+        } catch (error) {
+          console.error('Error updating user settings:', error);
+          throw error;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        // No-op for now
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/user-settings/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete user settings');
+        } catch (error) {
+          console.error('Error deleting user settings:', error);
+          throw error;
+        }
       }
     };
   }

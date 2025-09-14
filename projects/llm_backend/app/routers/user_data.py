@@ -5,6 +5,10 @@ from app.models.user_data_models import UserStorageCreate, UserStorageUpdate, Us
 from app.models.user_data_models import Profile, ProfileCreate, ProfileUpdate, Dataset, DatasetCreate, DatasetUpdate
 from app.models.user_data_models import DataPoint, DataPointCreate, DataPointUpdate, SegmentDataPoint, SegmentDataPointCreate, SegmentDataPointUpdate
 from app.models.user_data_models import ProfilePoint, ProfilePointCreate, ProfilePointUpdate, SegmentationProfilePoint, SegmentationProfilePointCreate, SegmentationProfilePointUpdate
+from app.models.user_data_models import Text, TextCreate, TextUpdate, AnnotatedText, AnnotatedTextCreate, AnnotatedTextUpdate, AnnotatedDataset, AnnotatedDatasetCreate, AnnotatedDatasetUpdate
+from app.models.user_data_models import ApiKey, ApiKeyCreate, ApiKeyUpdate, Model, ModelCreate, ModelUpdate, LLMProvider, LLMProviderCreate, LLMProviderUpdate
+from app.models.user_data_models import LLMUrl, LLMUrlCreate, LLMUrlUpdate, BatchSize, BatchSizeCreate, BatchSizeUpdate, MaxTokens, MaxTokensCreate, MaxTokensUpdate
+from app.models.user_data_models import UserSettings, UserSettingsCreate, UserSettingsUpdate
 from app.services.user_data_service import UserDataService
 from app.models.user import User
 from app.routers.auth import get_current_user
@@ -804,4 +808,961 @@ async def delete_segmentation_profile_point(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete segmentation profile point: {str(e)}"
+        )
+
+# Individual Text CRUD operations
+@router.post("/{storage_id}/texts", response_model=Text)
+async def create_text(
+    storage_id: str,
+    text_data: TextCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new text in the specified cloud storage."""
+    try:
+        text = await user_data_service.create_text(ObjectId(storage_id), current_user.id, text_data.model_dump())
+        return text
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create text: {str(e)}"
+        )
+
+@router.get("/{storage_id}/texts", response_model=List[Text])
+async def get_texts(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all texts from the specified cloud storage."""
+    try:
+        texts = await user_data_service.get_texts(ObjectId(storage_id), current_user.id)
+        return texts
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get texts: {str(e)}"
+        )
+
+@router.get("/{storage_id}/texts/by-dataset/{dataset_id}", response_model=List[Text])
+async def get_texts_by_dataset(
+    storage_id: str,
+    dataset_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all texts for a specific dataset."""
+    try:
+        texts = await user_data_service.get_texts_by_dataset(ObjectId(storage_id), ObjectId(dataset_id), current_user.id)
+        return texts
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get texts: {str(e)}"
+        )
+
+@router.put("/{storage_id}/texts/{text_id}", response_model=Text)
+async def update_text(
+    storage_id: str,
+    text_id: str,
+    text_data: TextUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update a text in the specified cloud storage."""
+    try:
+        text = await user_data_service.update_text(ObjectId(storage_id), ObjectId(text_id), current_user.id, text_data.model_dump())
+        return text
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update text: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/texts/{text_id}")
+async def delete_text(
+    storage_id: str,
+    text_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete a text from the specified cloud storage."""
+    try:
+        await user_data_service.delete_text(ObjectId(storage_id), ObjectId(text_id), current_user.id)
+        return {"message": "Text deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete text: {str(e)}"
+        )
+
+# Individual AnnotatedDataset CRUD operations
+@router.post("/{storage_id}/annotated-datasets", response_model=AnnotatedDataset)
+async def create_annotated_dataset(
+    storage_id: str,
+    annotated_dataset_data: AnnotatedDatasetCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new annotated dataset in the specified cloud storage."""
+    try:
+        annotated_dataset = await user_data_service.create_annotated_dataset(ObjectId(storage_id), current_user.id, annotated_dataset_data.model_dump())
+        return annotated_dataset
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create annotated dataset: {str(e)}"
+        )
+
+@router.get("/{storage_id}/annotated-datasets", response_model=List[AnnotatedDataset])
+async def get_annotated_datasets(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all annotated datasets from the specified cloud storage."""
+    try:
+        annotated_datasets = await user_data_service.get_annotated_datasets(ObjectId(storage_id), current_user.id)
+        return annotated_datasets
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get annotated datasets: {str(e)}"
+        )
+
+@router.get("/{storage_id}/annotated-datasets/by-dataset/{dataset_id}", response_model=List[AnnotatedDataset])
+async def get_annotated_datasets_by_dataset(
+    storage_id: str,
+    dataset_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all annotated datasets for a specific dataset."""
+    try:
+        annotated_datasets = await user_data_service.get_annotated_datasets_by_dataset(ObjectId(storage_id), ObjectId(dataset_id), current_user.id)
+        return annotated_datasets
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get annotated datasets: {str(e)}"
+        )
+
+@router.put("/{storage_id}/annotated-datasets/{annotated_dataset_id}", response_model=AnnotatedDataset)
+async def update_annotated_dataset(
+    storage_id: str,
+    annotated_dataset_id: str,
+    annotated_dataset_data: AnnotatedDatasetUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update an annotated dataset in the specified cloud storage."""
+    try:
+        annotated_dataset = await user_data_service.update_annotated_dataset(ObjectId(storage_id), ObjectId(annotated_dataset_id), current_user.id, annotated_dataset_data.model_dump())
+        return annotated_dataset
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update annotated dataset: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/annotated-datasets/{annotated_dataset_id}")
+async def delete_annotated_dataset(
+    storage_id: str,
+    annotated_dataset_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete an annotated dataset from the specified cloud storage."""
+    try:
+        await user_data_service.delete_annotated_dataset(ObjectId(storage_id), ObjectId(annotated_dataset_id), current_user.id)
+        return {"message": "Annotated dataset deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete annotated dataset: {str(e)}"
+        )
+
+# Individual AnnotatedText CRUD operations
+@router.post("/{storage_id}/annotated-texts", response_model=AnnotatedText)
+async def create_annotated_text(
+    storage_id: str,
+    annotated_text_data: AnnotatedTextCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new annotated text in the specified cloud storage."""
+    try:
+        annotated_text = await user_data_service.create_annotated_text(ObjectId(storage_id), current_user.id, annotated_text_data.model_dump())
+        return annotated_text
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create annotated text: {str(e)}"
+        )
+
+@router.get("/{storage_id}/annotated-texts", response_model=List[AnnotatedText])
+async def get_annotated_texts(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all annotated texts from the specified cloud storage."""
+    try:
+        annotated_texts = await user_data_service.get_annotated_texts(ObjectId(storage_id), current_user.id)
+        return annotated_texts
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get annotated texts: {str(e)}"
+        )
+
+@router.get("/{storage_id}/annotated-texts/by-dataset/{annotated_dataset_id}", response_model=List[AnnotatedText])
+async def get_annotated_texts_by_dataset(
+    storage_id: str,
+    annotated_dataset_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all annotated texts for a specific annotated dataset."""
+    try:
+        annotated_texts = await user_data_service.get_annotated_texts_by_dataset(ObjectId(storage_id), ObjectId(annotated_dataset_id), current_user.id)
+        return annotated_texts
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get annotated texts: {str(e)}"
+        )
+
+@router.put("/{storage_id}/annotated-texts/{annotated_text_id}", response_model=AnnotatedText)
+async def update_annotated_text(
+    storage_id: str,
+    annotated_text_id: str,
+    annotated_text_data: AnnotatedTextUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update an annotated text in the specified cloud storage."""
+    try:
+        annotated_text = await user_data_service.update_annotated_text(ObjectId(storage_id), ObjectId(annotated_text_id), current_user.id, annotated_text_data.model_dump())
+        return annotated_text
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update annotated text: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/annotated-texts/{annotated_text_id}")
+async def delete_annotated_text(
+    storage_id: str,
+    annotated_text_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete an annotated text from the specified cloud storage."""
+    try:
+        await user_data_service.delete_annotated_text(ObjectId(storage_id), ObjectId(annotated_text_id), current_user.id)
+        return {"message": "Annotated text deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete annotated text: {str(e)}"
+        )
+
+# Settings API endpoints
+# ApiKey endpoints
+@router.post("/{storage_id}/api-keys", response_model=ApiKey)
+async def create_api_key(
+    storage_id: str,
+    api_key_data: ApiKeyCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new API key in the specified cloud storage."""
+    try:
+        api_key = await user_data_service.create_api_key(ObjectId(storage_id), current_user.id, api_key_data.model_dump())
+        return api_key
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create API key: {str(e)}"
+        )
+
+@router.get("/{storage_id}/api-keys", response_model=List[ApiKey])
+async def get_api_keys(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all API keys from the specified cloud storage."""
+    try:
+        api_keys = await user_data_service.get_api_keys(ObjectId(storage_id), current_user.id)
+        return api_keys
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get API keys: {str(e)}"
+        )
+
+@router.put("/{storage_id}/api-keys/{api_key_id}", response_model=ApiKey)
+async def update_api_key(
+    storage_id: str,
+    api_key_id: str,
+    api_key_data: ApiKeyUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update an API key in the specified cloud storage."""
+    try:
+        api_key = await user_data_service.update_api_key(ObjectId(storage_id), ObjectId(api_key_id), current_user.id, api_key_data.model_dump())
+        return api_key
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update API key: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/api-keys/{api_key_id}")
+async def delete_api_key(
+    storage_id: str,
+    api_key_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete an API key from the specified cloud storage."""
+    try:
+        await user_data_service.delete_api_key(ObjectId(storage_id), ObjectId(api_key_id), current_user.id)
+        return {"message": "API key deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete API key: {str(e)}"
+        )
+
+# Model endpoints
+@router.post("/{storage_id}/models", response_model=Model)
+async def create_model(
+    storage_id: str,
+    model_data: ModelCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new model in the specified cloud storage."""
+    try:
+        model = await user_data_service.create_model(ObjectId(storage_id), current_user.id, model_data.model_dump())
+        return model
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create model: {str(e)}"
+        )
+
+@router.get("/{storage_id}/models", response_model=List[Model])
+async def get_models(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all models from the specified cloud storage."""
+    try:
+        models = await user_data_service.get_models(ObjectId(storage_id), current_user.id)
+        return models
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get models: {str(e)}"
+        )
+
+@router.put("/{storage_id}/models/{model_id}", response_model=Model)
+async def update_model(
+    storage_id: str,
+    model_id: str,
+    model_data: ModelUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update a model in the specified cloud storage."""
+    try:
+        model = await user_data_service.update_model(ObjectId(storage_id), ObjectId(model_id), current_user.id, model_data.model_dump())
+        return model
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update model: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/models/{model_id}")
+async def delete_model(
+    storage_id: str,
+    model_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete a model from the specified cloud storage."""
+    try:
+        await user_data_service.delete_model(ObjectId(storage_id), ObjectId(model_id), current_user.id)
+        return {"message": "Model deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete model: {str(e)}"
+        )
+
+# LLMProvider endpoints
+@router.post("/{storage_id}/llm-providers", response_model=LLMProvider)
+async def create_llm_provider(
+    storage_id: str,
+    provider_data: LLMProviderCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new LLM provider in the specified cloud storage."""
+    try:
+        provider = await user_data_service.create_llm_provider(ObjectId(storage_id), current_user.id, provider_data.model_dump())
+        return provider
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create LLM provider: {str(e)}"
+        )
+
+@router.get("/{storage_id}/llm-providers", response_model=List[LLMProvider])
+async def get_llm_providers(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all LLM providers from the specified cloud storage."""
+    try:
+        providers = await user_data_service.get_llm_providers(ObjectId(storage_id), current_user.id)
+        return providers
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get LLM providers: {str(e)}"
+        )
+
+@router.put("/{storage_id}/llm-providers/{provider_id}", response_model=LLMProvider)
+async def update_llm_provider(
+    storage_id: str,
+    provider_id: str,
+    provider_data: LLMProviderUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update an LLM provider in the specified cloud storage."""
+    try:
+        provider = await user_data_service.update_llm_provider(ObjectId(storage_id), ObjectId(provider_id), current_user.id, provider_data.model_dump())
+        return provider
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update LLM provider: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/llm-providers/{provider_id}")
+async def delete_llm_provider(
+    storage_id: str,
+    provider_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete an LLM provider from the specified cloud storage."""
+    try:
+        await user_data_service.delete_llm_provider(ObjectId(storage_id), ObjectId(provider_id), current_user.id)
+        return {"message": "LLM provider deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete LLM provider: {str(e)}"
+        )
+
+# LLMUrl endpoints
+@router.post("/{storage_id}/llm-urls", response_model=LLMUrl)
+async def create_llm_url(
+    storage_id: str,
+    url_data: LLMUrlCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new LLM URL in the specified cloud storage."""
+    try:
+        url = await user_data_service.create_llm_url(ObjectId(storage_id), current_user.id, url_data.model_dump())
+        return url
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create LLM URL: {str(e)}"
+        )
+
+@router.get("/{storage_id}/llm-urls", response_model=List[LLMUrl])
+async def get_llm_urls(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all LLM URLs from the specified cloud storage."""
+    try:
+        urls = await user_data_service.get_llm_urls(ObjectId(storage_id), current_user.id)
+        return urls
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get LLM URLs: {str(e)}"
+        )
+
+@router.put("/{storage_id}/llm-urls/{url_id}", response_model=LLMUrl)
+async def update_llm_url(
+    storage_id: str,
+    url_id: str,
+    url_data: LLMUrlUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update an LLM URL in the specified cloud storage."""
+    try:
+        url = await user_data_service.update_llm_url(ObjectId(storage_id), ObjectId(url_id), current_user.id, url_data.model_dump())
+        return url
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update LLM URL: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/llm-urls/{url_id}")
+async def delete_llm_url(
+    storage_id: str,
+    url_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete an LLM URL from the specified cloud storage."""
+    try:
+        await user_data_service.delete_llm_url(ObjectId(storage_id), ObjectId(url_id), current_user.id)
+        return {"message": "LLM URL deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete LLM URL: {str(e)}"
+        )
+
+# BatchSize endpoints
+@router.post("/{storage_id}/batch-sizes", response_model=BatchSize)
+async def create_batch_size(
+    storage_id: str,
+    batch_size_data: BatchSizeCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new batch size in the specified cloud storage."""
+    try:
+        batch_size = await user_data_service.create_batch_size(ObjectId(storage_id), current_user.id, batch_size_data.model_dump())
+        return batch_size
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create batch size: {str(e)}"
+        )
+
+@router.get("/{storage_id}/batch-sizes", response_model=List[BatchSize])
+async def get_batch_sizes(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all batch sizes from the specified cloud storage."""
+    try:
+        batch_sizes = await user_data_service.get_batch_sizes(ObjectId(storage_id), current_user.id)
+        return batch_sizes
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get batch sizes: {str(e)}"
+        )
+
+@router.put("/{storage_id}/batch-sizes/{batch_size_id}", response_model=BatchSize)
+async def update_batch_size(
+    storage_id: str,
+    batch_size_id: str,
+    batch_size_data: BatchSizeUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update a batch size in the specified cloud storage."""
+    try:
+        batch_size = await user_data_service.update_batch_size(ObjectId(storage_id), ObjectId(batch_size_id), current_user.id, batch_size_data.model_dump())
+        return batch_size
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update batch size: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/batch-sizes/{batch_size_id}")
+async def delete_batch_size(
+    storage_id: str,
+    batch_size_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete a batch size from the specified cloud storage."""
+    try:
+        await user_data_service.delete_batch_size(ObjectId(storage_id), ObjectId(batch_size_id), current_user.id)
+        return {"message": "Batch size deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete batch size: {str(e)}"
+        )
+
+# MaxTokens endpoints
+@router.post("/{storage_id}/max-tokens", response_model=MaxTokens)
+async def create_max_tokens(
+    storage_id: str,
+    max_tokens_data: MaxTokensCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create new max tokens in the specified cloud storage."""
+    try:
+        max_tokens = await user_data_service.create_max_tokens(ObjectId(storage_id), current_user.id, max_tokens_data.model_dump())
+        return max_tokens
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create max tokens: {str(e)}"
+        )
+
+@router.get("/{storage_id}/max-tokens", response_model=List[MaxTokens])
+async def get_max_tokens(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all max tokens from the specified cloud storage."""
+    try:
+        max_tokens = await user_data_service.get_max_tokens(ObjectId(storage_id), current_user.id)
+        return max_tokens
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get max tokens: {str(e)}"
+        )
+
+@router.put("/{storage_id}/max-tokens/{max_tokens_id}", response_model=MaxTokens)
+async def update_max_tokens(
+    storage_id: str,
+    max_tokens_id: str,
+    max_tokens_data: MaxTokensUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update max tokens in the specified cloud storage."""
+    try:
+        max_tokens = await user_data_service.update_max_tokens(ObjectId(storage_id), ObjectId(max_tokens_id), current_user.id, max_tokens_data.model_dump())
+        return max_tokens
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update max tokens: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/max-tokens/{max_tokens_id}")
+async def delete_max_tokens(
+    storage_id: str,
+    max_tokens_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete max tokens from the specified cloud storage."""
+    try:
+        await user_data_service.delete_max_tokens(ObjectId(storage_id), ObjectId(max_tokens_id), current_user.id)
+        return {"message": "Max tokens deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete max tokens: {str(e)}"
+        )
+
+# UserSettings endpoints
+@router.post("/{storage_id}/user-settings", response_model=UserSettings)
+async def create_user_settings(
+    storage_id: str,
+    settings_data: UserSettingsCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create new user settings in the specified cloud storage."""
+    try:
+        settings = await user_data_service.create_user_settings(ObjectId(storage_id), current_user.id, settings_data.model_dump())
+        return settings
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create user settings: {str(e)}"
+        )
+
+@router.get("/{storage_id}/user-settings", response_model=List[UserSettings])
+async def get_user_settings(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all user settings from the specified cloud storage."""
+    try:
+        settings = await user_data_service.get_user_settings(ObjectId(storage_id), current_user.id)
+        return settings
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get user settings: {str(e)}"
+        )
+
+@router.put("/{storage_id}/user-settings/{settings_id}", response_model=UserSettings)
+async def update_user_settings(
+    storage_id: str,
+    settings_id: str,
+    settings_data: UserSettingsUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update user settings in the specified cloud storage."""
+    try:
+        settings = await user_data_service.update_user_settings(ObjectId(storage_id), ObjectId(settings_id), current_user.id, settings_data.model_dump())
+        return settings
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update user settings: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/user-settings/{settings_id}")
+async def delete_user_settings(
+    storage_id: str,
+    settings_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete user settings from the specified cloud storage."""
+    try:
+        await user_data_service.delete_user_settings(ObjectId(storage_id), ObjectId(settings_id), current_user.id)
+        return {"message": "User settings deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete user settings: {str(e)}"
         )

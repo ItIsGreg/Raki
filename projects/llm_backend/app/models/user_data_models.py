@@ -138,6 +138,16 @@ class Text(BaseDataModel):
             "dataset_id",
         ]
 
+class TextCreate(BaseModel):
+    dataset_id: str
+    filename: str
+    text: str
+
+class TextUpdate(BaseModel):
+    filename: Optional[str] = None
+    text: Optional[str] = None
+    dataset_id: Optional[str] = None
+
 # Annotated Dataset Models
 class AnnotatedDataset(BaseDataModel):
     name: str
@@ -170,6 +180,32 @@ class AnnotatedText(BaseDataModel):
             "text_id",
             "annotated_dataset_id",
         ]
+
+class AnnotatedDatasetCreate(BaseModel):
+    name: str
+    description: str
+    dataset_id: str
+    profile_id: str
+    mode: str
+
+class AnnotatedDatasetUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    dataset_id: Optional[str] = None
+    profile_id: Optional[str] = None
+    mode: Optional[str] = None
+
+class AnnotatedTextCreate(BaseModel):
+    text_id: str
+    annotated_dataset_id: str
+    verified: Optional[bool] = None
+    ai_faulty: Optional[bool] = None
+
+class AnnotatedTextUpdate(BaseModel):
+    text_id: Optional[str] = None
+    annotated_dataset_id: Optional[str] = None
+    verified: Optional[bool] = None
+    ai_faulty: Optional[bool] = None
 
 # Data Point Models
 class DataPoint(BaseDataModel):
@@ -386,6 +422,49 @@ class UserSettings(BaseDataModel):
             "user_id",
             "storage_id",
         ]
+
+# Settings Create/Update Models
+class ApiKeyCreate(BaseModel):
+    key: str
+
+class ApiKeyUpdate(BaseModel):
+    key: Optional[str] = None
+
+class ModelCreate(BaseModel):
+    name: str
+
+class ModelUpdate(BaseModel):
+    name: Optional[str] = None
+
+class LLMProviderCreate(BaseModel):
+    provider: str
+
+class LLMProviderUpdate(BaseModel):
+    provider: Optional[str] = None
+
+class LLMUrlCreate(BaseModel):
+    url: str
+
+class LLMUrlUpdate(BaseModel):
+    url: Optional[str] = None
+
+class BatchSizeCreate(BaseModel):
+    value: int
+
+class BatchSizeUpdate(BaseModel):
+    value: Optional[int] = None
+
+class MaxTokensCreate(BaseModel):
+    value: Optional[int] = None
+
+class MaxTokensUpdate(BaseModel):
+    value: Optional[int] = None
+
+class UserSettingsCreate(BaseModel):
+    tutorial_completed: bool = False
+
+class UserSettingsUpdate(BaseModel):
+    tutorial_completed: Optional[bool] = None
 
 # Migration and Export Models
 class MigrateLocalToCloudRequest(BaseModel):

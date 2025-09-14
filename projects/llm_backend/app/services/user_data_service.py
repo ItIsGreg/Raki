@@ -879,3 +879,685 @@ class UserDataService:
         
         # Delete the segmentation profile point
         await segmentation_profile_point.delete()
+    
+    # Individual Text CRUD operations
+    async def create_text(self, storage_id: ObjectId, user_id: ObjectId, text_data: dict) -> Text:
+        """Create a new text in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Create the text
+        text = Text(
+            user_id=user_id,
+            storage_id=storage_id,
+            dataset_id=ObjectId(text_data['dataset_id']),
+            filename=text_data['filename'],
+            text=text_data['text']
+        )
+        await text.insert()
+        return text
+    
+    async def get_texts(self, storage_id: ObjectId, user_id: ObjectId) -> List[Text]:
+        """Get all texts from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get all texts for this storage
+        texts = await Text.find(Text.user_id == user_id, Text.storage_id == storage_id).to_list()
+        return texts
+    
+    async def get_texts_by_dataset(self, storage_id: ObjectId, dataset_id: ObjectId, user_id: ObjectId) -> List[Text]:
+        """Get all texts for a specific dataset."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get texts for this dataset
+        texts = await Text.find(
+            Text.user_id == user_id, 
+            Text.storage_id == storage_id,
+            Text.dataset_id == dataset_id
+        ).to_list()
+        return texts
+    
+    async def update_text(self, storage_id: ObjectId, text_id: ObjectId, user_id: ObjectId, text_data: dict) -> Text:
+        """Update a text in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the text
+        text = await Text.find_one(Text.id == text_id, Text.user_id == user_id, Text.storage_id == storage_id)
+        if not text:
+            raise ValueError("Text not found or access denied")
+        
+        # Update the text
+        for field, value in text_data.items():
+            if hasattr(text, field):
+                if field == 'dataset_id' and value:
+                    setattr(text, field, ObjectId(value))
+                else:
+                    setattr(text, field, value)
+        
+        await text.save()
+        return text
+    
+    async def delete_text(self, storage_id: ObjectId, text_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete a text from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the text
+        text = await Text.find_one(Text.id == text_id, Text.user_id == user_id, Text.storage_id == storage_id)
+        if not text:
+            raise ValueError("Text not found or access denied")
+        
+        # Delete the text
+        await text.delete()
+    
+    # Individual AnnotatedDataset CRUD operations
+    async def create_annotated_dataset(self, storage_id: ObjectId, user_id: ObjectId, annotated_dataset_data: dict) -> AnnotatedDataset:
+        """Create a new annotated dataset in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Create the annotated dataset
+        annotated_dataset = AnnotatedDataset(
+            user_id=user_id,
+            storage_id=storage_id,
+            name=annotated_dataset_data['name'],
+            description=annotated_dataset_data['description'],
+            dataset_id=ObjectId(annotated_dataset_data['dataset_id']),
+            profile_id=ObjectId(annotated_dataset_data['profile_id']),
+            mode=annotated_dataset_data['mode']
+        )
+        await annotated_dataset.insert()
+        return annotated_dataset
+    
+    async def get_annotated_datasets(self, storage_id: ObjectId, user_id: ObjectId) -> List[AnnotatedDataset]:
+        """Get all annotated datasets from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get all annotated datasets for this storage
+        annotated_datasets = await AnnotatedDataset.find(AnnotatedDataset.user_id == user_id, AnnotatedDataset.storage_id == storage_id).to_list()
+        return annotated_datasets
+    
+    async def get_annotated_datasets_by_dataset(self, storage_id: ObjectId, dataset_id: ObjectId, user_id: ObjectId) -> List[AnnotatedDataset]:
+        """Get all annotated datasets for a specific dataset."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get annotated datasets for this dataset
+        annotated_datasets = await AnnotatedDataset.find(
+            AnnotatedDataset.user_id == user_id, 
+            AnnotatedDataset.storage_id == storage_id,
+            AnnotatedDataset.dataset_id == dataset_id
+        ).to_list()
+        return annotated_datasets
+    
+    async def update_annotated_dataset(self, storage_id: ObjectId, annotated_dataset_id: ObjectId, user_id: ObjectId, annotated_dataset_data: dict) -> AnnotatedDataset:
+        """Update an annotated dataset in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the annotated dataset
+        annotated_dataset = await AnnotatedDataset.find_one(AnnotatedDataset.id == annotated_dataset_id, AnnotatedDataset.user_id == user_id, AnnotatedDataset.storage_id == storage_id)
+        if not annotated_dataset:
+            raise ValueError("Annotated dataset not found or access denied")
+        
+        # Update the annotated dataset
+        for field, value in annotated_dataset_data.items():
+            if hasattr(annotated_dataset, field):
+                if field in ['dataset_id', 'profile_id'] and value:
+                    setattr(annotated_dataset, field, ObjectId(value))
+                else:
+                    setattr(annotated_dataset, field, value)
+        
+        await annotated_dataset.save()
+        return annotated_dataset
+    
+    async def delete_annotated_dataset(self, storage_id: ObjectId, annotated_dataset_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete an annotated dataset from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the annotated dataset
+        annotated_dataset = await AnnotatedDataset.find_one(AnnotatedDataset.id == annotated_dataset_id, AnnotatedDataset.user_id == user_id, AnnotatedDataset.storage_id == storage_id)
+        if not annotated_dataset:
+            raise ValueError("Annotated dataset not found or access denied")
+        
+        # Delete the annotated dataset
+        await annotated_dataset.delete()
+    
+    # Individual AnnotatedText CRUD operations
+    async def create_annotated_text(self, storage_id: ObjectId, user_id: ObjectId, annotated_text_data: dict) -> AnnotatedText:
+        """Create a new annotated text in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Create the annotated text
+        annotated_text = AnnotatedText(
+            user_id=user_id,
+            storage_id=storage_id,
+            text_id=ObjectId(annotated_text_data['text_id']),
+            annotated_dataset_id=ObjectId(annotated_text_data['annotated_dataset_id']),
+            verified=annotated_text_data.get('verified'),
+            ai_faulty=annotated_text_data.get('ai_faulty')
+        )
+        await annotated_text.insert()
+        return annotated_text
+    
+    async def get_annotated_texts(self, storage_id: ObjectId, user_id: ObjectId) -> List[AnnotatedText]:
+        """Get all annotated texts from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get all annotated texts for this storage
+        annotated_texts = await AnnotatedText.find(AnnotatedText.user_id == user_id, AnnotatedText.storage_id == storage_id).to_list()
+        return annotated_texts
+    
+    async def get_annotated_texts_by_dataset(self, storage_id: ObjectId, annotated_dataset_id: ObjectId, user_id: ObjectId) -> List[AnnotatedText]:
+        """Get all annotated texts for a specific annotated dataset."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get annotated texts for this annotated dataset
+        annotated_texts = await AnnotatedText.find(
+            AnnotatedText.user_id == user_id, 
+            AnnotatedText.storage_id == storage_id,
+            AnnotatedText.annotated_dataset_id == annotated_dataset_id
+        ).to_list()
+        return annotated_texts
+    
+    async def update_annotated_text(self, storage_id: ObjectId, annotated_text_id: ObjectId, user_id: ObjectId, annotated_text_data: dict) -> AnnotatedText:
+        """Update an annotated text in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the annotated text
+        annotated_text = await AnnotatedText.find_one(AnnotatedText.id == annotated_text_id, AnnotatedText.user_id == user_id, AnnotatedText.storage_id == storage_id)
+        if not annotated_text:
+            raise ValueError("Annotated text not found or access denied")
+        
+        # Update the annotated text
+        for field, value in annotated_text_data.items():
+            if hasattr(annotated_text, field):
+                if field in ['text_id', 'annotated_dataset_id'] and value:
+                    setattr(annotated_text, field, ObjectId(value))
+                else:
+                    setattr(annotated_text, field, value)
+        
+        await annotated_text.save()
+        return annotated_text
+    
+    async def delete_annotated_text(self, storage_id: ObjectId, annotated_text_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete an annotated text from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the annotated text
+        annotated_text = await AnnotatedText.find_one(AnnotatedText.id == annotated_text_id, AnnotatedText.user_id == user_id, AnnotatedText.storage_id == storage_id)
+        if not annotated_text:
+            raise ValueError("Annotated text not found or access denied")
+        
+        # Delete the annotated text
+        await annotated_text.delete()
+    
+    # Settings CRUD operations
+    # ApiKey CRUD operations
+    async def create_api_key(self, storage_id: ObjectId, user_id: ObjectId, api_key_data: dict) -> ApiKey:
+        """Create a new API key in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        api_key = ApiKey(
+            user_id=user_id,
+            storage_id=storage_id,
+            key=api_key_data['key']
+        )
+        await api_key.insert()
+        return api_key
+    
+    async def get_api_keys(self, storage_id: ObjectId, user_id: ObjectId) -> List[ApiKey]:
+        """Get all API keys from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        api_keys = await ApiKey.find(ApiKey.user_id == user_id, ApiKey.storage_id == storage_id).to_list()
+        return api_keys
+    
+    async def update_api_key(self, storage_id: ObjectId, api_key_id: ObjectId, user_id: ObjectId, api_key_data: dict) -> ApiKey:
+        """Update an API key in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        api_key = await ApiKey.find_one(ApiKey.id == api_key_id, ApiKey.user_id == user_id, ApiKey.storage_id == storage_id)
+        if not api_key:
+            raise ValueError("API key not found or access denied")
+        
+        for field, value in api_key_data.items():
+            if hasattr(api_key, field):
+                setattr(api_key, field, value)
+        
+        await api_key.save()
+        return api_key
+    
+    async def delete_api_key(self, storage_id: ObjectId, api_key_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete an API key from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        api_key = await ApiKey.find_one(ApiKey.id == api_key_id, ApiKey.user_id == user_id, ApiKey.storage_id == storage_id)
+        if not api_key:
+            raise ValueError("API key not found or access denied")
+        
+        await api_key.delete()
+    
+    # Model CRUD operations
+    async def create_model(self, storage_id: ObjectId, user_id: ObjectId, model_data: dict) -> Model:
+        """Create a new model in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        model = Model(
+            user_id=user_id,
+            storage_id=storage_id,
+            name=model_data['name']
+        )
+        await model.insert()
+        return model
+    
+    async def get_models(self, storage_id: ObjectId, user_id: ObjectId) -> List[Model]:
+        """Get all models from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        models = await Model.find(Model.user_id == user_id, Model.storage_id == storage_id).to_list()
+        return models
+    
+    async def update_model(self, storage_id: ObjectId, model_id: ObjectId, user_id: ObjectId, model_data: dict) -> Model:
+        """Update a model in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        model = await Model.find_one(Model.id == model_id, Model.user_id == user_id, Model.storage_id == storage_id)
+        if not model:
+            raise ValueError("Model not found or access denied")
+        
+        for field, value in model_data.items():
+            if hasattr(model, field):
+                setattr(model, field, value)
+        
+        await model.save()
+        return model
+    
+    async def delete_model(self, storage_id: ObjectId, model_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete a model from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        model = await Model.find_one(Model.id == model_id, Model.user_id == user_id, Model.storage_id == storage_id)
+        if not model:
+            raise ValueError("Model not found or access denied")
+        
+        await model.delete()
+    
+    # LLMProvider CRUD operations
+    async def create_llm_provider(self, storage_id: ObjectId, user_id: ObjectId, provider_data: dict) -> LLMProvider:
+        """Create a new LLM provider in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        provider = LLMProvider(
+            user_id=user_id,
+            storage_id=storage_id,
+            provider=provider_data['provider']
+        )
+        await provider.insert()
+        return provider
+    
+    async def get_llm_providers(self, storage_id: ObjectId, user_id: ObjectId) -> List[LLMProvider]:
+        """Get all LLM providers from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        providers = await LLMProvider.find(LLMProvider.user_id == user_id, LLMProvider.storage_id == storage_id).to_list()
+        return providers
+    
+    async def update_llm_provider(self, storage_id: ObjectId, provider_id: ObjectId, user_id: ObjectId, provider_data: dict) -> LLMProvider:
+        """Update an LLM provider in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        provider = await LLMProvider.find_one(LLMProvider.id == provider_id, LLMProvider.user_id == user_id, LLMProvider.storage_id == storage_id)
+        if not provider:
+            raise ValueError("LLM provider not found or access denied")
+        
+        for field, value in provider_data.items():
+            if hasattr(provider, field):
+                setattr(provider, field, value)
+        
+        await provider.save()
+        return provider
+    
+    async def delete_llm_provider(self, storage_id: ObjectId, provider_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete an LLM provider from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        provider = await LLMProvider.find_one(LLMProvider.id == provider_id, LLMProvider.user_id == user_id, LLMProvider.storage_id == storage_id)
+        if not provider:
+            raise ValueError("LLM provider not found or access denied")
+        
+        await provider.delete()
+    
+    # LLMUrl CRUD operations
+    async def create_llm_url(self, storage_id: ObjectId, user_id: ObjectId, url_data: dict) -> LLMUrl:
+        """Create a new LLM URL in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        url = LLMUrl(
+            user_id=user_id,
+            storage_id=storage_id,
+            url=url_data['url']
+        )
+        await url.insert()
+        return url
+    
+    async def get_llm_urls(self, storage_id: ObjectId, user_id: ObjectId) -> List[LLMUrl]:
+        """Get all LLM URLs from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        urls = await LLMUrl.find(LLMUrl.user_id == user_id, LLMUrl.storage_id == storage_id).to_list()
+        return urls
+    
+    async def update_llm_url(self, storage_id: ObjectId, url_id: ObjectId, user_id: ObjectId, url_data: dict) -> LLMUrl:
+        """Update an LLM URL in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        url = await LLMUrl.find_one(LLMUrl.id == url_id, LLMUrl.user_id == user_id, LLMUrl.storage_id == storage_id)
+        if not url:
+            raise ValueError("LLM URL not found or access denied")
+        
+        for field, value in url_data.items():
+            if hasattr(url, field):
+                setattr(url, field, value)
+        
+        await url.save()
+        return url
+    
+    async def delete_llm_url(self, storage_id: ObjectId, url_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete an LLM URL from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        url = await LLMUrl.find_one(LLMUrl.id == url_id, LLMUrl.user_id == user_id, LLMUrl.storage_id == storage_id)
+        if not url:
+            raise ValueError("LLM URL not found or access denied")
+        
+        await url.delete()
+    
+    # BatchSize CRUD operations
+    async def create_batch_size(self, storage_id: ObjectId, user_id: ObjectId, batch_size_data: dict) -> BatchSize:
+        """Create a new batch size in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        batch_size = BatchSize(
+            user_id=user_id,
+            storage_id=storage_id,
+            value=batch_size_data['value']
+        )
+        await batch_size.insert()
+        return batch_size
+    
+    async def get_batch_sizes(self, storage_id: ObjectId, user_id: ObjectId) -> List[BatchSize]:
+        """Get all batch sizes from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        batch_sizes = await BatchSize.find(BatchSize.user_id == user_id, BatchSize.storage_id == storage_id).to_list()
+        return batch_sizes
+    
+    async def update_batch_size(self, storage_id: ObjectId, batch_size_id: ObjectId, user_id: ObjectId, batch_size_data: dict) -> BatchSize:
+        """Update a batch size in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        batch_size = await BatchSize.find_one(BatchSize.id == batch_size_id, BatchSize.user_id == user_id, BatchSize.storage_id == storage_id)
+        if not batch_size:
+            raise ValueError("Batch size not found or access denied")
+        
+        for field, value in batch_size_data.items():
+            if hasattr(batch_size, field):
+                setattr(batch_size, field, value)
+        
+        await batch_size.save()
+        return batch_size
+    
+    async def delete_batch_size(self, storage_id: ObjectId, batch_size_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete a batch size from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        batch_size = await BatchSize.find_one(BatchSize.id == batch_size_id, BatchSize.user_id == user_id, BatchSize.storage_id == storage_id)
+        if not batch_size:
+            raise ValueError("Batch size not found or access denied")
+        
+        await batch_size.delete()
+    
+    # MaxTokens CRUD operations
+    async def create_max_tokens(self, storage_id: ObjectId, user_id: ObjectId, max_tokens_data: dict) -> MaxTokens:
+        """Create a new max tokens in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        max_tokens = MaxTokens(
+            user_id=user_id,
+            storage_id=storage_id,
+            value=max_tokens_data.get('value')
+        )
+        await max_tokens.insert()
+        return max_tokens
+    
+    async def get_max_tokens(self, storage_id: ObjectId, user_id: ObjectId) -> List[MaxTokens]:
+        """Get all max tokens from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        max_tokens = await MaxTokens.find(MaxTokens.user_id == user_id, MaxTokens.storage_id == storage_id).to_list()
+        return max_tokens
+    
+    async def update_max_tokens(self, storage_id: ObjectId, max_tokens_id: ObjectId, user_id: ObjectId, max_tokens_data: dict) -> MaxTokens:
+        """Update max tokens in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        max_tokens = await MaxTokens.find_one(MaxTokens.id == max_tokens_id, MaxTokens.user_id == user_id, MaxTokens.storage_id == storage_id)
+        if not max_tokens:
+            raise ValueError("Max tokens not found or access denied")
+        
+        for field, value in max_tokens_data.items():
+            if hasattr(max_tokens, field):
+                setattr(max_tokens, field, value)
+        
+        await max_tokens.save()
+        return max_tokens
+    
+    async def delete_max_tokens(self, storage_id: ObjectId, max_tokens_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete max tokens from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        max_tokens = await MaxTokens.find_one(MaxTokens.id == max_tokens_id, MaxTokens.user_id == user_id, MaxTokens.storage_id == storage_id)
+        if not max_tokens:
+            raise ValueError("Max tokens not found or access denied")
+        
+        await max_tokens.delete()
+    
+    # UserSettings CRUD operations
+    async def create_user_settings(self, storage_id: ObjectId, user_id: ObjectId, settings_data: dict) -> UserSettings:
+        """Create new user settings in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        settings = UserSettings(
+            user_id=user_id,
+            storage_id=storage_id,
+            tutorial_completed=settings_data.get('tutorial_completed', False)
+        )
+        await settings.insert()
+        return settings
+    
+    async def get_user_settings(self, storage_id: ObjectId, user_id: ObjectId) -> List[UserSettings]:
+        """Get all user settings from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        settings = await UserSettings.find(UserSettings.user_id == user_id, UserSettings.storage_id == storage_id).to_list()
+        return settings
+    
+    async def update_user_settings(self, storage_id: ObjectId, settings_id: ObjectId, user_id: ObjectId, settings_data: dict) -> UserSettings:
+        """Update user settings in the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        settings = await UserSettings.find_one(UserSettings.id == settings_id, UserSettings.user_id == user_id, UserSettings.storage_id == storage_id)
+        if not settings:
+            raise ValueError("User settings not found or access denied")
+        
+        for field, value in settings_data.items():
+            if hasattr(settings, field):
+                setattr(settings, field, value)
+        
+        await settings.save()
+        return settings
+    
+    async def delete_user_settings(self, storage_id: ObjectId, settings_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete user settings from the specified storage."""
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        settings = await UserSettings.find_one(UserSettings.id == settings_id, UserSettings.user_id == user_id, UserSettings.storage_id == storage_id)
+        if not settings:
+            raise ValueError("User settings not found or access denied")
+        
+        await settings.delete()
