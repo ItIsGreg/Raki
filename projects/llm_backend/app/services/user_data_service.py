@@ -490,3 +490,392 @@ class UserDataService:
         
         # Delete the dataset
         await dataset.delete()
+    
+    # Individual DataPoint CRUD operations
+    async def create_data_point(self, storage_id: ObjectId, user_id: ObjectId, data_point_data: dict) -> DataPoint:
+        """Create a new data point in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Create the data point
+        data_point = DataPoint(
+            user_id=user_id,
+            storage_id=storage_id,
+            annotated_text_id=ObjectId(data_point_data['annotated_text_id']),
+            name=data_point_data['name'],
+            value=data_point_data.get('value'),
+            match=data_point_data.get('match'),
+            profile_point_id=ObjectId(data_point_data['profile_point_id']) if data_point_data.get('profile_point_id') else None,
+            verified=data_point_data.get('verified')
+        )
+        await data_point.insert()
+        return data_point
+    
+    async def get_data_points(self, storage_id: ObjectId, user_id: ObjectId) -> List[DataPoint]:
+        """Get all data points from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get all data points for this storage
+        data_points = await DataPoint.find(DataPoint.user_id == user_id, DataPoint.storage_id == storage_id).to_list()
+        return data_points
+    
+    async def get_data_points_by_annotated_text(self, storage_id: ObjectId, annotated_text_id: ObjectId, user_id: ObjectId) -> List[DataPoint]:
+        """Get all data points for a specific annotated text."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get data points for this annotated text
+        data_points = await DataPoint.find(
+            DataPoint.user_id == user_id, 
+            DataPoint.storage_id == storage_id,
+            DataPoint.annotated_text_id == annotated_text_id
+        ).to_list()
+        return data_points
+    
+    async def update_data_point(self, storage_id: ObjectId, data_point_id: ObjectId, user_id: ObjectId, data_point_data: dict) -> DataPoint:
+        """Update a data point in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the data point
+        data_point = await DataPoint.find_one(DataPoint.id == data_point_id, DataPoint.user_id == user_id, DataPoint.storage_id == storage_id)
+        if not data_point:
+            raise ValueError("Data point not found or access denied")
+        
+        # Update the data point
+        for field, value in data_point_data.items():
+            if hasattr(data_point, field):
+                if field in ['annotated_text_id', 'profile_point_id'] and value:
+                    setattr(data_point, field, ObjectId(value))
+                else:
+                    setattr(data_point, field, value)
+        
+        await data_point.save()
+        return data_point
+    
+    async def delete_data_point(self, storage_id: ObjectId, data_point_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete a data point from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the data point
+        data_point = await DataPoint.find_one(DataPoint.id == data_point_id, DataPoint.user_id == user_id, DataPoint.storage_id == storage_id)
+        if not data_point:
+            raise ValueError("Data point not found or access denied")
+        
+        # Delete the data point
+        await data_point.delete()
+    
+    # Individual SegmentDataPoint CRUD operations
+    async def create_segment_data_point(self, storage_id: ObjectId, user_id: ObjectId, segment_data_point_data: dict) -> SegmentDataPoint:
+        """Create a new segment data point in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Create the segment data point
+        segment_data_point = SegmentDataPoint(
+            user_id=user_id,
+            storage_id=storage_id,
+            annotated_text_id=ObjectId(segment_data_point_data['annotated_text_id']),
+            name=segment_data_point_data['name'],
+            begin_match=segment_data_point_data.get('begin_match'),
+            end_match=segment_data_point_data.get('end_match'),
+            profile_point_id=ObjectId(segment_data_point_data['profile_point_id']) if segment_data_point_data.get('profile_point_id') else None,
+            verified=segment_data_point_data.get('verified')
+        )
+        await segment_data_point.insert()
+        return segment_data_point
+    
+    async def get_segment_data_points(self, storage_id: ObjectId, user_id: ObjectId) -> List[SegmentDataPoint]:
+        """Get all segment data points from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get all segment data points for this storage
+        segment_data_points = await SegmentDataPoint.find(SegmentDataPoint.user_id == user_id, SegmentDataPoint.storage_id == storage_id).to_list()
+        return segment_data_points
+    
+    async def get_segment_data_points_by_annotated_text(self, storage_id: ObjectId, annotated_text_id: ObjectId, user_id: ObjectId) -> List[SegmentDataPoint]:
+        """Get all segment data points for a specific annotated text."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get segment data points for this annotated text
+        segment_data_points = await SegmentDataPoint.find(
+            SegmentDataPoint.user_id == user_id, 
+            SegmentDataPoint.storage_id == storage_id,
+            SegmentDataPoint.annotated_text_id == annotated_text_id
+        ).to_list()
+        return segment_data_points
+    
+    async def update_segment_data_point(self, storage_id: ObjectId, segment_data_point_id: ObjectId, user_id: ObjectId, segment_data_point_data: dict) -> SegmentDataPoint:
+        """Update a segment data point in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the segment data point
+        segment_data_point = await SegmentDataPoint.find_one(SegmentDataPoint.id == segment_data_point_id, SegmentDataPoint.user_id == user_id, SegmentDataPoint.storage_id == storage_id)
+        if not segment_data_point:
+            raise ValueError("Segment data point not found or access denied")
+        
+        # Update the segment data point
+        for field, value in segment_data_point_data.items():
+            if hasattr(segment_data_point, field):
+                if field in ['annotated_text_id', 'profile_point_id'] and value:
+                    setattr(segment_data_point, field, ObjectId(value))
+                else:
+                    setattr(segment_data_point, field, value)
+        
+        await segment_data_point.save()
+        return segment_data_point
+    
+    async def delete_segment_data_point(self, storage_id: ObjectId, segment_data_point_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete a segment data point from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the segment data point
+        segment_data_point = await SegmentDataPoint.find_one(SegmentDataPoint.id == segment_data_point_id, SegmentDataPoint.user_id == user_id, SegmentDataPoint.storage_id == storage_id)
+        if not segment_data_point:
+            raise ValueError("Segment data point not found or access denied")
+        
+        # Delete the segment data point
+        await segment_data_point.delete()
+    
+    # Individual ProfilePoint CRUD operations
+    async def create_profile_point(self, storage_id: ObjectId, user_id: ObjectId, profile_point_data: dict) -> ProfilePoint:
+        """Create a new profile point in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Create the profile point
+        profile_point = ProfilePoint(
+            user_id=user_id,
+            storage_id=storage_id,
+            name=profile_point_data['name'],
+            explanation=profile_point_data['explanation'],
+            synonyms=profile_point_data.get('synonyms', []),
+            datatype=profile_point_data['datatype'],
+            valueset=profile_point_data.get('valueset'),
+            unit=profile_point_data.get('unit'),
+            profile_id=ObjectId(profile_point_data['profile_id']),
+            order=profile_point_data.get('order'),
+            previous_point_id=ObjectId(profile_point_data['previous_point_id']) if profile_point_data.get('previous_point_id') else None,
+            next_point_id=ObjectId(profile_point_data['next_point_id']) if profile_point_data.get('next_point_id') else None
+        )
+        await profile_point.insert()
+        return profile_point
+    
+    async def get_profile_points(self, storage_id: ObjectId, user_id: ObjectId) -> List[ProfilePoint]:
+        """Get all profile points from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get all profile points for this storage
+        profile_points = await ProfilePoint.find(ProfilePoint.user_id == user_id, ProfilePoint.storage_id == storage_id).to_list()
+        return profile_points
+    
+    async def get_profile_points_by_profile(self, storage_id: ObjectId, profile_id: ObjectId, user_id: ObjectId) -> List[ProfilePoint]:
+        """Get all profile points for a specific profile."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get profile points for this profile
+        profile_points = await ProfilePoint.find(
+            ProfilePoint.user_id == user_id, 
+            ProfilePoint.storage_id == storage_id,
+            ProfilePoint.profile_id == profile_id
+        ).to_list()
+        return profile_points
+    
+    async def update_profile_point(self, storage_id: ObjectId, profile_point_id: ObjectId, user_id: ObjectId, profile_point_data: dict) -> ProfilePoint:
+        """Update a profile point in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the profile point
+        profile_point = await ProfilePoint.find_one(ProfilePoint.id == profile_point_id, ProfilePoint.user_id == user_id, ProfilePoint.storage_id == storage_id)
+        if not profile_point:
+            raise ValueError("Profile point not found or access denied")
+        
+        # Update the profile point
+        for field, value in profile_point_data.items():
+            if hasattr(profile_point, field):
+                if field in ['profile_id', 'previous_point_id', 'next_point_id'] and value:
+                    setattr(profile_point, field, ObjectId(value))
+                else:
+                    setattr(profile_point, field, value)
+        
+        await profile_point.save()
+        return profile_point
+    
+    async def delete_profile_point(self, storage_id: ObjectId, profile_point_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete a profile point from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the profile point
+        profile_point = await ProfilePoint.find_one(ProfilePoint.id == profile_point_id, ProfilePoint.user_id == user_id, ProfilePoint.storage_id == storage_id)
+        if not profile_point:
+            raise ValueError("Profile point not found or access denied")
+        
+        # Delete the profile point
+        await profile_point.delete()
+    
+    # Individual SegmentationProfilePoint CRUD operations
+    async def create_segmentation_profile_point(self, storage_id: ObjectId, user_id: ObjectId, segmentation_profile_point_data: dict) -> SegmentationProfilePoint:
+        """Create a new segmentation profile point in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Create the segmentation profile point
+        segmentation_profile_point = SegmentationProfilePoint(
+            user_id=user_id,
+            storage_id=storage_id,
+            name=segmentation_profile_point_data['name'],
+            explanation=segmentation_profile_point_data['explanation'],
+            synonyms=segmentation_profile_point_data.get('synonyms', []),
+            profile_id=ObjectId(segmentation_profile_point_data['profile_id']),
+            order=segmentation_profile_point_data.get('order'),
+            previous_point_id=ObjectId(segmentation_profile_point_data['previous_point_id']) if segmentation_profile_point_data.get('previous_point_id') else None,
+            next_point_id=ObjectId(segmentation_profile_point_data['next_point_id']) if segmentation_profile_point_data.get('next_point_id') else None
+        )
+        await segmentation_profile_point.insert()
+        return segmentation_profile_point
+    
+    async def get_segmentation_profile_points(self, storage_id: ObjectId, user_id: ObjectId) -> List[SegmentationProfilePoint]:
+        """Get all segmentation profile points from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get all segmentation profile points for this storage
+        segmentation_profile_points = await SegmentationProfilePoint.find(SegmentationProfilePoint.user_id == user_id, SegmentationProfilePoint.storage_id == storage_id).to_list()
+        return segmentation_profile_points
+    
+    async def get_segmentation_profile_points_by_profile(self, storage_id: ObjectId, profile_id: ObjectId, user_id: ObjectId) -> List[SegmentationProfilePoint]:
+        """Get all segmentation profile points for a specific profile."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Verify the storage belongs to the user
+        storage = await self.get_user_storage_by_id(storage_id, user_id)
+        if not storage:
+            raise ValueError("Storage not found or access denied")
+        
+        # Get segmentation profile points for this profile
+        segmentation_profile_points = await SegmentationProfilePoint.find(
+            SegmentationProfilePoint.user_id == user_id, 
+            SegmentationProfilePoint.storage_id == storage_id,
+            SegmentationProfilePoint.profile_id == profile_id
+        ).to_list()
+        return segmentation_profile_points
+    
+    async def update_segmentation_profile_point(self, storage_id: ObjectId, segmentation_profile_point_id: ObjectId, user_id: ObjectId, segmentation_profile_point_data: dict) -> SegmentationProfilePoint:
+        """Update a segmentation profile point in the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the segmentation profile point
+        segmentation_profile_point = await SegmentationProfilePoint.find_one(SegmentationProfilePoint.id == segmentation_profile_point_id, SegmentationProfilePoint.user_id == user_id, SegmentationProfilePoint.storage_id == storage_id)
+        if not segmentation_profile_point:
+            raise ValueError("Segmentation profile point not found or access denied")
+        
+        # Update the segmentation profile point
+        for field, value in segmentation_profile_point_data.items():
+            if hasattr(segmentation_profile_point, field):
+                if field in ['profile_id', 'previous_point_id', 'next_point_id'] and value:
+                    setattr(segmentation_profile_point, field, ObjectId(value))
+                else:
+                    setattr(segmentation_profile_point, field, value)
+        
+        await segmentation_profile_point.save()
+        return segmentation_profile_point
+    
+    async def delete_segmentation_profile_point(self, storage_id: ObjectId, segmentation_profile_point_id: ObjectId, user_id: ObjectId) -> None:
+        """Delete a segmentation profile point from the specified storage."""
+        # Ensure user_id is an ObjectId
+        if isinstance(user_id, str):
+            user_id = ObjectId(user_id)
+        
+        # Find the segmentation profile point
+        segmentation_profile_point = await SegmentationProfilePoint.find_one(SegmentationProfilePoint.id == segmentation_profile_point_id, SegmentationProfilePoint.user_id == user_id, SegmentationProfilePoint.storage_id == storage_id)
+        if not segmentation_profile_point:
+            raise ValueError("Segmentation profile point not found or access denied")
+        
+        # Delete the segmentation profile point
+        await segmentation_profile_point.delete()

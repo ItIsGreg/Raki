@@ -188,6 +188,21 @@ class DataPoint(BaseDataModel):
             "annotated_text_id",
         ]
 
+class DataPointCreate(BaseModel):
+    annotated_text_id: str
+    name: str
+    value: Optional[Union[str, int, float]] = None
+    match: Optional[List[int]] = None
+    profile_point_id: Optional[str] = None
+    verified: Optional[bool] = None
+
+class DataPointUpdate(BaseModel):
+    name: Optional[str] = None
+    value: Optional[Union[str, int, float]] = None
+    match: Optional[List[int]] = None
+    profile_point_id: Optional[str] = None
+    verified: Optional[bool] = None
+
 # Segment Data Point Models
 class SegmentDataPoint(BaseDataModel):
     annotated_text_id: ObjectId
@@ -204,6 +219,21 @@ class SegmentDataPoint(BaseDataModel):
             "storage_id",
             "annotated_text_id",
         ]
+
+class SegmentDataPointCreate(BaseModel):
+    annotated_text_id: str
+    name: str
+    begin_match: Optional[List[int]] = None
+    end_match: Optional[List[int]] = None
+    profile_point_id: Optional[str] = None
+    verified: Optional[bool] = None
+
+class SegmentDataPointUpdate(BaseModel):
+    name: Optional[str] = None
+    begin_match: Optional[List[int]] = None
+    end_match: Optional[List[int]] = None
+    profile_point_id: Optional[str] = None
+    verified: Optional[bool] = None
 
 # Profile Point Models
 class ProfilePoint(BaseDataModel):
@@ -226,6 +256,30 @@ class ProfilePoint(BaseDataModel):
             "profile_id",
         ]
 
+class ProfilePointCreate(BaseModel):
+    name: str
+    explanation: str
+    synonyms: List[str] = []
+    datatype: str
+    valueset: Optional[List[str]] = None
+    unit: Optional[str] = None
+    profile_id: str
+    order: Optional[int] = None
+    previous_point_id: Optional[str] = None
+    next_point_id: Optional[str] = None
+
+class ProfilePointUpdate(BaseModel):
+    name: Optional[str] = None
+    explanation: Optional[str] = None
+    synonyms: Optional[List[str]] = None
+    datatype: Optional[str] = None
+    valueset: Optional[List[str]] = None
+    unit: Optional[str] = None
+    profile_id: Optional[str] = None
+    order: Optional[int] = None
+    previous_point_id: Optional[str] = None
+    next_point_id: Optional[str] = None
+
 # Segmentation Profile Point Models
 class SegmentationProfilePoint(BaseDataModel):
     name: str
@@ -243,6 +297,24 @@ class SegmentationProfilePoint(BaseDataModel):
             "storage_id",
             "profile_id",
         ]
+
+class SegmentationProfilePointCreate(BaseModel):
+    name: str
+    explanation: str
+    synonyms: List[str] = []
+    profile_id: str
+    order: Optional[int] = None
+    previous_point_id: Optional[str] = None
+    next_point_id: Optional[str] = None
+
+class SegmentationProfilePointUpdate(BaseModel):
+    name: Optional[str] = None
+    explanation: Optional[str] = None
+    synonyms: Optional[List[str]] = None
+    profile_id: Optional[str] = None
+    order: Optional[int] = None
+    previous_point_id: Optional[str] = None
+    next_point_id: Optional[str] = None
 
 # Settings Models
 class ApiKey(BaseDataModel):

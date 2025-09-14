@@ -3,6 +3,8 @@ from typing import List
 from bson import ObjectId
 from app.models.user_data_models import UserStorageCreate, UserStorageUpdate, UserStorageResponse, StorageDataExport, MigrateLocalToCloudRequest
 from app.models.user_data_models import Profile, ProfileCreate, ProfileUpdate, Dataset, DatasetCreate, DatasetUpdate
+from app.models.user_data_models import DataPoint, DataPointCreate, DataPointUpdate, SegmentDataPoint, SegmentDataPointCreate, SegmentDataPointUpdate
+from app.models.user_data_models import ProfilePoint, ProfilePointCreate, ProfilePointUpdate, SegmentationProfilePoint, SegmentationProfilePointCreate, SegmentationProfilePointUpdate
 from app.services.user_data_service import UserDataService
 from app.models.user import User
 from app.routers.auth import get_current_user
@@ -358,4 +360,448 @@ async def delete_dataset(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete dataset: {str(e)}"
+        )
+
+# Individual DataPoint CRUD operations
+@router.post("/{storage_id}/data-points", response_model=DataPoint)
+async def create_data_point(
+    storage_id: str,
+    data_point_data: DataPointCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new data point in the specified cloud storage."""
+    try:
+        data_point = await user_data_service.create_data_point(ObjectId(storage_id), current_user.id, data_point_data.model_dump())
+        return data_point
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create data point: {str(e)}"
+        )
+
+@router.get("/{storage_id}/data-points", response_model=List[DataPoint])
+async def get_data_points(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all data points from the specified cloud storage."""
+    try:
+        data_points = await user_data_service.get_data_points(ObjectId(storage_id), current_user.id)
+        return data_points
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get data points: {str(e)}"
+        )
+
+@router.get("/{storage_id}/data-points/by-annotated-text/{annotated_text_id}", response_model=List[DataPoint])
+async def get_data_points_by_annotated_text(
+    storage_id: str,
+    annotated_text_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all data points for a specific annotated text."""
+    try:
+        data_points = await user_data_service.get_data_points_by_annotated_text(ObjectId(storage_id), ObjectId(annotated_text_id), current_user.id)
+        return data_points
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get data points: {str(e)}"
+        )
+
+@router.put("/{storage_id}/data-points/{data_point_id}", response_model=DataPoint)
+async def update_data_point(
+    storage_id: str,
+    data_point_id: str,
+    data_point_data: DataPointUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update a data point in the specified cloud storage."""
+    try:
+        data_point = await user_data_service.update_data_point(ObjectId(storage_id), ObjectId(data_point_id), current_user.id, data_point_data.model_dump())
+        return data_point
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update data point: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/data-points/{data_point_id}")
+async def delete_data_point(
+    storage_id: str,
+    data_point_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete a data point from the specified cloud storage."""
+    try:
+        await user_data_service.delete_data_point(ObjectId(storage_id), ObjectId(data_point_id), current_user.id)
+        return {"message": "Data point deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete data point: {str(e)}"
+        )
+
+# Individual SegmentDataPoint CRUD operations
+@router.post("/{storage_id}/segment-data-points", response_model=SegmentDataPoint)
+async def create_segment_data_point(
+    storage_id: str,
+    segment_data_point_data: SegmentDataPointCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new segment data point in the specified cloud storage."""
+    try:
+        segment_data_point = await user_data_service.create_segment_data_point(ObjectId(storage_id), current_user.id, segment_data_point_data.model_dump())
+        return segment_data_point
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create segment data point: {str(e)}"
+        )
+
+@router.get("/{storage_id}/segment-data-points", response_model=List[SegmentDataPoint])
+async def get_segment_data_points(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all segment data points from the specified cloud storage."""
+    try:
+        segment_data_points = await user_data_service.get_segment_data_points(ObjectId(storage_id), current_user.id)
+        return segment_data_points
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get segment data points: {str(e)}"
+        )
+
+@router.get("/{storage_id}/segment-data-points/by-annotated-text/{annotated_text_id}", response_model=List[SegmentDataPoint])
+async def get_segment_data_points_by_annotated_text(
+    storage_id: str,
+    annotated_text_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all segment data points for a specific annotated text."""
+    try:
+        segment_data_points = await user_data_service.get_segment_data_points_by_annotated_text(ObjectId(storage_id), ObjectId(annotated_text_id), current_user.id)
+        return segment_data_points
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get segment data points: {str(e)}"
+        )
+
+@router.put("/{storage_id}/segment-data-points/{segment_data_point_id}", response_model=SegmentDataPoint)
+async def update_segment_data_point(
+    storage_id: str,
+    segment_data_point_id: str,
+    segment_data_point_data: SegmentDataPointUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update a segment data point in the specified cloud storage."""
+    try:
+        segment_data_point = await user_data_service.update_segment_data_point(ObjectId(storage_id), ObjectId(segment_data_point_id), current_user.id, segment_data_point_data.model_dump())
+        return segment_data_point
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update segment data point: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/segment-data-points/{segment_data_point_id}")
+async def delete_segment_data_point(
+    storage_id: str,
+    segment_data_point_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete a segment data point from the specified cloud storage."""
+    try:
+        await user_data_service.delete_segment_data_point(ObjectId(storage_id), ObjectId(segment_data_point_id), current_user.id)
+        return {"message": "Segment data point deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete segment data point: {str(e)}"
+        )
+
+# Individual ProfilePoint CRUD operations
+@router.post("/{storage_id}/profile-points", response_model=ProfilePoint)
+async def create_profile_point(
+    storage_id: str,
+    profile_point_data: ProfilePointCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new profile point in the specified cloud storage."""
+    try:
+        profile_point = await user_data_service.create_profile_point(ObjectId(storage_id), current_user.id, profile_point_data.model_dump())
+        return profile_point
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create profile point: {str(e)}"
+        )
+
+@router.get("/{storage_id}/profile-points", response_model=List[ProfilePoint])
+async def get_profile_points(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all profile points from the specified cloud storage."""
+    try:
+        profile_points = await user_data_service.get_profile_points(ObjectId(storage_id), current_user.id)
+        return profile_points
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get profile points: {str(e)}"
+        )
+
+@router.get("/{storage_id}/profile-points/by-profile/{profile_id}", response_model=List[ProfilePoint])
+async def get_profile_points_by_profile(
+    storage_id: str,
+    profile_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all profile points for a specific profile."""
+    try:
+        profile_points = await user_data_service.get_profile_points_by_profile(ObjectId(storage_id), ObjectId(profile_id), current_user.id)
+        return profile_points
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get profile points: {str(e)}"
+        )
+
+@router.put("/{storage_id}/profile-points/{profile_point_id}", response_model=ProfilePoint)
+async def update_profile_point(
+    storage_id: str,
+    profile_point_id: str,
+    profile_point_data: ProfilePointUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update a profile point in the specified cloud storage."""
+    try:
+        profile_point = await user_data_service.update_profile_point(ObjectId(storage_id), ObjectId(profile_point_id), current_user.id, profile_point_data.model_dump())
+        return profile_point
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update profile point: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/profile-points/{profile_point_id}")
+async def delete_profile_point(
+    storage_id: str,
+    profile_point_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete a profile point from the specified cloud storage."""
+    try:
+        await user_data_service.delete_profile_point(ObjectId(storage_id), ObjectId(profile_point_id), current_user.id)
+        return {"message": "Profile point deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete profile point: {str(e)}"
+        )
+
+# Individual SegmentationProfilePoint CRUD operations
+@router.post("/{storage_id}/segmentation-profile-points", response_model=SegmentationProfilePoint)
+async def create_segmentation_profile_point(
+    storage_id: str,
+    segmentation_profile_point_data: SegmentationProfilePointCreate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Create a new segmentation profile point in the specified cloud storage."""
+    try:
+        segmentation_profile_point = await user_data_service.create_segmentation_profile_point(ObjectId(storage_id), current_user.id, segmentation_profile_point_data.model_dump())
+        return segmentation_profile_point
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create segmentation profile point: {str(e)}"
+        )
+
+@router.get("/{storage_id}/segmentation-profile-points", response_model=List[SegmentationProfilePoint])
+async def get_segmentation_profile_points(
+    storage_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all segmentation profile points from the specified cloud storage."""
+    try:
+        segmentation_profile_points = await user_data_service.get_segmentation_profile_points(ObjectId(storage_id), current_user.id)
+        return segmentation_profile_points
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get segmentation profile points: {str(e)}"
+        )
+
+@router.get("/{storage_id}/segmentation-profile-points/by-profile/{profile_id}", response_model=List[SegmentationProfilePoint])
+async def get_segmentation_profile_points_by_profile(
+    storage_id: str,
+    profile_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Get all segmentation profile points for a specific profile."""
+    try:
+        segmentation_profile_points = await user_data_service.get_segmentation_profile_points_by_profile(ObjectId(storage_id), ObjectId(profile_id), current_user.id)
+        return segmentation_profile_points
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get segmentation profile points: {str(e)}"
+        )
+
+@router.put("/{storage_id}/segmentation-profile-points/{segmentation_profile_point_id}", response_model=SegmentationProfilePoint)
+async def update_segmentation_profile_point(
+    storage_id: str,
+    segmentation_profile_point_id: str,
+    segmentation_profile_point_data: SegmentationProfilePointUpdate,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Update a segmentation profile point in the specified cloud storage."""
+    try:
+        segmentation_profile_point = await user_data_service.update_segmentation_profile_point(ObjectId(storage_id), ObjectId(segmentation_profile_point_id), current_user.id, segmentation_profile_point_data.model_dump())
+        return segmentation_profile_point
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update segmentation profile point: {str(e)}"
+        )
+
+@router.delete("/{storage_id}/segmentation-profile-points/{segmentation_profile_point_id}")
+async def delete_segmentation_profile_point(
+    storage_id: str,
+    segmentation_profile_point_id: str,
+    current_user: User = Depends(get_current_user),
+    user_data_service: UserDataService = Depends(get_user_data_service)
+):
+    """Delete a segmentation profile point from the specified cloud storage."""
+    try:
+        await user_data_service.delete_segmentation_profile_point(ObjectId(storage_id), ObjectId(segmentation_profile_point_id), current_user.id)
+        return {"message": "Segmentation profile point deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete segmentation profile point: {str(e)}"
         )

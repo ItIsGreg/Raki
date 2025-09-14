@@ -469,38 +469,197 @@ export class CloudStorageAdapter {
   get DataPoints() {
     return {
       toArray: async (): Promise<DataPoint[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch data points');
+          const data = await response.json();
+          return data.map((dp: any) => ({
+            id: dp.id,
+            annotatedTextId: dp.annotated_text_id,
+            name: dp.name,
+            value: dp.value,
+            match: dp.match,
+            profilePointId: dp.profile_point_id,
+            verified: dp.verified
+          }));
+        } catch (error) {
+          console.error('Error fetching data points:', error);
+          return [];
+        }
       },
       add: async (dataPoint: DataPointCreate): Promise<string> => {
-        return 'mock-data-point-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              annotated_text_id: dataPoint.annotatedTextId,
+              name: dataPoint.name,
+              value: dataPoint.value,
+              match: dataPoint.match,
+              profile_point_id: dataPoint.profilePointId,
+              verified: dataPoint.verified
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create data point');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating data point:', error);
+          throw error;
+        }
       },
       put: async (dataPoint: DataPoint): Promise<string> => {
-        return dataPoint.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/data-points/${dataPoint.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: dataPoint.name,
+              value: dataPoint.value,
+              match: dataPoint.match,
+              profile_point_id: dataPoint.profilePointId,
+              verified: dataPoint.verified
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update data point');
+          return dataPoint.id;
+        } catch (error) {
+          console.error('Error updating data point:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<DataPoint | undefined> => {
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch data points');
+          const data = await response.json();
+          const dataPoint = data.find((dp: any) => dp.id === id);
+          if (!dataPoint) return undefined;
+          return {
+            id: dataPoint.id,
+            annotatedTextId: dataPoint.annotated_text_id,
+            name: dataPoint.name,
+            value: dataPoint.value,
+            match: dataPoint.match,
+            profilePointId: dataPoint.profile_point_id,
+            verified: dataPoint.verified
+          };
+        } catch (error) {
+          console.error('Error fetching data point:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/data-points/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete data point');
+        } catch (error) {
+          console.error('Error deleting data point:', error);
+          throw error;
+        }
       },
       where: (fieldOrQuery: string | object): any => {
         if (typeof fieldOrQuery === 'string') {
           return {
             equals: (value: any) => ({
               toArray: async (): Promise<DataPoint[]> => {
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch data points');
+                  const data = await response.json();
+                  return data
+                    .filter((dp: any) => dp[fieldOrQuery] === value)
+                    .map((dp: any) => ({
+                      id: dp.id,
+                      annotatedTextId: dp.annotated_text_id,
+                      name: dp.name,
+                      value: dp.value,
+                      match: dp.match,
+                      profilePointId: dp.profile_point_id,
+                      verified: dp.verified
+                    }));
+                } catch (error) {
+                  console.error('Error filtering data points:', error);
+                  return [];
+                }
               }
             }),
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<DataPoint[]> => {
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch data points');
+                  const data = await response.json();
+                  return data
+                    .filter((dp: any) => values.includes(dp[fieldOrQuery]))
+                    .map((dp: any) => ({
+                      id: dp.id,
+                      annotatedTextId: dp.annotated_text_id,
+                      name: dp.name,
+                      value: dp.value,
+                      match: dp.match,
+                      profilePointId: dp.profile_point_id,
+                      verified: dp.verified
+                    }));
+                } catch (error) {
+                  console.error('Error filtering data points:', error);
+                  return [];
+                }
               }
             })
           };
         } else {
           return {
             toArray: async (): Promise<DataPoint[]> => {
-              return [];
+              try {
+                const response = await fetch(`/api/user-data/${this.storageId}/data-points`, {
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  }
+                });
+                if (!response.ok) throw new Error('Failed to fetch data points');
+                const data = await response.json();
+                return data.map((dp: any) => ({
+                  id: dp.id,
+                  annotatedTextId: dp.annotated_text_id,
+                  name: dp.name,
+                  value: dp.value,
+                  match: dp.match,
+                  profilePointId: dp.profile_point_id,
+                  verified: dp.verified
+                }));
+              } catch (error) {
+                console.error('Error fetching data points:', error);
+                return [];
+              }
             }
           };
         }
@@ -511,38 +670,197 @@ export class CloudStorageAdapter {
   get SegmentDataPoints() {
     return {
       toArray: async (): Promise<SegmentDataPoint[]> => {
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch segment data points');
+          const data = await response.json();
+          return data.map((sdp: any) => ({
+            id: sdp.id,
+            annotatedTextId: sdp.annotated_text_id,
+            name: sdp.name,
+            beginMatch: sdp.begin_match,
+            endMatch: sdp.end_match,
+            profilePointId: sdp.profile_point_id,
+            verified: sdp.verified
+          }));
+        } catch (error) {
+          console.error('Error fetching segment data points:', error);
+          return [];
+        }
       },
       add: async (segmentDataPoint: SegmentDataPointCreate): Promise<string> => {
-        return 'mock-segment-data-point-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              annotated_text_id: segmentDataPoint.annotatedTextId,
+              name: segmentDataPoint.name,
+              begin_match: segmentDataPoint.beginMatch,
+              end_match: segmentDataPoint.endMatch,
+              profile_point_id: segmentDataPoint.profilePointId,
+              verified: segmentDataPoint.verified
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create segment data point');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating segment data point:', error);
+          throw error;
+        }
       },
       put: async (segmentDataPoint: SegmentDataPoint): Promise<string> => {
-        return segmentDataPoint.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points/${segmentDataPoint.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: segmentDataPoint.name,
+              begin_match: segmentDataPoint.beginMatch,
+              end_match: segmentDataPoint.endMatch,
+              profile_point_id: segmentDataPoint.profilePointId,
+              verified: segmentDataPoint.verified
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update segment data point');
+          return segmentDataPoint.id;
+        } catch (error) {
+          console.error('Error updating segment data point:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<SegmentDataPoint | undefined> => {
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch segment data points');
+          const data = await response.json();
+          const segmentDataPoint = data.find((sdp: any) => sdp.id === id);
+          if (!segmentDataPoint) return undefined;
+          return {
+            id: segmentDataPoint.id,
+            annotatedTextId: segmentDataPoint.annotated_text_id,
+            name: segmentDataPoint.name,
+            beginMatch: segmentDataPoint.begin_match,
+            endMatch: segmentDataPoint.end_match,
+            profilePointId: segmentDataPoint.profile_point_id,
+            verified: segmentDataPoint.verified
+          };
+        } catch (error) {
+          console.error('Error fetching segment data point:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete segment data point');
+        } catch (error) {
+          console.error('Error deleting segment data point:', error);
+          throw error;
+        }
       },
       where: (fieldOrQuery: string | object): any => {
         if (typeof fieldOrQuery === 'string') {
           return {
             equals: (value: any) => ({
               toArray: async (): Promise<SegmentDataPoint[]> => {
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch segment data points');
+                  const data = await response.json();
+                  return data
+                    .filter((sdp: any) => sdp[fieldOrQuery] === value)
+                    .map((sdp: any) => ({
+                      id: sdp.id,
+                      annotatedTextId: sdp.annotated_text_id,
+                      name: sdp.name,
+                      beginMatch: sdp.begin_match,
+                      endMatch: sdp.end_match,
+                      profilePointId: sdp.profile_point_id,
+                      verified: sdp.verified
+                    }));
+                } catch (error) {
+                  console.error('Error filtering segment data points:', error);
+                  return [];
+                }
               }
             }),
             anyOf: (values: any[]) => ({
               toArray: async (): Promise<SegmentDataPoint[]> => {
-                return [];
+                try {
+                  const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+                    headers: {
+                      'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                  });
+                  if (!response.ok) throw new Error('Failed to fetch segment data points');
+                  const data = await response.json();
+                  return data
+                    .filter((sdp: any) => values.includes(sdp[fieldOrQuery]))
+                    .map((sdp: any) => ({
+                      id: sdp.id,
+                      annotatedTextId: sdp.annotated_text_id,
+                      name: sdp.name,
+                      beginMatch: sdp.begin_match,
+                      endMatch: sdp.end_match,
+                      profilePointId: sdp.profile_point_id,
+                      verified: sdp.verified
+                    }));
+                } catch (error) {
+                  console.error('Error filtering segment data points:', error);
+                  return [];
+                }
               }
             })
           };
         } else {
           return {
             toArray: async (): Promise<SegmentDataPoint[]> => {
-              return [];
+              try {
+                const response = await fetch(`/api/user-data/${this.storageId}/segment-data-points`, {
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  }
+                });
+                if (!response.ok) throw new Error('Failed to fetch segment data points');
+                const data = await response.json();
+                return data.map((sdp: any) => ({
+                  id: sdp.id,
+                  annotatedTextId: sdp.annotated_text_id,
+                  name: sdp.name,
+                  beginMatch: sdp.begin_match,
+                  endMatch: sdp.end_match,
+                  profilePointId: sdp.profile_point_id,
+                  verified: sdp.verified
+                }));
+              } catch (error) {
+                console.error('Error fetching segment data points:', error);
+                return [];
+              }
             }
           };
         }
@@ -553,36 +871,191 @@ export class CloudStorageAdapter {
   get profilePoints() {
     return {
       toArray: async (): Promise<ProfilePoint[]> => {
-        // Return empty array for now - cloud storage profile points not yet implemented
-        return [];
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/profile-points`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch profile points');
+          const data = await response.json();
+          return data.map((pp: any) => ({
+            id: pp.id,
+            name: pp.name,
+            explanation: pp.explanation,
+            synonyms: pp.synonyms,
+            datatype: pp.datatype,
+            valueset: pp.valueset,
+            unit: pp.unit,
+            profileId: pp.profile_id,
+            order: pp.order,
+            previousPointId: pp.previous_point_id,
+            nextPointId: pp.next_point_id
+          }));
+        } catch (error) {
+          console.error('Error fetching profile points:', error);
+          return [];
+        }
       },
       add: async (profilePoint: ProfilePointCreate): Promise<string> => {
-        // Return a mock ID for now
-        return 'mock-profile-point-id';
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/profile-points`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: profilePoint.name,
+              explanation: profilePoint.explanation,
+              synonyms: profilePoint.synonyms,
+              datatype: profilePoint.datatype,
+              valueset: profilePoint.valueset,
+              unit: profilePoint.unit,
+              profile_id: profilePoint.profileId,
+              order: profilePoint.order,
+              previous_point_id: profilePoint.previousPointId,
+              next_point_id: profilePoint.nextPointId
+            })
+          });
+          if (!response.ok) throw new Error('Failed to create profile point');
+          const data = await response.json();
+          return data.id;
+        } catch (error) {
+          console.error('Error creating profile point:', error);
+          throw error;
+        }
       },
       put: async (profilePoint: ProfilePoint): Promise<string> => {
-        // Return the same ID for now
-        return profilePoint.id;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/profile-points/${profilePoint.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: profilePoint.name,
+              explanation: profilePoint.explanation,
+              synonyms: profilePoint.synonyms,
+              datatype: profilePoint.datatype,
+              valueset: profilePoint.valueset,
+              unit: profilePoint.unit,
+              profile_id: profilePoint.profileId,
+              order: profilePoint.order,
+              previous_point_id: profilePoint.previousPointId,
+              next_point_id: profilePoint.nextPointId
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update profile point');
+          return profilePoint.id;
+        } catch (error) {
+          console.error('Error updating profile point:', error);
+          throw error;
+        }
       },
       get: async (id: string): Promise<ProfilePoint | undefined> => {
-        // Return undefined for now
-        return undefined;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/profile-points`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to fetch profile points');
+          const data = await response.json();
+          const profilePoint = data.find((pp: any) => pp.id === id);
+          if (!profilePoint) return undefined;
+          return {
+            id: profilePoint.id,
+            name: profilePoint.name,
+            explanation: profilePoint.explanation,
+            synonyms: profilePoint.synonyms,
+            datatype: profilePoint.datatype,
+            valueset: profilePoint.valueset,
+            unit: profilePoint.unit,
+            profileId: profilePoint.profile_id,
+            order: profilePoint.order,
+            previousPointId: profilePoint.previous_point_id,
+            nextPointId: profilePoint.next_point_id
+          };
+        } catch (error) {
+          console.error('Error fetching profile point:', error);
+          return undefined;
+        }
       },
       delete: async (id: string): Promise<void> => {
-        // No-op for now
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/profile-points/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!response.ok) throw new Error('Failed to delete profile point');
+        } catch (error) {
+          console.error('Error deleting profile point:', error);
+          throw error;
+        }
       },
       where: (field: string) => ({
         equals: (value: any) => ({
           toArray: async (): Promise<ProfilePoint[]> => {
-            // Return empty array for now
-            return [];
+            try {
+              const response = await fetch(`/api/user-data/${this.storageId}/profile-points`, {
+                headers: {
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+              });
+              if (!response.ok) throw new Error('Failed to fetch profile points');
+              const data = await response.json();
+              return data
+                .filter((pp: any) => pp[field] === value)
+                .map((pp: any) => ({
+                  id: pp.id,
+                  name: pp.name,
+                  explanation: pp.explanation,
+                  synonyms: pp.synonyms,
+                  datatype: pp.datatype,
+                  valueset: pp.valueset,
+                  unit: pp.unit,
+                  profileId: pp.profile_id,
+                  order: pp.order,
+                  previousPointId: pp.previous_point_id,
+                  nextPointId: pp.next_point_id
+                }));
+            } catch (error) {
+              console.error('Error filtering profile points:', error);
+              return [];
+            }
           }
         })
       }),
       update: async (id: string, changes: Partial<ProfilePoint>): Promise<void> => {
-        // No-op for now
-        return;
+        try {
+          const response = await fetch(`/api/user-data/${this.storageId}/profile-points/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              name: changes.name,
+              explanation: changes.explanation,
+              synonyms: changes.synonyms,
+              datatype: changes.datatype,
+              valueset: changes.valueset,
+              unit: changes.unit,
+              profile_id: changes.profileId,
+              order: changes.order,
+              previous_point_id: changes.previousPointId,
+              next_point_id: changes.nextPointId
+            })
+          });
+          if (!response.ok) throw new Error('Failed to update profile point');
+        } catch (error) {
+          console.error('Error updating profile point:', error);
+          throw error;
+        }
       }
     };
   }
