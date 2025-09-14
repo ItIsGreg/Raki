@@ -1,11 +1,12 @@
-from beanie import Document, Indexed
+from beanie import Indexed
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
 from bson import ObjectId
+from .base import MongoDocument, MongoBaseModel
 
 # User Storage Models
-class UserStorage(Document):
+class UserStorage(MongoDocument):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
     user_id: ObjectId
@@ -26,7 +27,7 @@ class UserStorageCreate(BaseModel):
 class UserStorageUpdate(BaseModel):
     storage_name: Optional[str] = None
 
-class UserStorageResponse(BaseModel):
+class UserStorageResponse(MongoBaseModel):
     model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
     
     id: str

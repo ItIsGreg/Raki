@@ -1,10 +1,11 @@
-from beanie import Document, Indexed
+from beanie import Indexed
 from pydantic import Field, EmailStr, ConfigDict
 from datetime import datetime
 from typing import Optional
 from bson import ObjectId
+from .base import MongoDocument
 
-class User(Document):
+class User(MongoDocument):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
     email: Indexed(EmailStr, unique=True)
@@ -29,7 +30,7 @@ class User(Document):
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', full_name='{self.full_name}')>"
 
-class UserSession(Document):
+class UserSession(MongoDocument):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
     user_id: ObjectId

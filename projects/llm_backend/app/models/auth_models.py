@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
 from typing import Optional, Union
 from datetime import datetime
 from bson import ObjectId
+from .base import MongoBaseModel
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -22,7 +23,7 @@ class UserLogin(BaseModel):
     password: str
     remember_me: bool = False
 
-class UserResponse(UserBase):
+class UserResponse(MongoBaseModel):
     model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
     
     id: str
