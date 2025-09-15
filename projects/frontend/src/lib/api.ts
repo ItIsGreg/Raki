@@ -23,3 +23,12 @@ export async function postProfilePoint(storageId: string, body: any) {
   return r.json();
 }
 
+export async function deleteProfilePointApi(storageId: string, id: string) {
+  const r = await fetch(`${API}/user-data/${storageId}/profile-points/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!r.ok) throw new Error('Failed to delete profile point');
+  return r.json?.() ?? {};
+}
+

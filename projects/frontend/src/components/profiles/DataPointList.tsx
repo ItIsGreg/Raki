@@ -7,10 +7,7 @@ import { useMemo, useRef, useState } from "react";
 import ProfileChatButton from "./profileChat/ProfileChatButton";
 import ProfileChatView from "./profileChat/ProfileChatView";
 import { Profile } from "@/lib/db/db";
-import {
-  deleteProfilePoint,
-  deleteSegmentationProfilePoint,
-} from "@/lib/db/crud";
+import { deleteSegmentationProfilePoint } from "@/lib/db/crud";
 import { TASK_MODE } from "@/app/constants";
 import {
   DndContext,
@@ -36,7 +33,10 @@ import {
 import { MoreVertical } from "lucide-react";
 import { AddButton } from "@/components/shared/AddButton";
 import { useStorage } from "@/contexts/StorageContext";
-import { useProfilePoints } from "@/lib/queries/profilePoints";
+import {
+  useProfilePoints,
+  useDeleteProfilePoint,
+} from "@/lib/queries/profilePoints";
 
 export interface DataPointListProps<T> {
   activeProfile: Profile | undefined;
@@ -69,6 +69,7 @@ const DataPointList = <T extends { id: string; profileId: string }>(
       currentStorage?.type === "cloud" ? currentStorage.storageId : undefined,
     [currentStorage]
   );
+  const deleteCloudPoint = useDeleteProfilePoint(storageId);
 
   // Remove upload/download datapoints functionality
   // const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -76,13 +77,20 @@ const DataPointList = <T extends { id: string; profileId: string }>(
 
   // Local (Dexie) path
   const localDataPoints = useLiveQuery(
-    () => readPointsByProfile(activeProfile?.id),
+    () =>
+      activeProfile?.id
+        ? readPointsByProfile(activeProfile.id)
+        : Promise.resolve([]),
     [activeProfile, readPointsByProfile]
   );
 
   // Cloud (React Query) path
   const cloudQuery = useProfilePoints(storageId, activeProfile?.id);
-  const dataPoints = storageId ? cloudQuery.data ?? [] : localDataPoints ?? [];
+  const dataPoints = !activeProfile?.id
+    ? []
+    : storageId
+    ? cloudQuery.data ?? []
+    : localDataPoints ?? [];
 
   // Remove handleUploadButtonClick, handleDownloadDatapoints, handleUploadDatapoints
   // Remove handleEnterSelectionMode, handleExitSelectionMode, handleSelectAll, handleSelectNone, handleToggleDataPoint, handleDownloadSelected
@@ -157,9 +165,12 @@ const DataPointList = <T extends { id: string; profileId: string }>(
     }
 
     try {
-      if (activeProfile.mode === TASK_MODE.TEXT_SEGMENTATION) {
+      if (storageId) {
+        await deleteCloudPoint.mutateAsync(id);
+      } else if (activeProfile.mode === TASK_MODE.TEXT_SEGMENTATION) {
         await deleteSegmentationProfilePoint(id);
       } else {
+        const { deleteProfilePoint } = await import("@/lib/db/crud");
         await deleteProfilePoint(id);
       }
 
