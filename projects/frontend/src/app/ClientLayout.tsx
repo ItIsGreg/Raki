@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import SettingsMenu from "@/components/llmSettings/SettingsMenu";
 import { SettingsContext } from "@/contexts/SettingsContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -24,6 +26,7 @@ export default function ClientLayout({
   children: React.ReactNode;
 }>) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [queryClient] = useState(() => new QueryClient());
 
   // Suppress hydration warnings caused by browser extensions
   useSuppressHydrationWarnings();
@@ -38,19 +41,20 @@ export default function ClientLayout({
         <LoadingProvider>
           <PageLoadDetector />
           <SettingsContext.Provider value={{ setIsSettingsOpen }}>
-            <div className="h-screen flex flex-col">
-              <TopNavbar />
-              <main className="flex-1 overflow-y-auto">
-                {children}
-              </main>
-              <SettingsMenu
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
-                autoRerunFaulty={true}
-                setAutoRerunFaulty={() => {}}
-              />
-              <GlobalLoadingSpinner />
-            </div>
+            <QueryClientProvider client={queryClient}>
+              <div className="h-screen flex flex-col">
+                <TopNavbar />
+                <main className="flex-1 overflow-y-auto">{children}</main>
+                <SettingsMenu
+                  isOpen={isSettingsOpen}
+                  onClose={() => setIsSettingsOpen(false)}
+                  autoRerunFaulty={true}
+                  setAutoRerunFaulty={() => {}}
+                />
+                <GlobalLoadingSpinner />
+              </div>
+              <ReactQueryDevtools initialIsOpen={false} />
+            </QueryClientProvider>
           </SettingsContext.Provider>
         </LoadingProvider>
       </StorageProvider>

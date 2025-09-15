@@ -22,6 +22,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { SelectGroup } from "@radix-ui/react-select";
 import { TiDeleteOutline } from "react-icons/ti";
 import { createProfilePoint, updateProfilePoint } from "@/lib/db/crud";
+import { useMemo } from "react";
+import { useStorage } from "@/contexts/StorageContext";
+import { useCreateProfilePoint } from "@/lib/queries/profilePoints";
+import { getNextOrderNumber } from "@/lib/db/ordering";
 import debounce from "lodash/debounce";
 import { DataPointEditorProps } from "@/app/types";
 
@@ -42,6 +46,15 @@ export function DataPointEditor(props: DataPointEditorProps) {
   const [unit, setUnit] = useState<string>("");
   const [currentSynonym, setCurrentSynonym] = useState<string>("");
   const [currentValuesetItem, setCurrentValuesetItem] = useState<string>("");
+
+  // Cloud storage integration via React Query
+  const { currentStorage } = useStorage();
+  const storageId = useMemo(
+    () =>
+      currentStorage?.type === "cloud" ? currentStorage.storageId : undefined,
+    [currentStorage]
+  );
+  const createCloudPoint = useCreateProfilePoint(storageId);
 
   const updateDataPoint = (updates: Partial<typeof activeDataPoint>) => {
     if (!creatingNewDataPoint && activeDataPoint) {
@@ -132,18 +145,38 @@ export function DataPointEditor(props: DataPointEditorProps) {
     return (
       <Button
         onClick={() => {
-          if (creatingNewDataPoint) {
-            createProfilePoint({
-              name: name,
-              explanation: explanation,
-              synonyms: synonyms,
-              datatype: datatype,
-              valueset: valueset,
-              unit: unit,
-              profileId: activeProfile!.id,
-            });
+          (async () => {
+            if (!creatingNewDataPoint) return;
+            if (storageId) {
+              // Cloud path: compute order, then use React Query mutation
+              const order = await getNextOrderNumber(activeProfile!.id, false);
+              await createCloudPoint.mutateAsync({
+                name,
+                explanation,
+                synonyms,
+                datatype,
+                valueset,
+                unit,
+                profileId: activeProfile!.id,
+                order,
+                previousPointId: null,
+                nextPointId: null,
+              });
+              setCreatingNewDataPoint(false);
+            } else {
+              // Local path via Dexie CRUD
+              await createProfilePoint({
+                name,
+                explanation,
+                synonyms,
+                datatype,
+                valueset,
+                unit,
+                profileId: activeProfile!.id,
+              });
+            }
             resetEditor();
-          }
+          })();
         }}
         data-cy="save-datapoint-button"
       >

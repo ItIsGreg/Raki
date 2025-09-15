@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MdDownload, MdUpload } from "react-icons/md";
 import { useLiveQuery } from "dexie-react-hooks";
 import SortableDataPointCard from "./SortableDataPointCard";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import ProfileChatButton from "./profileChat/ProfileChatButton";
 import ProfileChatView from "./profileChat/ProfileChatView";
 import { Profile } from "@/lib/db/db";
@@ -35,6 +35,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { AddButton } from "@/components/shared/AddButton";
+import { useStorage } from "@/contexts/StorageContext";
+import { useProfilePoints } from "@/lib/queries/profilePoints";
 
 export interface DataPointListProps<T> {
   activeProfile: Profile | undefined;
@@ -61,15 +63,26 @@ const DataPointList = <T extends { id: string; profileId: string }>(
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const { currentStorage } = useStorage();
+  const storageId = useMemo(
+    () =>
+      currentStorage?.type === "cloud" ? currentStorage.storageId : undefined,
+    [currentStorage]
+  );
 
   // Remove upload/download datapoints functionality
   // const [isSelectionMode, setIsSelectionMode] = useState(false);
   // const [selectedDataPoints, setSelectedDataPoints] = useState<string[]>([]);
 
-  const dataPoints = useLiveQuery(
+  // Local (Dexie) path
+  const localDataPoints = useLiveQuery(
     () => readPointsByProfile(activeProfile?.id),
     [activeProfile, readPointsByProfile]
   );
+
+  // Cloud (React Query) path
+  const cloudQuery = useProfilePoints(storageId, activeProfile?.id);
+  const dataPoints = storageId ? cloudQuery.data ?? [] : localDataPoints ?? [];
 
   // Remove handleUploadButtonClick, handleDownloadDatapoints, handleUploadDatapoints
   // Remove handleEnterSelectionMode, handleExitSelectionMode, handleSelectAll, handleSelectNone, handleToggleDataPoint, handleDownloadSelected
@@ -195,7 +208,7 @@ const DataPointList = <T extends { id: string; profileId: string }>(
             >
               <SortableContext
                 items={dataPoints
-                  .filter(point => point && point.id)
+                  .filter((point) => point && point.id)
                   .sort(
                     (a, b) => ((a as any).order || 0) - ((b as any).order || 0)
                   )
@@ -203,7 +216,7 @@ const DataPointList = <T extends { id: string; profileId: string }>(
                 strategy={verticalListSortingStrategy}
               >
                 {dataPoints
-                  .filter(point => point && point.id)
+                  .filter((point) => point && point.id)
                   .sort(
                     (a, b) => ((a as any).order || 0) - ((b as any).order || 0)
                   )
