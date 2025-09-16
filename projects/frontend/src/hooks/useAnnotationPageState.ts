@@ -82,8 +82,6 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
   const [editingDataset, setEditingDataset] = useState<
     AnnotatedDataset | undefined
   >(undefined);
-  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
-  const [tutorialCompleted, setTutorialCompleted] = useState(false);
 
   // File input ref for profile uploads
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -168,22 +166,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     }
   }, [profiles, pendingActiveProfile]);
 
-  // Handle tutorial completion
-  const handleTutorialComplete = async (completed: boolean) => {
-    setTutorialCompleted(completed);
-    await updateUserSettings({ tutorialCompleted: completed });
-    // Close the drawer when tutorial is marked as completed
-    if (completed) {
-      setIsTutorialOpen(false);
-    }
-  };
 
-  // Update tutorial completed state when user settings change
-  useEffect(() => {
-    if (userSettings) {
-      setTutorialCompleted(userSettings.tutorialCompleted);
-    }
-  }, [userSettings]);
 
   // Reset ready state when component mounts (for tab navigation)
   useEffect(() => {
@@ -406,8 +389,6 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     activeTab,
     isCardExpanded,
     editingDataset,
-    isTutorialOpen,
-    tutorialCompleted,
   };
 
   // Compose handlers object
@@ -443,8 +424,6 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     handleCancelAddProfile,
     handleCancelAddDataset,
     handleUpdateSegment,
-    setIsTutorialOpen,
-    handleTutorialComplete,
   };
 
   return {

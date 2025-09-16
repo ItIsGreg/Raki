@@ -7,7 +7,6 @@ import { BaseAnnotationPageProps, BaseProfilePoint } from "@/types/annotation";
 import { AnnotationTab } from "./tabs/AnnotationTab";
 import { ProfilesTab } from "./tabs/ProfilesTab";
 import { TextUploadTab } from "./tabs/TextUploadTab";
-import TutorialDrawer from "@/components/tutorial/TutorialDrawer";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useEffect } from "react";
 
@@ -57,14 +56,6 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
 
   return (
     <div className="h-full overflow-hidden" data-cy={containerDataCy}>
-      <TutorialDrawer
-        isOpen={state.isTutorialOpen}
-        onOpenChange={handlers.setIsTutorialOpen}
-        tutorialCompleted={state.tutorialCompleted}
-        onTutorialComplete={handlers.handleTutorialComplete}
-        data-cy="tutorial-drawer"
-      />
-
       <PanelGroup
         direction="horizontal"
         className="h-full"

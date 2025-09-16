@@ -1,20 +1,8 @@
-import {
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
 import { Bot, Plus, Save, Play, Download } from "lucide-react";
 
 const AnnotationTab = () => {
   return (
-    <div className="p-4">
-      <DrawerHeader>
-        <DrawerTitle>Annotation Process</DrawerTitle>
-        <DrawerDescription>
-          Master the art of text annotation with AI assistance
-        </DrawerDescription>
-      </DrawerHeader>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="space-y-4">
           <div className="flex items-start gap-3">
             <Bot className="h-5 w-5 mt-1 text-primary" />
@@ -153,7 +141,6 @@ const AnnotationTab = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

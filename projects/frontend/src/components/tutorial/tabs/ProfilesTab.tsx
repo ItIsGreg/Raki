@@ -1,20 +1,8 @@
-import {
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
 import { Sparkles } from "lucide-react";
 
 const ProfilesTab = () => {
   return (
-    <div className="p-4">
-      <DrawerHeader>
-        <DrawerTitle>Working with Profiles</DrawerTitle>
-        <DrawerDescription>
-          Learn how to create and manage profiles for data extraction
-        </DrawerDescription>
-      </DrawerHeader>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="space-y-4">
           <div className="flex items-start gap-3">
             <Sparkles className="h-5 w-5 mt-1 text-primary" />
@@ -180,7 +168,6 @@ const ProfilesTab = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

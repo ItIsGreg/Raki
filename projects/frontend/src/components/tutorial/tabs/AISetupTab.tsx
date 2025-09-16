@@ -1,20 +1,8 @@
-import {
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
 import { Bot, Settings, Sparkles } from "lucide-react";
 
 const AISetupTab = () => {
   return (
-    <div className="p-4">
-      <DrawerHeader>
-        <DrawerTitle>AI Setup</DrawerTitle>
-        <DrawerDescription>
-          Configure AI assistance for your annotation workflow
-        </DrawerDescription>
-      </DrawerHeader>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="space-y-4">
           <div className="flex items-start gap-3">
             <Bot className="h-5 w-5 mt-1 text-primary" />
@@ -295,7 +283,6 @@ const AISetupTab = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

@@ -1,21 +1,9 @@
-import {
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Download, Shield } from "lucide-react";
 
 const TextUploadTab = () => {
   return (
-    <div className="p-4">
-      <DrawerHeader>
-        <DrawerTitle>Text Upload</DrawerTitle>
-        <DrawerDescription>
-          Learn how to upload and manage your texts with privacy protection
-        </DrawerDescription>
-      </DrawerHeader>
-      <div className="space-y-4">
+    <div className="space-y-4">
         <p>
           First of all in the upper right corner of your screen you should see
           three tabs:
@@ -246,7 +234,6 @@ const TextUploadTab = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

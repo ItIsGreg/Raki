@@ -1,18 +1,8 @@
-import {
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from "@/components/ui/drawer";
 import { ArrowUp, ArrowDown, AlertTriangle, ArrowUpDown } from "lucide-react";
 
 const TipsTab = () => {
   return (
-    <div className="p-4">
-      <DrawerHeader>
-        <DrawerTitle>Tips &amp; Tricks</DrawerTitle>
-        <DrawerDescription>Pro tips to enhance your workflow</DrawerDescription>
-      </DrawerHeader>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="space-y-4">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-5 w-5 mt-1 text-yellow-500" />
@@ -80,7 +70,6 @@ const TipsTab = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
