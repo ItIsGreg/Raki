@@ -19,7 +19,7 @@ class ProfileChatTemplateList:
 
     json content should be surrounded by 
     ```json
-    {{json: content}}
+    content
     ```
 
     Each profile point should be enclosed in a ```json``` block separately.
