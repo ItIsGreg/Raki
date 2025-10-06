@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MessageSquare, X, Send, CheckCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { backendURL } from "@/app/constants";
 
 interface FeedbackDrawerProps {
   isOpen: boolean;
@@ -43,7 +44,7 @@ const FeedbackDrawer = ({
   onOpenChange,
   onSubmit,
   "data-cy": dataCy,
-  backendUrl = "http://localhost:8000",
+  backendUrl = backendURL,
 }: FeedbackDrawerProps) => {
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");

@@ -4,159 +4,181 @@ from langchain.prompts import PromptTemplate
 class Rate_Regex_Matches_Template_List:
     def __init__(self) -> None:
         self.rate_regex_matches = """
-        You are an assistant to a researcher who is evaluating potential matches for datapoints in a text.
-        You will be provided with a datapoint definition and a list of text excerpts that were found using regex patterns.
-        Each text excerpt contains a potential match for the datapoint.
+You are an assistant to a researcher who is extracting datapoints from clinical text.
 
-        Your task is to:
-        1. Evaluate each match to determine if it truly represents the datapoint
-        2. Consider the datapoint's definition, explanation, and synonyms
-        3. Decide which match (if any) best represents the datapoint
-        4. Provide a brief explanation for your decision
+You will receive:
+- A list of datapoints. Each datapoint has a name, explanation, synonyms, datatype, possible valueset, expected unit (if any), and a text excerpt.
+- Your job is to extract the correct value for each datapoint from the excerpt.
 
-        %DATAPOINT:
-        {datapoint}
+Your tasks:
+1. For each datapoint, find the value in the text excerpt that best matches the definition, synonyms, and expected unit.
+2. Always return the value in the specified format:
+   - "number": only the numeric value (without unit).
+   - "valueset": choose one or more values from the given valueset. If none match, leave it empty.
+   - "text": copy the relevant phrase from the excerpt.
+   - "binary/yes-no": decide if the datapoint is affirmed or denied in the excerpt.
+3. For each extracted value, provide a short explanation (1–2 sentences) describing why this value was chosen.
+4. If no valid value is present, leave the value as an empty string "".
+5. Always output strictly valid JSON.
 
-        %MATCHES:
-        {matches}
+Rules:
+- Do not invent values not present in the text.
+- For measurements: include only the number, not the unit (e.g. "8.5", not "8.5 mm").
+- For valuesets: pick exactly from the allowed list.
+- For binary/yes-no: pay attention to negations like "kein" / "no".
+- Do not output code, tool calls, or additional text outside JSON.
 
-        The output should look like this:
+Input datapoint:
+{datapoint}
+
+Candidate matches:
+{matches}
+
+Your output must be strictly valid JSON with no trailing commas.
+
+Output format:
+{{
+    "match_ratings": [
         {{
-            "match_ratings": [
-                {{
-                    "index": 0,
-                    "explanation": "Why this match is valid or invalid"
-                    "is_valid": true,
-                }},
-                {{
-                    "index": 1,
-                    "explanation": "Why this match is valid or invalid"
-                    "is_valid": false,
-                }}
-            ],
-            "explanation": "Explanation of why this match was selected or why no match is suitable",
-            "selected_match_index": 0,  // Index of the best match, or -1 if no match is suitable
-        }}
-
-        The output should be valid JSON and only valid JSON.
-        Do not use trailing commas in the JSON output.
-
-        %EXAMPLE_DATAPOINT:
+            "index": 0,
+            "is_valid": true,
+            "explanation": "Short explanation why valid or invalid"
+        }},
         {{
-            "name": "IVSD",
-            "explanation": "Interventricular septum thickness at end-diastole",
-            "synonyms": ["Interventricular septum thickness at end-diastole"],
-            "unit": "mm"
+            "index": 1,
+            "is_valid": false,
+            "explanation": "Short explanation why valid or invalid"
         }}
+    ],
+    "explanation": "Overall explanation of why the best match was chosen or why none is suitable",
+    "selected_match_index": 0
+}}
 
-        %EXAMPLE_MATCHES:
-        [
-            "nicht hypertrophierter (IVSD: 8.5 mm, LVPWD: 10.3 mm) linker Ventrikel",
-            "erhöhte Füllungsdrücke (E/E': 15.8 1). Linker Vorhof erweitert",
-            "it einem RVSP von 31.8mmHg Aortenklappe: zart,  max/mean Gradient:"
-        ]
+Example datapoint:
+{{
+    "name": "IVSD",
+    "explanation": "Interventricular septum thickness at end-diastole",
+    "synonyms": ["Interventricular septum thickness at end-diastole"],
+    "unit": "mm"
+}}
 
-        %EXAMPLE_OUTPUT:
+Example matches:
+[
+    "nicht hypertrophierter (IVSD: 8.5 mm, LVPWD: 10.3 mm) linker Ventrikel",
+    "erhöhte Füllungsdrücke (E/E': 15.8 1). Linker Vorhof erweitert",
+    "mit einem RVSP von 31.8mmHg Aortenklappe: zart, max/mean Gradient:"
+]
+
+Example output:
+{{
+    "match_ratings": [
         {{
-            "match_ratings": [
-                {{
-                    "index": 0,
-                    "explanation": "Contains a clear IVSD measurement with the correct unit (mm)"
-                    "is_valid": true,
-                }},
-                {{
-                    "index": 1,
-                    "explanation": "Contains E/E' ratio measurement, not related to IVSD"
-                    "is_valid": false,
-                }},
-                {{
-                    "index": 2,
-                    "explanation": "Contains RVSP and aortic valve information, not related to IVSD"
-                    "is_valid": false,
-                }}
-            ],
-            "explanation": "The first match contains a clear measurement of IVSD (8.5 mm) which directly corresponds to the datapoint definition. The other matches do not contain any relevant information about IVSD.",
-            "selected_match_index": 0,
+            "index": 0,
+            "is_valid": true,
+            "explanation": "Contains a clear IVSD measurement with correct unit (mm)"
+        }},
+        {{
+            "index": 1,
+            "is_valid": false,
+            "explanation": "This is E/E' ratio, unrelated to IVSD"
+        }},
+        {{
+            "index": 2,
+            "is_valid": false,
+            "explanation": "Mentions RVSP and aortic valve, unrelated to IVSD"
         }}
+    ],
+    "explanation": "The first match contains a clear IVSD measurement (8.5 mm). The others do not describe IVSD.",
+    "selected_match_index": 0
+}}
+
 
         JSON_OUTPUT:
         """
 
         self.rate_regex_matches_german = """
-        Sie sind Assistent eines Forschers, der potenzielle Übereinstimmungen für Datenpunkte in einem Text bewertet.
-        Sie erhalten eine Datenpunktdefinition und eine Liste von Textauszügen, die mit Regex-Mustern gefunden wurden.
-        Jeder Textauszug enthält eine potenzielle Übereinstimmung für den Datenpunkt.
+Sie sind Assistent eines Forschers, der potenzielle Übereinstimmungen für Datenpunkte in Texten bewertet.
 
-        Ihre Aufgabe ist es:
-        1. Jede Übereinstimmung zu bewerten, um zu bestimmen, ob sie den Datenpunkt wirklich repräsentiert
-        2. Die Definition, Erklärung und Synonyme des Datenpunkts zu berücksichtigen
-        3. Zu entscheiden, welche Übereinstimmung (falls vorhanden) den Datenpunkt am besten repräsentiert
-        4. Eine kurze Erklärung für Ihre Entscheidung zu liefern
+Sie erhalten:
+1. Eine Datenpunktdefinition (mit Name, Erklärung, Synonymen und erwarteter Einheit, falls vorhanden).
+2. Eine Liste von Textauszügen, die mit Regex-Mustern gefunden wurden und möglicherweise den Datenpunkt repräsentieren.
 
-        %DATAPOINT:
-        {datapoint}
+Ihre Aufgaben:
+- Geben Sie zuerst eine kurze Gesamterklärung zu Ihrer Entscheidung.
+- Bewerten Sie jeden einzelnen Textauszug und entscheiden Sie, ob er den Datenpunkt wirklich repräsentiert.
+- Berücksichtigen Sie dabei die Definition, Erklärung, Synonyme und die erwartete Einheit.
+- Wählen Sie die beste Übereinstimmung, falls vorhanden. Wenn keine passt, wählen Sie -1.
 
-        %MATCHES:
-        {matches}
+Bewertungsregeln:
+- Eine gültige Übereinstimmung muss den Datenpunkt klar erwähnen (durch Namen, Synonym oder Abkürzung).
+- Wenn der Datenpunkt eine Messung enthält, müssen Wert und richtige Einheit vorhanden sein.
+- Wenn der Textauszug ein anderes Maß oder eine andere Größe beschreibt, ist er ungültig.
+- Wenn mehrere gültig sind, wählen Sie die am besten passende Übereinstimmung.
 
-        Die Ausgabe sollte so aussehen:
+Eingabe-Datenpunkt:
+{datapoint}
+
+Kandidaten:
+{matches}
+
+Die Ausgabe muss gültiges JSON sein und darf keine abschließenden Kommata enthalten.
+
+Ausgabeformat:
+{{
+    "match_ratings": [
         {{
-            "selected_match_index": 0,  // Index der besten Übereinstimmung oder -1, wenn keine Übereinstimmung geeignet ist
-            "explanation": "Erklärung, warum diese Übereinstimmung ausgewählt wurde oder warum keine Übereinstimmung geeignet ist",
-            "match_ratings": [
-                {{
-                    "index": 0,
-                    "is_valid": true,
-                    "explanation": "Warum diese Übereinstimmung gültig oder ungültig ist"
-                }},
-                {{
-                    "index": 1,
-                    "is_valid": false,
-                    "explanation": "Warum diese Übereinstimmung gültig oder ungültig ist"
-                }}
-            ]
-        }}
-
-        Die Ausgabe sollte gültiges JSON sein und nur gültiges JSON.
-        Verwenden Sie keine abschließenden Kommas in der JSON-Ausgabe.
-
-        %EXAMPLE_DATAPOINT:
+            "index": 0,
+            "is_valid": true,
+            "explanation": "Kurze Erklärung, warum gültig oder ungültig"
+        }},
         {{
-            "name": "IVSD",
-            "explanation": "Interventrikuläre Septumdicke in der Enddiastole",
-            "synonyms": ["Interventrikuläre Septumdicke in der Enddiastole"],
-            "unit": "mm"
+            "index": 1,
+            "is_valid": false,
+            "explanation": "Kurze Erklärung, warum gültig oder ungültig"
         }}
+    ],
+    "explanation": "Gesamterklärung, warum diese Übereinstimmung gewählt wurde oder warum keine passt",
+    "selected_match_index": 0
+}}
 
-        %EXAMPLE_MATCHES:
-        [
-            "nicht hypertrophierter (IVSD: 8.5 mm, LVPWD: 10.3 mm) linker Ventrikel",
-            "erhöhte Füllungsdrücke (E/E': 15.8 1). Linker Vorhof erweitert",
-            "it einem RVSP von 31.8mmHg Aortenklappe: zart,  max/mean Gradient:"
-        ]
+Beispiel-Datenpunkt:
+{{
+    "name": "IVSD",
+    "explanation": "Interventrikuläre Septumdicke in der Enddiastole",
+    "synonyms": ["Interventrikuläre Septumdicke in der Enddiastole"],
+    "unit": "mm"
+}}
 
-        %EXAMPLE_OUTPUT:
+Beispiel-Kandidaten:
+[
+    "nicht hypertrophierter (IVSD: 8.5 mm, LVPWD: 10.3 mm) linker Ventrikel",
+    "erhöhte Füllungsdrücke (E/E': 15.8 1). Linker Vorhof erweitert",
+    "mit einem RVSP von 31.8mmHg Aortenklappe: zart, max/mean Gradient:"
+]
+
+Beispiel-Ausgabe:
+{{
+    "match_ratings": [
         {{
-            "selected_match_index": 0,
-            "explanation": "Die erste Übereinstimmung enthält eine klare Messung des IVSD (8.5 mm), die direkt der Datenpunktdefinition entspricht. Die anderen Übereinstimmungen enthalten keine relevanten Informationen über IVSD.",
-            "match_ratings": [
-                {{
-                    "index": 0,
-                    "is_valid": true,
-                    "explanation": "Enthält eine klare IVSD-Messung mit der richtigen Einheit (mm)"
-                }},
-                {{
-                    "index": 1,
-                    "is_valid": false,
-                    "explanation": "Enthält E/E'-Verhältnis-Messung, nicht verwandt mit IVSD"
-                }},
-                {{
-                    "index": 2,
-                    "is_valid": false,
-                    "explanation": "Enthält RVSP- und Aortenklappeninformationen, nicht verwandt mit IVSD"
-                }}
-            ]
+            "index": 0,
+            "is_valid": true,
+            "explanation": "Enthält eine klare IVSD-Messung mit der richtigen Einheit (mm)"
+        }},
+        {{
+            "index": 1,
+            "is_valid": false,
+            "explanation": "Enthält E/E'-Verhältnis, nicht IVSD"
+        }},
+        {{
+            "index": 2,
+            "is_valid": false,
+            "explanation": "Enthält RVSP und Aortenklappe, nicht IVSD"
         }}
+    ],
+    "explanation": "Die erste Übereinstimmung enthält eine klare IVSD-Messung (8.5 mm). Die anderen enthalten keine relevanten Informationen zu IVSD.",
+    "selected_match_index": 0
+}}
+
 
         JSON_OUTPUT:
         """
