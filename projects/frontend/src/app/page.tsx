@@ -9,7 +9,7 @@ export default function Home() {
   const { setIsSettingsOpen } = useSettings();
 
   return (
-    <div className="flex justify-center items-center min-h-screen w-full">
+    <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center">
       <div className="flex flex-col w-full max-w-md">
         <Link href="/dataPointExtraction" className="m-10">
           <Card
