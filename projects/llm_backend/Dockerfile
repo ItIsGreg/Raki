@@ -5,13 +5,13 @@ WORKDIR /app
 # Install uv
 RUN pip install uv
 
-# Copy pyproject.toml
-COPY pyproject.toml .
+# Copy dependency manifests (lockfile included for reproducible installs)
+COPY pyproject.toml uv.lock ./
 
-# Create venv and install dependencies
+# Create venv and install the exact locked dependencies
 RUN uv venv && \
     . .venv/bin/activate && \
-    uv sync
+    uv sync --frozen
 
 COPY ./app ./app
 

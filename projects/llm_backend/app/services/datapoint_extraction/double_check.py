@@ -3,7 +3,7 @@ from app.llm_calls import call_llm
 from app.models.datapoint_extraction_models import DoubleCheckReq
 from app.prompts.datapoint_extraction.double_check import DoubleCheckTemplateList
 from app.config.environment import prompt_language
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 import json
 
 
