@@ -115,18 +115,10 @@ export const runTestSuiteWithProvider = (providerType: 'OpenAI' | 'Custom') => {
       
       // Upload text files
       cy.get('[data-cy="upload-texts-btn"]').click()
-      cy.get('[data-cy="file-input"]').attachFile([
-        {
-          filePath: 'segmentation_texts/015.md',
-          fileName: '015.md',
-          mimeType: 'text/markdown'
-        },
-        {
-          filePath: 'segmentation_texts/024.md',
-          fileName: '024.md',
-          mimeType: 'text/markdown'
-        }
-      ])
+      cy.get('[data-cy="file-input"]').selectFile([
+        'cypress/fixtures/segmentation_texts/015.md',
+        'cypress/fixtures/segmentation_texts/024.md'
+      ], { force: true })
 
       // Wait for texts to load
       cy.wait(1000)

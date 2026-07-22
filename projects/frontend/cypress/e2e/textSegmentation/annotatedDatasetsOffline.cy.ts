@@ -86,11 +86,7 @@ describe('Text Segmentation Annotated Datasets', () => {
     cy.get('[data-cy="text-dataset-select-trigger"]').click()
     cy.get('[data-cy="text-dataset-select-content"]').contains('Test Segmentation Dataset').click()
     cy.get('[data-cy="upload-texts-btn"]').click()
-    cy.get('[data-cy="file-input"]').attachFile({
-      filePath: 'segmentation_texts/015.md',
-      fileName: '015.md',
-      mimeType: 'text/markdown'
-    })
+    cy.get('[data-cy="file-input"]').selectFile('cypress/fixtures/segmentation_texts/015.md', { force: true })
     cy.wait(1000)
     // Switch to annotation tab
     cy.get('[data-cy="annotation-tab"]').click({ force: true })
@@ -256,16 +252,12 @@ describe('Text Segmentation Annotated Datasets', () => {
       const jsonFile = fileList.find((file: string) => file.endsWith('.json'))
       expect(jsonFile).to.exist
       
-      // Copy the file to fixtures so attachFile can find it
+      // Copy the file to fixtures so selectFile can find it
       cy.task('copyDownloadToFixtures', { fileName: jsonFile })
       
       // Upload the downloaded file (from fixtures)
       cy.get('[data-cy="upload-dataset-button"]').click()
-      cy.get('[data-cy="upload-dataset-input"]').attachFile({
-        filePath: jsonFile,
-        fileName: jsonFile,
-        mimeType: 'application/json'
-      })
+      cy.get('[data-cy="upload-dataset-input"]').selectFile(`cypress/fixtures/${jsonFile}`, { force: true })
       
       // Wait for upload to complete
       cy.wait(2000)
@@ -311,11 +303,7 @@ describe('Text Segmentation Annotated Datasets', () => {
 
     // Try to upload the invalid file
     cy.get('[data-cy="upload-dataset-button"]').click()
-    cy.get('[data-cy="upload-dataset-input"]').attachFile({
-      filePath: 'invalid_segmentation_dataset.json',
-      fileName: 'invalid_segmentation_dataset.json',
-      mimeType: 'application/json'
-    })
+    cy.get('[data-cy="upload-dataset-input"]').selectFile('cypress/fixtures/invalid_segmentation_dataset.json', { force: true })
 
     // Wait a moment for the upload to process
     cy.wait(1000)

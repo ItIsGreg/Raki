@@ -24,11 +24,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       // Wait for table to load
       cy.wait(1000)
@@ -83,11 +79,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
       cy.get('[data-cy="table-grid"]').should('be.visible')
@@ -140,11 +132,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
       cy.get('[data-cy="table-grid"]').should('be.visible')
@@ -181,11 +169,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
 
@@ -226,11 +210,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
 
@@ -271,11 +251,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
 
@@ -316,11 +292,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
 
@@ -378,11 +350,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
 
@@ -425,11 +393,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
 
@@ -470,11 +434,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
 
@@ -513,11 +473,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
       cy.get('[data-cy="table-grid"]').should('be.visible')
@@ -563,11 +519,7 @@ describe('Anonymisation Tests', () => {
           cy.get('[data-cy="upload-table-option"]').click()
         })
 
-      cy.get('[data-cy="table-file-input"]').attachFile({
-        filePath: '../../public/example-echos-with-names-dobs.xlsx',
-        fileName: 'example-echos-with-names-dobs.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      })
+      cy.get('[data-cy="table-file-input"]').selectFile('public/example-echos-with-names-dobs.xlsx', { force: true })
 
       cy.wait(1000)
 

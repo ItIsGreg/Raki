@@ -282,11 +282,7 @@ describe('Manual Annotation', () => {
           .click({ force: true })
       })
 
-    cy.get('[data-cy="file-input"]').attachFile({
-      filePath: 'test_texts/txts/0.txt',
-      fileName: '0.txt',
-      mimeType: 'text/plain'
-    })
+    cy.get('[data-cy="file-input"]').selectFile('cypress/fixtures/test_texts/txts/0.txt', { force: true })
 
     // Wait for text to load
     cy.wait(1000)

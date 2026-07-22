@@ -130,11 +130,7 @@ describe('Text Segmentation Manual Annotation', () => {
     cy.get('[data-cy="text-dataset-select-trigger"]').click()
     cy.get('[data-cy="text-dataset-select-content"]').contains('Test Segmentation Dataset').click()
     cy.get('[data-cy="upload-texts-btn"]').click()
-    cy.get('[data-cy="file-input"]').attachFile({
-      filePath: 'segmentation_texts/015.md',
-      fileName: '015.md',
-      mimeType: 'text/markdown'
-    })
+    cy.get('[data-cy="file-input"]').selectFile('cypress/fixtures/segmentation_texts/015.md', { force: true })
 
     // Wait for text to load
     cy.wait(1000)

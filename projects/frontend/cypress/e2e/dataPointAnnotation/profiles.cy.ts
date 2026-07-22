@@ -193,11 +193,7 @@ describe('Profile Upload and Download', () => {
 
     // Upload the profile
     cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
-    cy.get('[data-cy="upload-profile-input"]').attachFile({
-      filePath: 'test_profile.json',
-      fileName: 'test_profile.json',
-      mimeType: 'application/json'
-    })
+    cy.get('[data-cy="upload-profile-input"]').selectFile('cypress/fixtures/test_profile.json', { force: true })
 
     // Verify the profile is uploaded and appears in the select dropdown
     cy.get('[data-cy="profile-select-trigger"]', { timeout: 10000 }).should('be.visible').click()
@@ -221,11 +217,7 @@ describe('Profile Upload and Download', () => {
 
     // Upload the invalid file
     cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
-    cy.get('[data-cy="upload-profile-input"]').attachFile({
-      filePath: 'invalid_profile.json',
-      fileName: 'invalid_profile.json',
-      mimeType: 'application/json'
-    })
+    cy.get('[data-cy="upload-profile-input"]').selectFile('cypress/fixtures/invalid_profile.json', { force: true })
 
     // Verify an error alert is shown
     cy.on('window:alert', (text) => {
@@ -241,11 +233,7 @@ describe('Profile Upload and Download', () => {
 
     // Upload the malformed file
     cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
-    cy.get('[data-cy="upload-profile-input"]').attachFile({
-      filePath: 'malformed_profile.json',
-      fileName: 'malformed_profile.json',
-      mimeType: 'application/json'
-    })
+    cy.get('[data-cy="upload-profile-input"]').selectFile('cypress/fixtures/malformed_profile.json', { force: true })
 
     // Verify an error alert is shown
     cy.on('window:alert', (text) => {

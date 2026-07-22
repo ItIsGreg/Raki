@@ -125,11 +125,7 @@ describe('Datasets page', () => {
               .click({ force: true })
           })
 
-        cy.get('[data-cy="file-input"]').attachFile({
-          filePath: 'test_texts/txts/0.txt',
-          fileName: '0.txt',
-          mimeType: 'text/plain'
-        })
+        cy.get('[data-cy="file-input"]').selectFile('cypress/fixtures/test_texts/txts/0.txt', { force: true })
 
         // Verify the uploaded file appears in the list
         cy.get('[data-cy="text-card"]')
@@ -162,18 +158,11 @@ describe('Datasets page', () => {
               .click({ force: true })
           })
 
-        cy.get('[data-cy="file-input"]').attachFile([
-          {
-            filePath: 'test_texts/txts/0.txt',
-            fileName: '0.txt',
-            mimeType: 'text/plain'
-          },
-          {
-            filePath: 'test_texts/txts/0.txt', // Using same file with different name
-            fileName: '1.txt',
-            mimeType: 'text/plain'
-          }
-        ])
+        cy.fixture('test_texts/txts/0.txt', null).as('sameTxt')
+        cy.get('[data-cy="file-input"]').selectFile([
+          { contents: '@sameTxt', fileName: '0.txt' },
+          { contents: '@sameTxt', fileName: '1.txt' } // Using same file with different name
+        ], { force: true })
 
         // Verify both files appear in the list
         cy.get('[data-cy="text-card"]').should('have.length', 2)
@@ -275,11 +264,7 @@ describe('Datasets page', () => {
               .click({ force: true })
           })
 
-        cy.get('[data-cy="table-file-input"]').attachFile({
-          filePath: 'test_texts/claude-echos.xlsx',
-          fileName: 'claude-echos.xlsx',
-          mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        })
+        cy.get('[data-cy="table-file-input"]').selectFile('cypress/fixtures/test_texts/claude-echos.xlsx', { force: true })
 
         // Add a small wait to ensure the table has time to initialize
         cy.wait(1000)

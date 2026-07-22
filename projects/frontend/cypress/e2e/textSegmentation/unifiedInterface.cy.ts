@@ -79,11 +79,7 @@ describe('Text Segmentation Unified Interface', () => {
       
       // Upload a text file
       cy.get('[data-cy="upload-texts-btn"]').click()
-      cy.get('[data-cy="file-input"]').attachFile({
-        filePath: 'segmentation_texts/015.md',
-        fileName: '015.md',
-        mimeType: 'text/markdown'
-      })
+      cy.get('[data-cy="file-input"]').selectFile('cypress/fixtures/segmentation_texts/015.md', { force: true })
       
       // Verify text appears in the list
       cy.get('[data-cy="text-card"]')
@@ -117,11 +113,7 @@ describe('Text Segmentation Unified Interface', () => {
       cy.get('[data-cy="entity-save-button"]').click()
       
       cy.get('[data-cy="upload-texts-btn"]').click()
-      cy.get('[data-cy="file-input"]').attachFile({
-        filePath: 'segmentation_texts/015.md',
-        fileName: '015.md',
-        mimeType: 'text/markdown'
-      })
+      cy.get('[data-cy="file-input"]').selectFile('cypress/fixtures/segmentation_texts/015.md', { force: true })
       
       cy.get('[data-cy="text-card"]').click({ force: true })
       

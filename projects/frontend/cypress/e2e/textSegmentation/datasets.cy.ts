@@ -60,11 +60,7 @@ describe('Text Segmentation Datasets (Unified UI)', () => {
     it('should upload a text file and display its content', () => {
       cy.readFile('cypress/fixtures/segmentation_texts/015.md').then((expectedContent) => {
         cy.get('[data-cy="upload-texts-btn"]').click()
-        cy.get('[data-cy="file-input"]').attachFile({
-          filePath: 'segmentation_texts/015.md',
-          fileName: '015.md',
-          mimeType: 'text/markdown'
-        })
+        cy.get('[data-cy="file-input"]').selectFile('cypress/fixtures/segmentation_texts/015.md', { force: true })
         cy.get('[data-cy="text-card"]').should('be.visible').should('contain', '015.md').click({ force: true })
         
         // Wait for the UI to update
@@ -83,18 +79,10 @@ describe('Text Segmentation Datasets (Unified UI)', () => {
     it('should upload multiple text files and display their content', () => {
       cy.readFile('cypress/fixtures/segmentation_texts/015.md').then((expectedContent) => {
         cy.get('[data-cy="upload-texts-btn"]').click()
-        cy.get('[data-cy="file-input"]').attachFile([
-          {
-            filePath: 'segmentation_texts/015.md',
-            fileName: '015.md',
-            mimeType: 'text/markdown'
-          },
-          {
-            filePath: 'segmentation_texts/024.md',
-            fileName: '024.md',
-            mimeType: 'text/markdown'
-          }
-        ])
+        cy.get('[data-cy="file-input"]').selectFile([
+          'cypress/fixtures/segmentation_texts/015.md',
+          'cypress/fixtures/segmentation_texts/024.md'
+        ], { force: true })
         cy.get('[data-cy="text-card"]').should('have.length', 2)
         cy.get('[data-cy="text-card"]').first().should('contain', '015.md').click({ force: true })
         cy.get('[data-cy="text-display"]').first().within(() => {

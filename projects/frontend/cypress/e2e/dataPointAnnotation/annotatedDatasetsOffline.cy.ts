@@ -230,11 +230,7 @@ describe('Annotated Datasets', () => {
           .click({ force: true })
       })
 
-    cy.get('[data-cy="file-input"]').attachFile({
-      filePath: 'test_texts/txts/0.txt',
-      fileName: '0.txt',
-      mimeType: 'text/plain'
-    })
+    cy.get('[data-cy="file-input"]').selectFile('cypress/fixtures/test_texts/txts/0.txt', { force: true })
 
     // Wait for text to load
     cy.wait(1000)
@@ -509,16 +505,12 @@ describe('Annotated Datasets', () => {
       const jsonFile = fileList.find((file: string) => file.endsWith('.json'))
       expect(jsonFile).to.exist
       
-      // Copy the file to fixtures so attachFile can find it
+      // Copy the file to fixtures so selectFile can find it
       cy.task('copyDownloadToFixtures', { fileName: jsonFile })
       
       // Upload the downloaded file (from fixtures)
       cy.get('[data-cy="upload-dataset-button"]').click()
-      cy.get('[data-cy="upload-dataset-input"]').attachFile({
-        filePath: jsonFile,
-        fileName: jsonFile,
-        mimeType: 'application/json'
-      })
+      cy.get('[data-cy="upload-dataset-input"]').selectFile(`cypress/fixtures/${jsonFile}`, { force: true })
       
       // Wait for upload to complete
       cy.wait(2000)
@@ -567,11 +559,7 @@ describe('Annotated Datasets', () => {
 
     // Try to upload the invalid file
     cy.get('[data-cy="upload-dataset-button"]').click()
-    cy.get('[data-cy="upload-dataset-input"]').attachFile({
-      filePath: 'invalid_annotated_dataset.json',
-      fileName: 'invalid_annotated_dataset.json',
-      mimeType: 'application/json'
-    })
+    cy.get('[data-cy="upload-dataset-input"]').selectFile('cypress/fixtures/invalid_annotated_dataset.json', { force: true })
 
     // Wait a moment for the upload to process
     cy.wait(1000)

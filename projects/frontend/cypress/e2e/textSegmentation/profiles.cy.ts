@@ -202,11 +202,7 @@ describe('Text Segmentation Profile Upload and Download', () => {
 
     // Upload the profile
     cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
-    cy.get('[data-cy="upload-profile-input"]').attachFile({
-      filePath: 'test_segmentation_profile.json',
-      fileName: 'test_segmentation_profile.json',
-      mimeType: 'application/json'
-    })
+    cy.get('[data-cy="upload-profile-input"]').selectFile('cypress/fixtures/test_segmentation_profile.json', { force: true })
 
     // Verify the profile is uploaded and appears in the dropdown
     cy.get('[data-cy="profile-select-trigger"]', { timeout: 10000 }).should('be.visible').click()
@@ -230,11 +226,7 @@ describe('Text Segmentation Profile Upload and Download', () => {
 
     // Upload the invalid file
     cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
-    cy.get('[data-cy="upload-profile-input"]').attachFile({
-      filePath: 'invalid_segmentation_profile.json',
-      fileName: 'invalid_segmentation_profile.json',
-      mimeType: 'application/json'
-    })
+    cy.get('[data-cy="upload-profile-input"]').selectFile('cypress/fixtures/invalid_segmentation_profile.json', { force: true })
 
     // Verify an error alert is shown
     cy.on('window:alert', (text) => {
@@ -250,11 +242,7 @@ describe('Text Segmentation Profile Upload and Download', () => {
 
     // Upload the malformed file
     cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
-    cy.get('[data-cy="upload-profile-input"]').attachFile({
-      filePath: 'malformed_segmentation_profile.json',
-      fileName: 'malformed_segmentation_profile.json',
-      mimeType: 'application/json'
-    })
+    cy.get('[data-cy="upload-profile-input"]').selectFile('cypress/fixtures/malformed_segmentation_profile.json', { force: true })
 
     // Verify an error alert is shown
     cy.on('window:alert', (text) => {
@@ -314,11 +302,7 @@ describe('Text Segmentation Profile Upload and Download', () => {
     cy.writeFile('cypress/fixtures/round_trip_segmentation_profile.json', roundTripProfileData)
 
     cy.get('[data-cy="upload-profile-button"]').should('be.visible').click()
-    cy.get('[data-cy="upload-profile-input"]').attachFile({
-      filePath: 'round_trip_segmentation_profile.json',
-      fileName: 'round_trip_segmentation_profile.json',
-      mimeType: 'application/json'
-    })
+    cy.get('[data-cy="upload-profile-input"]').selectFile('cypress/fixtures/round_trip_segmentation_profile.json', { force: true })
 
     // Verify the profile is re-uploaded successfully
     cy.get('[data-cy="profile-select-trigger"]', { timeout: 10000 }).should('be.visible').click()
