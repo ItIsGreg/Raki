@@ -1,4 +1,10 @@
 /// <reference types="cypress" />
+
+// Ensure this file is treated as a module so the `declare global` augmentation
+// below is legal. (It previously relied on the removed `cypress-file-upload`
+// import to make the file a module.)
+export {};
+
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite
@@ -80,18 +86,4 @@ Cypress.Commands.add('mockFeedbackAPI', (success: boolean, statusCode = 200) => 
     statusCode,
     body: responseBody
   }).as('sendFeedbackEmail')
-})
-
-// Pre-acknowledge the disclaimer gate before the app's JS runs so its full-screen
-// overlay never renders during tests (Cypress test isolation clears localStorage
-// before each test, so the gate would otherwise reappear and block every click).
-// Keep the key in sync with DisclaimerGate.tsx (ACKNOWLEDGED_KEY).
-Cypress.Commands.overwrite('visit', (originalFn, url, options = {}) => {
-  return originalFn(url, {
-    ...options,
-    onBeforeLoad(win) {
-      win.localStorage.setItem('raki-disclaimer-acknowledged-v1', 'true')
-      options.onBeforeLoad?.(win)
-    },
-  })
 })

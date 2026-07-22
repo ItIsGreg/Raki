@@ -15,3 +15,13 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands'
+
+// Pre-acknowledge the disclaimer gate before the app's JS runs, on every page load.
+// Cypress test isolation clears localStorage before each test, so without this the
+// gate's full-screen overlay reappears and blocks interactions. `window:before:load`
+// fires after the window exists but before app scripts run — the same timing as
+// cy.visit's onBeforeLoad — so the gate's mount effect sees the acknowledged key.
+// Keep the key in sync with DisclaimerGate.tsx (ACKNOWLEDGED_KEY).
+Cypress.on('window:before:load', (win) => {
+  win.localStorage.setItem('raki-disclaimer-acknowledged-v1', 'true')
+})
