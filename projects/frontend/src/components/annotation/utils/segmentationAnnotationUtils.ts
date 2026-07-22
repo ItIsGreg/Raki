@@ -13,6 +13,7 @@ import {
   readSegmentDataPointsByAnnotatedText,
   updateSegmentDataPoint,
 } from "@/lib/db/crud";
+import { runWithConcurrency } from "./concurrency";
 
 interface LLMConfig {
   provider: string;
@@ -275,9 +276,10 @@ export const annotateSegmentationTextBatch = async (
   llmModel: string,
   llmUrl: string,
   apiKey: string,
-  maxTokens: number | undefined
+  maxTokens: number | undefined,
+  concurrency: number = 10
 ) => {
-  const annotationPromises = texts.map(async (text) => {
+  await runWithConcurrency(texts, concurrency, async (text) => {
     try {
       const { data, aiFaulty } = await callSegmentationAPI(
         text,
@@ -308,6 +310,4 @@ export const annotateSegmentationTextBatch = async (
       console.error(`Error annotating text ${text.id}:`, error);
     }
   });
-
-  await Promise.all(annotationPromises);
 };

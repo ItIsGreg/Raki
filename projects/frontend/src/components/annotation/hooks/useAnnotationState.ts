@@ -22,10 +22,11 @@ import {
   Text,
 } from "@/lib/db/db";
 import { annotateTextBatch, reannotateFaultyText } from "../utils/annotationUtils";
-import { 
-  annotateSegmentationTextBatch, 
-  reannotateFaultySegmentationText 
+import {
+  annotateSegmentationTextBatch,
+  reannotateFaultySegmentationText
 } from "../utils/segmentationAnnotationUtils";
+import { runWithConcurrency } from "../utils/concurrency";
 import { TaskMode } from "@/app/constants";
 
 type ProfilePointType = ProfilePoint | SegmentationProfilePoint;
@@ -86,17 +87,13 @@ export const useAnnotationState = <T extends ProfilePointType>({
     if (!activeAnnotatedDataset || !dbAnnotatedTexts || !dbBatchSize?.[0])
       return;
 
-    const batchSize = dbBatchSize[0].value;
     const faultyTexts = dbAnnotatedTexts.filter(
       (at) => at.annotatedDatasetId === activeAnnotatedDataset.id && at.aiFaulty
     );
 
-    const faultyBatches: AnnotatedText[][] = [];
-    for (let i = 0; i < faultyTexts.length; i += batchSize) {
-      faultyBatches.push(faultyTexts.slice(i, i + batchSize));
-    }
-
-    setFaultyBatches(faultyBatches);
+    // All faulty texts run as a single sliding-window pass (concurrency comes
+    // from the batch-size setting), not as fixed sequential chunks.
+    setFaultyBatches(faultyTexts.length ? [faultyTexts] : []);
     setFaultyBatchIndex(0);
   }, [activeAnnotatedDataset, dbAnnotatedTexts, dbBatchSize]);
 
@@ -104,7 +101,6 @@ export const useAnnotationState = <T extends ProfilePointType>({
     if (!activeAnnotatedDataset || !dbTexts || !dbAnnotatedTexts || !dbBatchSize?.[0])
       return;
 
-    const batchSize = dbBatchSize[0].value;
     const annotatedTextIds = new Set(
       dbAnnotatedTexts
         .filter((at) => at.annotatedDatasetId === activeAnnotatedDataset.id)
@@ -117,28 +113,30 @@ export const useAnnotationState = <T extends ProfilePointType>({
           text.datasetId === activeAnnotatedDataset.datasetId &&
           !annotatedTextIds.has(text.id)
       )
-      .sort((a, b) => 
+      .sort((a, b) =>
         a.filename.localeCompare(b.filename, undefined, { sensitivity: "base" })
       );
 
-    const batches: Text[][] = [];
-    for (let i = 0; i < unannotatedTexts.length; i += batchSize) {
-      batches.push(unannotatedTexts.slice(i, i + batchSize));
-    }
-
-    setTextBatches(batches);
+    // All unannotated texts run as a single sliding-window pass (concurrency
+    // comes from the batch-size setting), not as fixed sequential chunks — this
+    // avoids paying each chunk's slowest-request latency at every boundary.
+    setTextBatches(unannotatedTexts.length ? [unannotatedTexts] : []);
     setBatchIndex(0);
   }, [activeAnnotatedDataset, dbTexts, dbAnnotatedTexts, dbBatchSize]);
 
   useEffect(() => {
     const runAnnotation = async () => {
-      if (!activeAnnotatedDataset || !dbApiKeys || !dbLlmProvider || !dbLlmModel || !dbLlmUrl || !dbMaxTokens)
+      if (!activeAnnotatedDataset || !dbApiKeys || !dbLlmProvider || !dbLlmModel || !dbLlmUrl || !dbMaxTokens || !dbBatchSize?.[0])
         return;
 
-      const annotateFunction = mode === "datapoint_extraction" 
-        ? annotateTextBatch 
+      // The batch-size setting is now the max number of requests kept in flight
+      // at once (the sliding-window width), not a chunk size.
+      const concurrency = dbBatchSize[0].value;
+
+      const annotateFunction = mode === "datapoint_extraction"
+        ? annotateTextBatch
         : annotateSegmentationTextBatch;
-      
+
       const reannotateFunction = mode === "datapoint_extraction"
         ? reannotateFaultyText
         : reannotateFaultySegmentationText;
@@ -153,7 +151,8 @@ export const useAnnotationState = <T extends ProfilePointType>({
             dbLlmModel[0].name,
             dbLlmUrl[0].url,
             dbApiKeys[0].key,
-            dbMaxTokens[0]?.value
+            dbMaxTokens[0]?.value,
+            concurrency
           );
           setBatchIndex((prevIndex) => prevIndex + 1);
         } else if (autoRerunFaulty) {
@@ -164,9 +163,11 @@ export const useAnnotationState = <T extends ProfilePointType>({
         }
       } else if (annotationState === "faulty") {
         if (faultyBatches.length > 0 && faultyBatchIndex < faultyBatches.length) {
-          await Promise.all(
-            faultyBatches[faultyBatchIndex].map((annotatedText) =>
-              reannotateFunction(
+          await runWithConcurrency(
+            faultyBatches[faultyBatchIndex],
+            concurrency,
+            async (annotatedText) => {
+              await reannotateFunction(
                 annotatedText,
                 activeProfilePoints as any, // Type assertion needed due to generic constraints
                 dbLlmProvider[0].provider,
@@ -174,8 +175,8 @@ export const useAnnotationState = <T extends ProfilePointType>({
                 dbLlmUrl[0].url,
                 dbApiKeys[0].key,
                 dbMaxTokens[0]?.value
-              )
-            )
+              );
+            }
           );
           setFaultyBatchIndex((prevIndex) => prevIndex + 1);
         } else {
@@ -200,6 +201,7 @@ export const useAnnotationState = <T extends ProfilePointType>({
     dbLlmModel,
     dbLlmUrl,
     dbMaxTokens,
+    dbBatchSize,
     autoRerunFaulty,
     mode,
   ]);

@@ -6,6 +6,7 @@ import {
   AnnotatedText,
 } from "@/lib/db/db";
 import { ReqProfilePoint, ResDataPoint } from "../../../app/types";
+import { runWithConcurrency } from "./concurrency";
 import {
   readProfilePointsByProfile,
   createAnnotatedDataset,
@@ -437,9 +438,10 @@ export const annotateTextBatch = async (
   llmModel: string,
   llmUrl: string,
   apiKey: string,
-  maxTokens: number | undefined
+  maxTokens: number | undefined,
+  concurrency: number = 10
 ) => {
-  const annotationPromises = texts.map(async (text) => {
+  await runWithConcurrency(texts, concurrency, async (text) => {
     try {
       const { data, aiFaulty } = await callAnnotationAPI(
         text,
@@ -464,6 +466,4 @@ export const annotateTextBatch = async (
       console.error(`Error annotating text ${text.id}:`, error);
     }
   });
-
-  await Promise.all(annotationPromises);
 };
