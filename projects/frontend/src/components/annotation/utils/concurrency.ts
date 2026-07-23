@@ -14,17 +14,24 @@
  *
  * Errors from `worker` are the caller's responsibility to catch — an unhandled
  * rejection here aborts the whole run.
+ *
+ * If an `AbortSignal` is passed, workers stop pulling new items as soon as it is
+ * aborted; items already in flight settle (the worker should itself honor the
+ * signal to bail out early). The returned promise resolves once every worker has
+ * stopped, so callers can await a clean shutdown.
  */
 export async function runWithConcurrency<T>(
   items: T[],
   concurrency: number,
-  worker: (item: T, index: number) => Promise<void>
+  worker: (item: T, index: number) => Promise<void>,
+  signal?: AbortSignal
 ): Promise<void> {
   const limit = Math.max(1, Math.min(concurrency || 1, items.length));
   let next = 0;
 
   const runner = async (): Promise<void> => {
     while (next < items.length) {
+      if (signal?.aborted) return;
       const index = next++;
       await worker(items[index], index);
     }

@@ -1,0 +1,95 @@
+{
+ "annotatedDataset": {
+  "name": "SR Annotated",
+  "description": "stopresume",
+  "datasetId": "d1",
+  "profileId": "p1",
+  "mode": "datapoint_extraction",
+  "id": "ad1"
+ },
+ "originalDataset": {
+  "name": "SR Dataset",
+  "description": ".",
+  "mode": "datapoint_extraction",
+  "id": "d1"
+ },
+ "profile": {
+  "name": "SR Profile",
+  "description": ".",
+  "mode": "datapoint_extraction",
+  "id": "p1"
+ },
+ "profilePoints": [
+  {
+   "id": "pp1",
+   "profileId": "p1",
+   "name": "Finding",
+   "explanation": "A clinical finding.",
+   "synonyms": [
+    "observation"
+   ],
+   "datatype": "text",
+   "valueset": [],
+   "unit": ""
+  },
+  {
+   "id": "pp2",
+   "profileId": "p1",
+   "name": "Severity",
+   "explanation": "Severity level.",
+   "synonyms": [
+    "grade"
+   ],
+   "datatype": "valueset",
+   "valueset": [
+    "mild",
+    "severe"
+   ],
+   "unit": ""
+  }
+ ],
+ "texts": [
+  {
+   "id": "t1",
+   "filename": "1.txt",
+   "text": "Synthetic report 1: patient presents with a finding of moderate severity."
+  },
+  {
+   "id": "t2",
+   "filename": "2.txt",
+   "text": "Synthetic report 2: patient presents with a finding of moderate severity."
+  },
+  {
+   "id": "t3",
+   "filename": "3.txt",
+   "text": "Synthetic report 3: patient presents with a finding of moderate severity."
+  },
+  {
+   "id": "t4",
+   "filename": "4.txt",
+   "text": "Synthetic report 4: patient presents with a finding of moderate severity."
+  },
+  {
+   "id": "t5",
+   "filename": "5.txt",
+   "text": "Synthetic report 5: patient presents with a finding of moderate severity."
+  },
+  {
+   "id": "t6",
+   "filename": "6.txt",
+   "text": "Synthetic report 6: patient presents with a finding of moderate severity."
+  },
+  {
+   "id": "t7",
+   "filename": "7.txt",
+   "text": "Synthetic report 7: patient presents with a finding of moderate severity."
+  },
+  {
+   "id": "t8",
+   "filename": "8.txt",
+   "text": "Synthetic report 8: patient presents with a finding of moderate severity."
+  }
+ ],
+ "annotatedTexts": [],
+ "dataPoints": []
+}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   readAllAnnotatedDatasets,
@@ -51,11 +51,15 @@ export const useAnnotationState = <T extends ProfilePointType>({
   // state definitions
   const [addingDataset, setAddingDataset] = useState(false);
   const [annotationState, setAnnotationState] = useState<"idle" | "regular" | "faulty">("idle");
-  const [isRunning, setIsRunning] = useState(false);
   const [batchIndex, setBatchIndex] = useState(0);
   const [textBatches, setTextBatches] = useState<Text[][]>([]);
   const [faultyBatches, setFaultyBatches] = useState<AnnotatedText[][]>([]);
   const [faultyBatchIndex, setFaultyBatchIndex] = useState(0);
+  // Controls cancellation of the active annotation run. Stop aborts it; the run
+  // then stops starting new requests and cancels in-flight ones, and only after
+  // it has fully settled does the effect return the state to "idle" — which is
+  // what prevents a resume from overlapping a still-running (uncancelled) run.
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // db queries
   const dbAnnotatedDatasets = useLiveQuery(() => readAnnotatedDatasetsByMode(mode), [mode]);
@@ -132,6 +136,7 @@ export const useAnnotationState = <T extends ProfilePointType>({
       // The batch-size setting is now the max number of requests kept in flight
       // at once (the sliding-window width), not a chunk size.
       const concurrency = dbBatchSize[0].value;
+      const signal = abortControllerRef.current?.signal;
 
       const annotateFunction = mode === "datapoint_extraction"
         ? annotateTextBatch
@@ -152,9 +157,16 @@ export const useAnnotationState = <T extends ProfilePointType>({
             dbLlmUrl[0].url,
             dbApiKeys[0].key,
             dbMaxTokens[0]?.value,
-            concurrency
+            concurrency,
+            signal
           );
-          setBatchIndex((prevIndex) => prevIndex + 1);
+          // If Stop was pressed, halt here (the run has settled) instead of
+          // advancing or auto-rerunning faulty texts.
+          if (signal?.aborted) {
+            setAnnotationState("idle");
+          } else {
+            setBatchIndex((prevIndex) => prevIndex + 1);
+          }
         } else if (autoRerunFaulty) {
           prepareFaultyBatches();
           setAnnotationState("faulty");
@@ -176,9 +188,14 @@ export const useAnnotationState = <T extends ProfilePointType>({
                 dbApiKeys[0].key,
                 dbMaxTokens[0]?.value
               );
-            }
+            },
+            signal
           );
-          setFaultyBatchIndex((prevIndex) => prevIndex + 1);
+          if (signal?.aborted) {
+            setAnnotationState("idle");
+          } else {
+            setFaultyBatchIndex((prevIndex) => prevIndex + 1);
+          }
         } else {
           setAnnotationState("idle");
         }
@@ -207,16 +224,21 @@ export const useAnnotationState = <T extends ProfilePointType>({
   ]);
 
   const handleStart = () => {
+    // Fresh cancellation scope for this run. prepareTextBatches recomputes the
+    // unannotated set from the DB, which is now accurate because Stop waits for
+    // the previous run to fully settle before returning to "idle".
+    abortControllerRef.current = new AbortController();
     prepareTextBatches();
     setAnnotationState("regular");
   };
 
   const handleStop = () => {
-    setAnnotationState("idle");
-    setTextBatches([]);
-    setBatchIndex(0);
-    setFaultyBatches([]);
-    setFaultyBatchIndex(0);
+    // Cancel the active run: workers stop pulling new texts and in-flight
+    // requests are aborted (their results discarded). We deliberately do NOT set
+    // "idle" here — the running effect returns the state to idle once the run has
+    // actually settled, so the Start button (and thus a resume) only reappears
+    // after the run is truly stopped.
+    abortControllerRef.current?.abort();
   };
 
   const identifyActiveProfilePoints = (profileId: string) => {

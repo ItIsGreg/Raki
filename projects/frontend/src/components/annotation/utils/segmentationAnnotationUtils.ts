@@ -172,7 +172,8 @@ export const annotateSegmentationText = async (
 async function callSegmentationAPI(
   text: Text,
   activeProfilePoints: SegmentationProfilePoint[],
-  config: LLMConfig
+  config: LLMConfig,
+  signal?: AbortSignal
 ) {
   try {
     const body = {
@@ -198,6 +199,7 @@ async function callSegmentationAPI(
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
+      signal,
     });
 
     if (!response.ok) {
@@ -277,37 +279,47 @@ export const annotateSegmentationTextBatch = async (
   llmUrl: string,
   apiKey: string,
   maxTokens: number | undefined,
-  concurrency: number = 10
+  concurrency: number = 10,
+  signal?: AbortSignal
 ) => {
-  await runWithConcurrency(texts, concurrency, async (text) => {
-    try {
-      const { data, aiFaulty } = await callSegmentationAPI(
-        text,
-        activeProfilePoints,
-        {
-          provider: llmProvider,
-          model: llmModel,
-          url: llmUrl,
-          apiKey: apiKey,
-          maxTokens: maxTokens,
-        }
-      );
+  await runWithConcurrency(
+    texts,
+    concurrency,
+    async (text) => {
+      try {
+        const { data, aiFaulty } = await callSegmentationAPI(
+          text,
+          activeProfilePoints,
+          {
+            provider: llmProvider,
+            model: llmModel,
+            url: llmUrl,
+            apiKey: apiKey,
+            maxTokens: maxTokens,
+          },
+          signal
+        );
 
-      const annotatedText = await createAnnotatedText({
-        annotatedDatasetId: activeAnnotatedDataset.id,
-        textId: text.id,
-        verified: undefined,
-        aiFaulty: aiFaulty,
-      });
+        // Discard a cancelled in-flight result so Stop leaves it unannotated.
+        if (signal?.aborted) return;
 
-      await createSegmentDataPointsForAnnotatedText(
-        data,
-        annotatedText.id,
-        activeProfilePoints,
-        aiFaulty
-      );
-    } catch (error) {
-      console.error(`Error annotating text ${text.id}:`, error);
-    }
-  });
+        const annotatedText = await createAnnotatedText({
+          annotatedDatasetId: activeAnnotatedDataset.id,
+          textId: text.id,
+          verified: undefined,
+          aiFaulty: aiFaulty,
+        });
+
+        await createSegmentDataPointsForAnnotatedText(
+          data,
+          annotatedText.id,
+          activeProfilePoints,
+          aiFaulty
+        );
+      } catch (error) {
+        console.error(`Error annotating text ${text.id}:`, error);
+      }
+    },
+    signal
+  );
 };
