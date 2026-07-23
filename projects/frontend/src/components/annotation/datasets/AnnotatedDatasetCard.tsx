@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   AnnotatedDataset,
   ProfilePoint,
   SegmentationProfilePoint,
+  Text,
 } from "@/lib/db/db";
 import {
   deleteAnnotatedDataset,
@@ -22,8 +24,10 @@ import DeleteButton from "@/components/shared/DeleteButton";
 import EditButton from "@/components/shared/EditButton";
 import DownloadButton from "./DownloadButton";
 import { Progress } from "@/components/ui/progress";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 import { TaskMode } from "@/app/constants";
+import { RunSelection } from "../utils/runSelection";
+import { RunSubsetDialog } from "./RunSubsetDialog";
 
 interface AnnotatedDatasetCardProps<
   T extends ProfilePoint | SegmentationProfilePoint
@@ -34,6 +38,8 @@ interface AnnotatedDatasetCardProps<
   onSelect: () => void;
   onStart: () => void;
   onStop: () => void;
+  onRun: (selection: RunSelection) => void;
+  candidateTexts: Text[];
   onEdit: () => void;
   onDelete: () => void;
   mode: TaskMode;
@@ -48,10 +54,13 @@ export const AnnotatedDatasetCard = <
   onSelect,
   onStart,
   onStop,
+  onRun,
+  candidateTexts,
   onEdit,
   onDelete,
   mode,
 }: AnnotatedDatasetCardProps<T>) => {
+  const [subsetOpen, setSubsetOpen] = useState(false);
   const dbProfiles = useLiveQuery(() => readAllProfiles());
   const dbDatasets = useLiveQuery(() => readAllDatasets());
   const dbTexts = useLiveQuery(() => readAllTexts());
@@ -94,13 +103,30 @@ export const AnnotatedDatasetCard = <
         {isActive && (
           <div className="w-full">
             {annotationState === "idle" ? (
-              <Button
-                data-cy="start-annotation-button"
-                onClick={onStart}
-                className="w-full"
-              >
-                {getActionText()}
-              </Button>
+              <div className="flex w-full gap-1">
+                <Button
+                  data-cy="start-annotation-button"
+                  onClick={onStart}
+                  className="flex-1"
+                >
+                  {getActionText()}
+                </Button>
+                <Button
+                  data-cy="run-subset-button"
+                  variant="outline"
+                  size="icon"
+                  title="Run a subset…"
+                  onClick={() => setSubsetOpen(true)}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+                <RunSubsetDialog
+                  open={subsetOpen}
+                  onOpenChange={setSubsetOpen}
+                  candidateTexts={candidateTexts}
+                  onRun={onRun}
+                />
+              </div>
             ) : (
               <div className="flex flex-col gap-2">
                 <Button

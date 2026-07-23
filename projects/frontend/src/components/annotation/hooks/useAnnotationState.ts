@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   readAllAnnotatedDatasets,
@@ -27,6 +27,7 @@ import {
   reannotateFaultySegmentationText
 } from "../utils/segmentationAnnotationUtils";
 import { runWithConcurrency } from "../utils/concurrency";
+import { RunSelection, selectRunSubset } from "../utils/runSelection";
 import { TaskMode } from "@/app/constants";
 
 type ProfilePointType = ProfilePoint | SegmentationProfilePoint;
@@ -101,9 +102,11 @@ export const useAnnotationState = <T extends ProfilePointType>({
     setFaultyBatchIndex(0);
   }, [activeAnnotatedDataset, dbAnnotatedTexts, dbBatchSize]);
 
-  const prepareTextBatches = useCallback(() => {
-    if (!activeAnnotatedDataset || !dbTexts || !dbAnnotatedTexts || !dbBatchSize?.[0])
-      return;
+  // Texts in the active dataset that have not been annotated yet, sorted by
+  // filename. This is the candidate pool a run draws from (and what the
+  // "Run subset" dialog previews against).
+  const unannotatedTexts = useMemo(() => {
+    if (!activeAnnotatedDataset || !dbTexts || !dbAnnotatedTexts) return [];
 
     const annotatedTextIds = new Set(
       dbAnnotatedTexts
@@ -111,7 +114,7 @@ export const useAnnotationState = <T extends ProfilePointType>({
         .map((at) => at.textId)
     );
 
-    const unannotatedTexts = dbTexts
+    return dbTexts
       .filter(
         (text) =>
           text.datasetId === activeAnnotatedDataset.datasetId &&
@@ -120,13 +123,21 @@ export const useAnnotationState = <T extends ProfilePointType>({
       .sort((a, b) =>
         a.filename.localeCompare(b.filename, undefined, { sensitivity: "base" })
       );
+  }, [activeAnnotatedDataset, dbTexts, dbAnnotatedTexts]);
 
-    // All unannotated texts run as a single sliding-window pass (concurrency
-    // comes from the batch-size setting), not as fixed sequential chunks — this
-    // avoids paying each chunk's slowest-request latency at every boundary.
-    setTextBatches(unannotatedTexts.length ? [unannotatedTexts] : []);
-    setBatchIndex(0);
-  }, [activeAnnotatedDataset, dbTexts, dbAnnotatedTexts, dbBatchSize]);
+  const prepareTextBatches = useCallback(
+    (selection: RunSelection = { mode: "all" }) => {
+      if (!dbBatchSize?.[0]) return;
+
+      // Narrow the unannotated pool to the requested subset. The chosen texts
+      // run as a single sliding-window pass (concurrency = batch-size setting),
+      // not fixed sequential chunks.
+      const { selected } = selectRunSubset(unannotatedTexts, selection);
+      setTextBatches(selected.length ? [selected] : []);
+      setBatchIndex(0);
+    },
+    [unannotatedTexts, dbBatchSize]
+  );
 
   useEffect(() => {
     const runAnnotation = async () => {
@@ -223,12 +234,12 @@ export const useAnnotationState = <T extends ProfilePointType>({
     mode,
   ]);
 
-  const handleStart = () => {
+  const handleStart = (selection: RunSelection = { mode: "all" }) => {
     // Fresh cancellation scope for this run. prepareTextBatches recomputes the
     // unannotated set from the DB, which is now accurate because Stop waits for
     // the previous run to fully settle before returning to "idle".
     abortControllerRef.current = new AbortController();
-    prepareTextBatches();
+    prepareTextBatches(selection);
     setAnnotationState("regular");
   };
 
@@ -267,5 +278,6 @@ export const useAnnotationState = <T extends ProfilePointType>({
     identifyActiveProfilePoints,
     autoRerunFaulty,
     annotationState,
+    unannotatedTexts,
   };
 };

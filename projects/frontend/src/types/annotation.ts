@@ -9,6 +9,7 @@ import {
   Text,
 } from "@/lib/db/db";
 import { ReactNode } from "react";
+import { RunSelection } from "@/components/annotation/utils/runSelection";
 
 // Generic profile point type constraint
 export type BaseProfilePoint = ProfilePoint | SegmentationProfilePoint;
@@ -154,9 +155,10 @@ export interface AnnotationTabProps<TProfilePoint extends BaseProfilePoint> {
   configuration: ModeConfiguration<TProfilePoint>;
   annotationState: any; // From useAnnotationState hook
   dbAnnotatedDatasets: AnnotatedDataset[] | undefined;
-  handleStart: () => void;
+  handleStart: (selection?: RunSelection) => void;
   handleStop: () => void;
   identifyActiveProfilePoints: (profileId: string) => void;
+  unannotatedTexts: Text[];
 }
 
 export interface ProfilesTabProps<TProfilePoint extends BaseProfilePoint> {

@@ -32,6 +32,7 @@ export function AnnotationTab<TProfilePoint extends BaseProfilePoint>({
   handleStart,
   handleStop,
   identifyActiveProfilePoints,
+  unannotatedTexts,
 }: AnnotationTabProps<TProfilePoint>) {
   return (
     <TabsContent
@@ -126,6 +127,13 @@ export function AnnotationTab<TProfilePoint extends BaseProfilePoint>({
                     handleStart();
                   }}
                   onStop={handleStop}
+                  onRun={(selection) => {
+                    identifyActiveProfilePoints(
+                      state.activeAnnotatedDataset!.profileId
+                    );
+                    handleStart(selection);
+                  }}
+                  candidateTexts={unannotatedTexts}
                   onEdit={() =>
                     handlers.setEditingDataset(state.activeAnnotatedDataset)
                   }

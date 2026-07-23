@@ -27,6 +27,7 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
     handleStart,
     handleStop,
     identifyActiveProfilePoints,
+    unannotatedTexts,
   } = useAnnotationPageState(configuration);
 
   const containerDataCy =
@@ -141,6 +142,7 @@ export function BaseAnnotationPage<TProfilePoint extends BaseProfilePoint>({
               handleStart={handleStart}
               handleStop={handleStop}
               identifyActiveProfilePoints={identifyActiveProfilePoints}
+              unannotatedTexts={unannotatedTexts}
             />
 
             <ProfilesTab

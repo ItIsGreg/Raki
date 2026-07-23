@@ -162,6 +162,7 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     handleStart,
     handleStop,
     identifyActiveProfilePoints,
+    unannotatedTexts,
   } = useAnnotationState<TProfilePoint>({
     activeAnnotatedDataset: activeAnnotatedDataset || null,
     setActiveAnnotatedDataset: handleSetActiveAnnotatedDataset,
@@ -401,5 +402,6 @@ export function useAnnotationPageState<TProfilePoint extends BaseProfilePoint>(
     handleStart,
     handleStop,
     identifyActiveProfilePoints,
+    unannotatedTexts,
   };
-} 
+}
