@@ -287,10 +287,12 @@ export class MySubClassedDexie extends Dexie {
 
     // Add hooks to populate default values
     this.on("populate", async () => {
-      // Default batch size
+      // Default batch size (= max requests annotated in parallel / sliding-window
+      // width). 20 is the measured sweet spot over HTTP/2 before OpenAI latency
+      // creep sets in.
       await this.batchSizes.add({
         id: v4(),
-        value: 10,
+        value: 20,
       });
 
       // Default API Key
