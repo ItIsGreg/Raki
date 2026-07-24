@@ -17,6 +17,7 @@ import * as XLSX from "xlsx";
 import JSZip from "jszip";
 import SingleTextInput from "./SingleTextInput";
 import * as pdfjsLib from "pdfjs-dist";
+import mammoth from "mammoth";
 import { backendURL } from "../../app/constants";
 import CompactCard from "@/components/shared/CompactCard";
 import {
@@ -128,6 +129,22 @@ const TextList = (props: TextListProps) => {
           await refreshTexts();
         } catch (error) {
           console.error("Error processing PDF:", error);
+        }
+      } else if (fileExtension === "docx") {
+        // Parsed on-device (mammoth) — the document never leaves the client;
+        // only its extracted text goes to the backend at annotation time.
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const { value: text } = await mammoth.extractRawText({ arrayBuffer });
+          if (!activeDataset) return;
+          await createText({
+            datasetId: activeDataset.id,
+            filename: file.name,
+            text,
+          });
+          await refreshTexts();
+        } catch (error) {
+          console.error("Error processing DOCX:", error);
         }
       } else if (fileExtension === "md") {
         const reader = new FileReader();
@@ -332,7 +349,7 @@ const TextList = (props: TextListProps) => {
             type="file"
             ref={fileInputRef}
             hidden
-            accept=".txt,.pdf,.md"
+            accept=".txt,.pdf,.md,.docx"
             multiple
             onChange={handleFileChange}
             data-cy="file-input"

@@ -142,6 +142,31 @@ describe('Datasets page', () => {
       })
     })
 
+    it('should upload a .docx file (parsed client-side) and display its extracted text', () => {
+      cy.get('[data-cy="upload-texts-btn"]')
+        .should('be.visible')
+        .click({ force: true })
+
+      cy.get('[data-cy="upload-dropdown-content"]')
+        .should('be.visible')
+        .within(() => {
+          cy.get('[data-cy="upload-files-option"]')
+            .should('be.visible')
+            .click({ force: true })
+        })
+
+      cy.get('[data-cy="file-input"]').selectFile('cypress/fixtures/docx_sample.docx', { force: true })
+
+      cy.get('[data-cy="text-card"]', { timeout: 10000 })
+        .should('be.visible')
+        .should('contain', 'docx_sample.docx')
+        .click({ force: true })
+
+      cy.get('[data-cy="text-display-content"]')
+        .should('be.visible')
+        .should('contain', 'DOCX SAMPLE TEXT for annotation.')
+    })
+
     it('should upload multiple text files and display their content', () => {
       // Read the test file content first to compare later
       cy.readFile('cypress/fixtures/test_texts/txts/0.txt').then((expectedContent) => {
