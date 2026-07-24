@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Text } from "@/lib/db/db";
 import {
   RunSelection,
@@ -24,7 +26,7 @@ import {
   parseFilenameList,
 } from "../utils/runSelection";
 
-type Mode = "first" | "last" | "random" | "list";
+type Mode = "first" | "last" | "random" | "list" | "select";
 
 interface RunSubsetDialogProps {
   open: boolean;
@@ -42,13 +44,37 @@ export function RunSubsetDialog({
   const [mode, setMode] = useState<Mode>("first");
   const [n, setN] = useState("10");
   const [listText, setListText] = useState("");
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
 
   const selection = useMemo<RunSelection>(() => {
     if (mode === "list") {
       return { mode: "list", filenames: parseFilenameList(listText) };
     }
+    if (mode === "select") {
+      // A checkbox list is just a filename list built by clicking.
+      return { mode: "list", filenames: Array.from(checked) };
+    }
     return { mode, n: parseInt(n, 10) || 0 };
-  }, [mode, n, listText]);
+  }, [mode, n, listText, checked]);
+
+  const filtered = useMemo(
+    () =>
+      search.trim()
+        ? candidateTexts.filter((t) =>
+            t.filename.toLowerCase().includes(search.trim().toLowerCase())
+          )
+        : candidateTexts,
+    [candidateTexts, search]
+  );
+
+  const toggle = (filename: string) =>
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(filename)) next.delete(filename);
+      else next.add(filename);
+      return next;
+    });
 
   const { selected, unmatched } = useMemo(
     () => selectRunSubset(candidateTexts, selection),
@@ -87,11 +113,73 @@ export function RunSubsetDialog({
                 <SelectItem value="list" data-cy="run-subset-mode-list">
                   Paste filenames
                 </SelectItem>
+                <SelectItem value="select" data-cy="run-subset-mode-select">
+                  Select from list
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {mode !== "list" ? (
+          {mode === "select" ? (
+            <div className="flex flex-col gap-2">
+              <Input
+                placeholder="Search filenames…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                data-cy="run-subset-search"
+              />
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>{checked.size} selected</span>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    className="underline"
+                    data-cy="run-subset-select-all"
+                    onClick={() =>
+                      setChecked((prev) => {
+                        const next = new Set(prev);
+                        filtered.forEach((t) => next.add(t.filename));
+                        return next;
+                      })
+                    }
+                  >
+                    Select all{search.trim() ? " (filtered)" : ""}
+                  </button>
+                  <button
+                    type="button"
+                    className="underline"
+                    data-cy="run-subset-clear"
+                    onClick={() => setChecked(new Set())}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <ScrollArea className="h-48 rounded-md border">
+                <div
+                  className="flex flex-col gap-1 p-2"
+                  data-cy="run-subset-checklist"
+                >
+                  {filtered.map((t) => (
+                    <label
+                      key={t.id}
+                      className="flex items-center gap-2 text-sm cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={checked.has(t.filename)}
+                        onCheckedChange={() => toggle(t.filename)}
+                        data-cy={`run-subset-check-${t.filename}`}
+                      />
+                      <span className="truncate">{t.filename}</span>
+                    </label>
+                  ))}
+                  {filtered.length === 0 && (
+                    <span className="text-sm text-gray-400">No matching texts.</span>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          ) : mode !== "list" ? (
             <div className="flex flex-col gap-1">
               <Label>Number of texts</Label>
               <Input

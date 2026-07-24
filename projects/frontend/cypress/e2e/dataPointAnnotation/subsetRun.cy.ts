@@ -87,6 +87,22 @@ describe('Subset annotation (datapoint, mocked backend)', () => {
     });
   });
 
+  it('Select-from-list annotates exactly the checked texts', () => {
+    cy.get('[data-cy="run-subset-button"]').should('be.visible').click();
+    cy.get('[data-cy="run-subset-dialog"]').should('be.visible');
+    cy.get('[data-cy="run-subset-mode-trigger"]').click();
+    cy.get('[data-cy="run-subset-mode-select"]').click();
+    cy.get('[data-cy="run-subset-checklist"]').should('be.visible');
+    cy.get('[data-cy="run-subset-check-3.txt"]').click();
+    cy.get('[data-cy="run-subset-check-7.txt"]').click();
+    cy.get('[data-cy="run-subset-count"]').should('contain', 'Will annotate 2 of 8');
+    cy.get('[data-cy="run-subset-confirm"]').click();
+
+    settleAt(2).then((names: string[]) => {
+      expect(names).to.deep.eq(['3.txt', '7.txt']);
+    });
+  });
+
   it('Paste list annotates exactly the named texts', () => {
     cy.get('[data-cy="run-subset-button"]').should('be.visible').click();
     cy.get('[data-cy="run-subset-dialog"]').should('be.visible');
