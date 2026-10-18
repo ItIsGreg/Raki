@@ -111,6 +111,10 @@ async def call_self_hosted_model(
         "model": model,
         "api_key": api_key,
         "base_url": llm_url,
+        # Disable reasoning ("thinking") for reasoning models such as Qwen3 served
+        # via Ollama/vLLM; otherwise they emit long think-chains that time out and
+        # break JSON parsing. Servers that don't know this field ignore it.
+        "extra_body": {"chat_template_kwargs": {"enable_thinking": False}},
     }
     if max_tokens is not None:
         llm_params["max_tokens"] = max_tokens
@@ -242,6 +246,7 @@ async def call_self_hosted_model_stream(
         "api_key": api_key,
         "base_url": llm_url,
         "streaming": True,
+        "extra_body": {"chat_template_kwargs": {"enable_thinking": False}},
     }
     if max_tokens is not None:
         llm_params["max_tokens"] = max_tokens
